@@ -75,6 +75,10 @@ class SettingsPageTest extends \BF_SFD_TestCase {
             ->with( 'bf_sfd_settings', 'bf_sfd_menu_title', \WP_Mock\Functions::type( 'array' ) )
             ->once();
 
+        WP_Mock::userFunction( 'register_setting' )
+            ->with( 'bf_sfd_settings', 'bf_sfd_allow_editor_admin', \WP_Mock\Functions::type( 'array' ) )
+            ->once();
+
         $this->settings_page->register_settings();
 
         $this->assertTrue( true ); // Assert to avoid risky test

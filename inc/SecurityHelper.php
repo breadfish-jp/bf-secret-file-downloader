@@ -26,27 +26,40 @@ class SecurityHelper {
      * @return string 安全なパス
      */
     public static function build_safe_path( $base_directory, $relative_path ) {
+        error_log( 'SecurityHelper::build_safe_path - Base directory: ' . $base_directory );
+        error_log( 'SecurityHelper::build_safe_path - Relative path: ' . $relative_path );
+        
         // 空の相対パスの場合はベースディレクトリを返す
         if ( empty( $relative_path ) ) {
+            error_log( 'SecurityHelper::build_safe_path - Empty relative path, returning base directory' );
             return $base_directory;
         }
 
         // 危険な文字列をチェック
         if ( strpos( $relative_path, '..' ) !== false || strpos( $relative_path, '//' ) !== false ) {
+            error_log( 'SecurityHelper::build_safe_path - Dangerous characters detected, returning base directory' );
             return $base_directory;
         }
 
         // パスを構築
         $full_path = $base_directory . DIRECTORY_SEPARATOR . ltrim( $relative_path, DIRECTORY_SEPARATOR );
+        error_log( 'SecurityHelper::build_safe_path - Constructed full path: ' . $full_path );
 
         // パスを正規化
         $normalized_path = realpath( $full_path );
+        error_log( 'SecurityHelper::build_safe_path - Normalized path: ' . ( $normalized_path !== false ? $normalized_path : 'FALSE' ) );
 
         // 正規化に失敗した場合や、ベースディレクトリ外の場合はベースディレクトリを返す
-        if ( $normalized_path === false || strpos( $normalized_path, realpath( $base_directory ) ) !== 0 ) {
+        $real_base = realpath( $base_directory );
+        error_log( 'SecurityHelper::build_safe_path - Real base directory: ' . ( $real_base !== false ? $real_base : 'FALSE' ) );
+        
+        if ( $normalized_path === false || strpos( $normalized_path, $real_base ) !== 0 ) {
+            error_log( 'SecurityHelper::build_safe_path - Security check failed, returning base directory' );
+            error_log( 'SecurityHelper::build_safe_path - Reason: normalized=' . ( $normalized_path === false ? 'FALSE' : $normalized_path ) );
             return $base_directory;
         }
 
+        error_log( 'SecurityHelper::build_safe_path - Returning normalized path: ' . $normalized_path );
         return $normalized_path;
     }
 
@@ -57,29 +70,50 @@ class SecurityHelper {
      * @return bool 許可されている場合はtrue
      */
     public static function is_allowed_directory( $path ) {
+        error_log( 'SecurityHelper::is_allowed_directory - Checking path: ' . $path );
+        
         $real_path = realpath( $path );
+        error_log( 'SecurityHelper::is_allowed_directory - Real path: ' . ( $real_path !== false ? $real_path : 'FALSE' ) );
+        
         if ( $real_path === false ) {
+            error_log( 'SecurityHelper::is_allowed_directory - Real path is false, denying access' );
             return false;
         }
 
         // シンボリックリンクの場合は拒否
         if ( is_link( $path ) ) {
+            error_log( 'SecurityHelper::is_allowed_directory - Path is symbolic link, denying access' );
              return false;
         }
 
         // 基本となる対象ディレクトリを取得
         $target_directory = \Breadfish\SecretFileDownloader\DirectoryManager::get_secure_directory();
+        error_log( 'SecurityHelper::is_allowed_directory - Target directory: ' . ( ! empty( $target_directory ) ? $target_directory : 'EMPTY' ) );
+        
         if ( empty( $target_directory ) ) {
+            error_log( 'SecurityHelper::is_allowed_directory - Target directory is empty, denying access' );
             return false;
         }
 
         $real_target_directory = realpath( $target_directory );
+        error_log( 'SecurityHelper::is_allowed_directory - Real target directory: ' . ( $real_target_directory !== false ? $real_target_directory : 'FALSE' ) );
+        
         if ( $real_target_directory === false ) {
+            error_log( 'SecurityHelper::is_allowed_directory - Real target directory is false, denying access' );
             return false;
         }
 
         // セキュアディレクトリ内かつ存在するディレクトリのみ許可
-        return strpos( $real_path, $real_target_directory ) === 0 && is_dir( $real_path );
+        $within_target = strpos( $real_path, $real_target_directory ) === 0;
+        $is_dir_check = is_dir( $real_path );
+        
+        error_log( 'SecurityHelper::is_allowed_directory - Within target: ' . ( $within_target ? 'YES' : 'NO' ) );
+        error_log( 'SecurityHelper::is_allowed_directory - Is directory: ' . ( $is_dir_check ? 'YES' : 'NO' ) );
+        
+        $result = $within_target && $is_dir_check;
+        error_log( 'SecurityHelper::is_allowed_directory - Final result: ' . ( $result ? 'ALLOWED' : 'DENIED' ) );
+        
+        return $result;
     }
 
     /**
