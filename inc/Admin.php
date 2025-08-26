@@ -2,7 +2,7 @@
 /**
  * 管理画面メニューを管理するクラス
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;
@@ -21,14 +21,14 @@ class Admin {
     /**
      * ファイルリストページインスタンス
      *
-     * @var \Breadfish\BasicGuard\Admin\FileListPage
+     * @var \Breadfish\SecretFileDownloader\Admin\FileListPage
      */
     private $file_list_page;
 
     /**
      * 設定ページインスタンス
      *
-     * @var \Breadfish\BasicGuard\Admin\SettingsPage
+     * @var \Breadfish\SecretFileDownloader\Admin\SettingsPage
      */
     private $settings_page;
 
@@ -58,18 +58,18 @@ class Admin {
     public function add_admin_menu() {
         // 編集者管理権限設定をチェック
         $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
-        
+
         // 編集者管理権限が無効で、現在のユーザーが編集者の場合はメニューを表示しない
         if ( ! $allow_editor_admin && current_user_can( 'editor' ) && ! current_user_can( 'manage_options' ) ) {
             return;
         }
-        
+
         // 設定からメニュータイトルを取得
         $menu_title = get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
-        
+
         // ファイルリスト用の権限を決定
         $file_capability = $this->get_file_access_capability();
-        
+
         // メインメニューページを追加
         add_menu_page(
             $menu_title, // ページタイトル
@@ -108,7 +108,7 @@ class Admin {
      */
     private function get_file_access_capability() {
         $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
-        
+
         // 編集者管理権限が有効の場合は編集者以上、無効の場合は管理者のみ
         return $allow_editor_admin ? 'edit_posts' : 'manage_options';
     }

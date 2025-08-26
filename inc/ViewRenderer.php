@@ -2,7 +2,7 @@
 /**
  * ビューレンダラークラス
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;

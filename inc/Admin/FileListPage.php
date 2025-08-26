@@ -2,7 +2,7 @@
 /**
  * ファイルリストページを管理するクラス
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader\Admin;
@@ -740,7 +740,7 @@ class FileListPage {
         if ( ! $this->can_access_files() ) {
             wp_die( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ), 403 );
         }
-        
+
         // ビューで使用するデータを準備
         $import = $this->prepare_data();
 

@@ -2,7 +2,7 @@
 /**
  * ファイルリストページのビューファイル
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  *
  * 利用可能な変数:
  * @var array    $files                    ファイルリスト
@@ -1097,7 +1097,7 @@ jQuery(document).ready(function($) {
         if (file.type === 'directory') {
             if (file.readable) {
                 rowActions += '<span class="open"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + (strings.open || '<?php esc_html_e( '開く', 'bf-secret-file-downloader' ); ?>') + '</a>';
-                
+
                 if (file.can_delete) {
                     rowActions += ' | ';
                 }
@@ -1297,11 +1297,11 @@ jQuery(document).ready(function($) {
             '<label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e( '一括操作を選択', 'bf-secret-file-downloader' ); ?></label>' +
             '<select name="action" id="bulk-action-selector-top">' +
             '<option value="-1"><?php esc_html_e( '一括操作', 'bf-secret-file-downloader' ); ?></option>';
-        
+
         if (data.current_user_can_delete) {
             topTablenav += '<option value="delete"><?php esc_html_e( '削除', 'bf-secret-file-downloader' ); ?></option>';
         }
-        
+
         topTablenav += '</select>' +
             '<input type="submit" id="doaction" class="button action" value="<?php esc_attr_e( '適用', 'bf-secret-file-downloader' ); ?>">' +
             '</div>';
@@ -1696,7 +1696,7 @@ jQuery(document).ready(function($) {
                     var errorMsg = response.data || '<?php esc_html_e( 'ファイルの削除に失敗しました。', 'bf-secret-file-downloader' ); ?>';
                     console.log('削除処理がサーバー側で失敗:', errorMsg);
                     alert(errorMsg);
-                    
+
                     // 失敗時に削除ボタンを元に戻す
                     deleteLink.text(originalText).prop('disabled', false).css('color', '');
                 }
@@ -1704,7 +1704,7 @@ jQuery(document).ready(function($) {
             error: function(xhr, status, error) {
                 console.log('削除処理で通信エラーが発生:', {xhr: xhr, status: status, error: error});
                 alert('<?php esc_html_e( '削除処理で通信エラーが発生しました。再度お試しください。', 'bf-secret-file-downloader' ); ?>');
-                
+
                 // エラー時に削除ボタンを元に戻す
                 deleteLink.text(originalText).prop('disabled', false).css('color', '');
             }

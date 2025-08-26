@@ -2,7 +2,7 @@
 /**
  * フロントエンド側のファイルダウンローダーを管理するクラス
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;
@@ -117,7 +117,7 @@ class FrontEnd {
                 require_once ABSPATH . 'wp-admin/includes/file.php';
                 WP_Filesystem();
             }
-            
+
             // ファイル内容を取得して出力
             $file_content = $wp_filesystem->get_contents( $full_path );
             if ( $file_content !== false ) {

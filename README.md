@@ -98,7 +98,7 @@ bf-secret-file-downloader/
 例：
 ```php
 <?php
-namespace Breadfish\BasicGuard\Tests;
+namespace Breadfish\SecretFileDownloader\Tests;
 
 use WP_UnitTestCase;
 

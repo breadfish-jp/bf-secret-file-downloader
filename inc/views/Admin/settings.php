@@ -2,7 +2,7 @@
 /**
  * 設定ページのビューファイル
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  *
  * 利用可能な変数:
  * @var bool   $enable_auth        BASIC認証有効フラグ

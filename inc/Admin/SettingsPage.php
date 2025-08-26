@@ -2,7 +2,7 @@
 /**
  * 設定ページを管理するクラス
  *
- * @package BfBasicGuard
+ * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader\Admin;
@@ -271,12 +271,12 @@ class SettingsPage {
      */
     public function sanitize_menu_title( $value ) {
         $sanitized = sanitize_text_field( trim( $value ) );
-        
+
         // 空の場合はデフォルト値を返す
         if ( empty( $sanitized ) ) {
             return __( 'BF Secret File Downloader', 'bf-secret-file-downloader' );
         }
-        
+
         // 最大文字数制限（50文字まで）
         return mb_substr( $sanitized, 0, 50 );
     }
