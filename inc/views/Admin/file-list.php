@@ -195,7 +195,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     <p>
                         <?php
                         if ( $total_files > 0 ) {
-                            /* translators: %d: number of files found */
+                            /* translators: %d: number of items found */
                             echo esc_html( sprintf( __( '%d個のアイテムが見つかりました。', 'bf-secret-file-downloader' ), (int) $total_files ) );
                         } else {
                             esc_html_e( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' );
@@ -1250,7 +1250,7 @@ jQuery(document).ready(function($) {
         $('.bf-secret-file-downloader-stats p').text(
             data.total_items > 0
                 ? (strings.itemsFound || '<?php
-                    /* translators: %d: number of files found */
+                    /* translators: %d: number of items found */
                     echo esc_js( __( '%d個のアイテムが見つかりました。', 'bf-secret-file-downloader' ) );
                 ?>').replace('%d', data.total_items)
                 : (strings.noItemsFound || '<?php echo esc_js( __( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' ) ); ?>')

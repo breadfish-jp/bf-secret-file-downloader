@@ -125,8 +125,8 @@ class FileListPage {
      * ファイルブラウズのAJAXハンドラ
      */
     public function ajax_browse_files() {
-        // セキュリティチェック（編集者以上に許可）
-        if ( ! current_user_can( 'edit_posts' ) ) {
+        // 権限チェック
+        if ( ! $this->can_access_files() ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -169,8 +169,8 @@ class FileListPage {
      * ファイルアップロードのAJAXハンドラ
      */
     public function ajax_upload_file() {
-        // セキュリティチェック（管理者のみ）
-        if ( ! current_user_can( 'manage_options' ) ) {
+        // 権限チェック
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -269,7 +269,7 @@ class FileListPage {
      */
     public function ajax_create_directory() {
         // セキュリティチェック
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -335,8 +335,8 @@ class FileListPage {
      * ファイル削除のAJAXハンドラ
      */
     public function ajax_delete_file() {
-        // セキュリティチェック（管理者のみ）
-        if ( ! current_user_can( 'manage_options' ) ) {
+        // 権限チェック
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -430,8 +430,8 @@ class FileListPage {
      * 一括削除のAJAXハンドラ
      */
     public function ajax_bulk_delete() {
-        // セキュリティチェック（管理者のみ）
-        if ( ! current_user_can( 'manage_options' ) ) {
+        // 権限チェック
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -736,6 +736,11 @@ class FileListPage {
      * ページを表示します
      */
     public function render() {
+        // 権限チェック
+        if ( ! $this->can_access_files() ) {
+            wp_die( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ), 403 );
+        }
+        
         // ビューで使用するデータを準備
         $import = $this->prepare_data();
 
@@ -1186,6 +1191,17 @@ class FileListPage {
     }
 
     /**
+     * 現在のユーザーがファイルアクセス権限を持っているかチェック
+     *
+     * @return bool アクセス権限の有無
+     */
+    private function can_access_files() {
+        $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
+        $capability = $allow_editor_admin ? 'edit_posts' : 'manage_options';
+        return current_user_can( $capability );
+    }
+
+    /**
      * ファイル総数を取得します
      *
      * @param string $path ディレクトリパス
@@ -1326,7 +1342,7 @@ class FileListPage {
      */
     public function ajax_set_directory_auth() {
         // セキュリティチェック
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -1388,7 +1404,7 @@ class FileListPage {
      */
     public function ajax_get_directory_auth() {
         // セキュリティチェック
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -1621,7 +1637,7 @@ class FileListPage {
      */
     public function ajax_get_global_auth() {
         // セキュリティチェック
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
@@ -1646,7 +1662,7 @@ class FileListPage {
      */
     public function ajax_recreate_secure_directory() {
         // セキュリティチェック
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 

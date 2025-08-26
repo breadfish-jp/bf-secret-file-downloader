@@ -14,6 +14,7 @@
  * @var array  $allowed_roles      許可するユーザーロールの配列
  * @var string $simple_auth_password 簡易認証パスワード
  * @var string $menu_title         メニュータイトル
+ * @var bool   $allow_editor_admin 編集者管理権限有効フラグ
  *
  * @var string $nonce              AJAXノンス
  *
@@ -153,6 +154,17 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </td>
                         </tr>
                         <tr>
+                            <th scope="row"><?php esc_html_e( '編集者管理権限', 'bf-secret-file-downloader' ); ?></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="bf_sfd_allow_editor_admin" value="1"
+                                           <?php echo isset( $allow_editor_admin ) && $allow_editor_admin ? 'checked' : ''; ?> />
+                                    <?php esc_html_e( '編集者に管理権限を与える', 'bf-secret-file-downloader' ); ?>
+                                </label>
+                                <p class="description"><?php esc_html_e( 'チェックを入れると編集者もファイル管理機能にアクセスでき、ファイルのダウンロードができるようになります。ファイルアップロード、ファイル・ディレクトリの削除はできません。チェックを外すと編集者にはメニューが表示されず、ファイル閲覧もできません。', 'bf-secret-file-downloader' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
                             <th scope="row"><?php esc_html_e( 'アップロード制限', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <input type="number" name="bf_sfd_max_file_size"
@@ -172,7 +184,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <p style="margin-bottom: 15px; color: #856404;">
                         <?php esc_html_e( 'このボタンをクリックすると、すべての設定が初期状態にリセットされます。この操作は取り消すことができません。', 'bf-secret-file-downloader' ); ?>
                     </p>
-                    
+
                     <!-- ファイル削除オプション -->
                     <div style="margin-bottom: 15px;">
                         <label style="display: inline-flex; align-items: center; color: #856404;">
@@ -183,7 +195,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <?php esc_html_e( 'チェックすると、セキュアディレクトリ内のすべてのファイルが削除されます。デフォルトでは設定のみリセットしてファイルは保持されます。', 'bf-secret-file-downloader' ); ?>
                         </p>
                     </div>
-                    
+
                     <button type="button" id="bf-reset-settings" class="button button-secondary" style="background-color: #dc3545; border-color: #dc3545; color: white;">
                         <?php esc_html_e( '設定をリセット', 'bf-secret-file-downloader' ); ?>
                     </button>
@@ -231,10 +243,10 @@ jQuery(document).ready(function($) {
     // 設定リセットボタンの制御
     $('#bf-reset-settings').on('click', function() {
         var deleteFiles = $('#bf-delete-files-on-reset').is(':checked');
-        var confirmMessage = deleteFiles 
+        var confirmMessage = deleteFiles
             ? '<?php esc_html_e( "本当にすべての設定をリセットし、ファイルを削除しますか？この操作は取り消すことができません。", "bf-secret-file-downloader" ); ?>'
             : '<?php esc_html_e( "本当にすべての設定をリセットしますか？この操作は取り消すことができません。", "bf-secret-file-downloader" ); ?>';
-            
+
         if (confirm(confirmMessage)) {
             // ボタンを無効化してローディング状態に
             var $button = $(this);

@@ -75,6 +75,13 @@ class SettingsPage {
             'default' => __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ),
             'sanitize_callback' => array( $this, 'sanitize_menu_title' )
         ) );
+
+        // 編集者管理権限設定を追加
+        register_setting( 'bf_sfd_settings', 'bf_sfd_allow_editor_admin', array(
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => array( $this, 'sanitize_boolean' )
+        ) );
     }
 
 
@@ -110,6 +117,7 @@ class SettingsPage {
         delete_option( 'bf_sfd_auth_methods' );
         delete_option( 'bf_sfd_allowed_roles' );
         delete_option( 'bf_sfd_simple_auth_password' );
+        delete_option( 'bf_sfd_allow_editor_admin' );
 
         // ディレクトリパスワードもクリア
         $this->clear_all_directory_passwords();
@@ -146,6 +154,7 @@ class SettingsPage {
             'allowed_roles' => $this->get_allowed_roles(),
             'simple_auth_password' => $this->get_simple_auth_password(),
             'menu_title' => $this->get_plugin_menu_title(),
+            'allow_editor_admin' => $this->get_allow_editor_admin(),
 
             'nonce' => wp_create_nonce( 'bf_sfd_browse_nonce' ),
         );
@@ -230,6 +239,15 @@ class SettingsPage {
      */
     private function get_plugin_menu_title() {
         return get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
+    }
+
+    /**
+     * 編集者管理権限設定を取得します
+     *
+     * @return bool 編集者管理権限有効フラグ
+     */
+    private function get_allow_editor_admin() {
+        return (bool) get_option( 'bf_sfd_allow_editor_admin', false );
     }
 
 

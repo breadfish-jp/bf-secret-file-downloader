@@ -56,14 +56,25 @@ class Admin {
      * 管理画面メニューを追加します
      */
     public function add_admin_menu() {
+        // 編集者管理権限設定をチェック
+        $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
+        
+        // 編集者管理権限が無効で、現在のユーザーが編集者の場合はメニューを表示しない
+        if ( ! $allow_editor_admin && current_user_can( 'editor' ) && ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        
         // 設定からメニュータイトルを取得
         $menu_title = get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
+        
+        // ファイルリスト用の権限を決定
+        $file_capability = $this->get_file_access_capability();
         
         // メインメニューページを追加
         add_menu_page(
             $menu_title, // ページタイトル
             $menu_title, // メニュータイトル
-            'edit_posts', // 権限（編集者以上に許可）
+            $file_capability, // 権限
             $this->file_list_page::PAGE_SLUG, // メニュースラッグ
             array( $this->file_list_page, 'render' ), // コールバック関数
             'dashicons-lock', // アイコン
@@ -75,7 +86,7 @@ class Admin {
             $this->file_list_page::PAGE_SLUG, // 親メニューのスラッグ
             $this->file_list_page->get_page_title(), // ページタイトル
             $this->file_list_page->get_menu_title(), // メニュータイトル
-            'edit_posts', // 権限（編集者以上に許可）
+            $file_capability, // 権限
             $this->file_list_page::PAGE_SLUG, // メニュースラッグ（メインページと同じ）
             array( $this->file_list_page, 'render' ) // コールバック関数
         );
@@ -88,5 +99,27 @@ class Admin {
             $this->settings_page::PAGE_SLUG, // メニュースラッグ
             array( $this->settings_page, 'render' ) // コールバック関数
         );
+    }
+
+    /**
+     * ファイルアクセス用の権限を取得します
+     *
+     * @return string 権限文字列
+     */
+    private function get_file_access_capability() {
+        $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
+        
+        // 編集者管理権限が有効の場合は編集者以上、無効の場合は管理者のみ
+        return $allow_editor_admin ? 'edit_posts' : 'manage_options';
+    }
+
+    /**
+     * 現在のユーザーがファイルアクセス権限を持っているかチェック
+     *
+     * @return bool アクセス権限の有無
+     */
+    public function can_access_files() {
+        $capability = $this->get_file_access_capability();
+        return current_user_can( $capability );
     }
 }
