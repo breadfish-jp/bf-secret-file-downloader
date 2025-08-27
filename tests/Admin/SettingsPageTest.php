@@ -43,6 +43,9 @@ class SettingsPageTest extends \BF_SFD_TestCase {
         WP_Mock::expectActionAdded( 'admin_init', array( $this->settings_page, 'register_settings' ) );
         WP_Mock::expectActionAdded( 'wp_ajax_bf_sfd_reset_settings', array( $this->settings_page, 'ajax_reset_settings' ) );
         WP_Mock::expectActionAdded( 'admin_enqueue_scripts', array( $this->settings_page, 'enqueue_admin_assets' ) );
+        WP_Mock::expectActionAdded( 'update_option_bf_sfd_auth_methods', array( $this->settings_page, 'clear_sessions_on_auth_change' ) );
+        WP_Mock::expectActionAdded( 'update_option_bf_sfd_simple_auth_password', array( $this->settings_page, 'clear_sessions_on_auth_change' ) );
+        WP_Mock::expectActionAdded( 'update_option_bf_sfd_allowed_roles', array( $this->settings_page, 'clear_sessions_on_auth_change' ) );
 
         $this->settings_page->init();
 
@@ -77,6 +80,10 @@ class SettingsPageTest extends \BF_SFD_TestCase {
 
         WP_Mock::userFunction( 'register_setting' )
             ->with( 'bf_sfd_settings', 'bf_sfd_allow_editor_admin', \WP_Mock\Functions::type( 'array' ) )
+            ->once();
+
+        WP_Mock::userFunction( 'register_setting' )
+            ->with( 'bf_sfd_settings', 'bf_sfd_auth_timeout', \WP_Mock\Functions::type( 'array' ) )
             ->once();
 
         $this->settings_page->register_settings();
@@ -119,6 +126,25 @@ class SettingsPageTest extends \BF_SFD_TestCase {
         $this->assertFalse( $this->settings_page->sanitize_boolean( false ) );
         $this->assertFalse( $this->settings_page->sanitize_boolean( 0 ) );
         $this->assertFalse( $this->settings_page->sanitize_boolean( '' ) );
+    }
+
+    /**
+     * Test sanitize_auth_timeout
+     */
+    public function test_sanitize_auth_timeout() {
+        // Test valid values
+        $this->assertEquals( 30, $this->settings_page->sanitize_auth_timeout( 30 ) );
+        $this->assertEquals( 60, $this->settings_page->sanitize_auth_timeout( 60 ) );
+        $this->assertEquals( 1440, $this->settings_page->sanitize_auth_timeout( 1440 ) );
+
+        // Test boundary values
+        $this->assertEquals( 1, $this->settings_page->sanitize_auth_timeout( 0 ) ); // Below minimum
+        $this->assertEquals( 1, $this->settings_page->sanitize_auth_timeout( -10 ) ); // Negative
+        $this->assertEquals( 1440, $this->settings_page->sanitize_auth_timeout( 2000 ) ); // Above maximum
+
+        // Test string values
+        $this->assertEquals( 30, $this->settings_page->sanitize_auth_timeout( '30' ) );
+        $this->assertEquals( 1, $this->settings_page->sanitize_auth_timeout( 'invalid' ) );
     }
 
     /**

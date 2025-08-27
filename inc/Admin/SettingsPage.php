@@ -38,6 +38,11 @@ class SettingsPage {
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'wp_ajax_bf_sfd_reset_settings', array( $this, 'ajax_reset_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+
+        // 設定変更時のセッションクリア
+        add_action( 'update_option_bf_sfd_auth_methods', array( $this, 'clear_sessions_on_auth_change' ) );
+        add_action( 'update_option_bf_sfd_simple_auth_password', array( $this, 'clear_sessions_on_auth_change' ) );
+        add_action( 'update_option_bf_sfd_allowed_roles', array( $this, 'clear_sessions_on_auth_change' ) );
     }
 
     /**
@@ -67,6 +72,13 @@ class SettingsPage {
             'type' => 'string',
             'default' => '',
             'sanitize_callback' => array( $this, 'sanitize_password' )
+        ) );
+
+        // 認証タイムアウト設定を追加
+        register_setting( 'bf_sfd_settings', 'bf_sfd_auth_timeout', array(
+            'type' => 'integer',
+            'default' => 30,
+            'sanitize_callback' => array( $this, 'sanitize_auth_timeout' )
         ) );
 
         // メニュータイトル設定を追加
@@ -118,6 +130,11 @@ class SettingsPage {
         delete_option( 'bf_sfd_allowed_roles' );
         delete_option( 'bf_sfd_simple_auth_password' );
         delete_option( 'bf_sfd_allow_editor_admin' );
+        delete_option( 'bf_sfd_auth_timeout' );
+        delete_option( 'bf_sfd_auth_settings_changed' );
+
+        // 認証セッションをクリア
+        $this->clear_all_auth_sessions();
 
         // ディレクトリパスワードもクリア
         $this->clear_all_directory_passwords();
@@ -155,6 +172,7 @@ class SettingsPage {
             'simple_auth_password' => $this->get_simple_auth_password(),
             'menu_title' => $this->get_plugin_menu_title(),
             'allow_editor_admin' => $this->get_allow_editor_admin(),
+            'auth_timeout' => $this->get_auth_timeout(),
 
             'nonce' => wp_create_nonce( 'bf_sfd_browse_nonce' ),
         );
@@ -248,6 +266,15 @@ class SettingsPage {
      */
     private function get_allow_editor_admin() {
         return (bool) get_option( 'bf_sfd_allow_editor_admin', false );
+    }
+
+    /**
+     * 認証タイムアウト設定を取得します
+     *
+     * @return int 認証タイムアウト時間（分）
+     */
+    private function get_auth_timeout() {
+        return (int) get_option( 'bf_sfd_auth_timeout', 30 );
     }
 
 
@@ -349,6 +376,17 @@ class SettingsPage {
     }
 
     /**
+     * 認証タイムアウト時間をサニタイズします
+     *
+     * @param mixed $value タイムアウト時間（分）
+     * @return int サニタイズされたタイムアウト時間
+     */
+    public function sanitize_auth_timeout( $value ) {
+        $timeout = (int) $value;
+        return max( 1, min( 1440*30, $timeout ) ); // 1分-30日の範囲に制限
+    }
+
+    /**
      * 許可するユーザーロールをサニタイズします
      *
      * @param array $value ユーザーロールの配列
@@ -376,8 +414,6 @@ class SettingsPage {
         return array_values( array_unique( $result ) );
     }
 
-
-
     /**
      * すべてのディレクトリパスワードをクリアします
      */
@@ -385,6 +421,41 @@ class SettingsPage {
         delete_option( 'bf_sfd_directory_passwords' );
     }
 
+    /**
+     * すべての認証セッションをクリアします
+     */
+    private function clear_all_auth_sessions() {
+        // テスト環境チェック（複数の定数をチェック）
+        $is_test_env = defined( 'PHPUNIT_COMPOSER_INSTALL' ) ||
+                       defined( 'WP_TESTS_CONFIG_FILE_PATH' ) ||
+                       ( defined( 'WP_RUN_CORE_TESTS' ) && WP_RUN_CORE_TESTS );
+
+        if ( ! $is_test_env ) {
+            // セッションが開始されていない場合は開始
+            if ( ! session_id() ) {
+                @session_start();
+            }
+        }
+
+        // 認証関連のセッション変数をクリア
+        if ( isset( $_SESSION ) ) {
+            unset( $_SESSION['bf_simple_auth_verified'] );
+            unset( $_SESSION['bf_directory_simple_auth_verified'] );
+            unset( $_SESSION['bf_auth_timestamp'] );
+        }
+
+        error_log( 'All authentication sessions cleared by admin settings change' );
+    }
+
+    /**
+     * 認証設定変更時にタイムスタンプを更新します
+     */
+    public function clear_sessions_on_auth_change() {
+        error_log( 'SettingsPage::clear_sessions_on_auth_change called' );
+        // 設定変更時刻を記録（全ユーザーの認証を無効化するため）
+        update_option( 'bf_sfd_auth_settings_changed', time() );
+        error_log( 'Auth settings change timestamp updated: ' . time() );
+    }
 
     /**
      * ページタイトルを取得します

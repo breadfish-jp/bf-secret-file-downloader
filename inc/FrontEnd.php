@@ -69,17 +69,8 @@ class FrontEnd {
         // ファイルが存在しない場合は、build_safe_pathが返したディレクトリをチェック
         $check_directory = is_file( $full_path ) ? dirname( $full_path ) : $full_path;
         $directory_check = SecurityHelper::is_allowed_directory( $check_directory );
-        
-        // デバッグ情報をログに出力
-        error_log( 'BF Secret File Downloader Debug:' );
-        error_log( 'Requested file_path: ' . $file_path );
-        error_log( 'Base directory: ' . $base_directory );
-        error_log( 'Full path: ' . $full_path );
-        error_log( 'Directory to check: ' . $check_directory );
-        error_log( 'Is file: ' . ( is_file( $full_path ) ? 'YES' : 'NO' ) );
-        error_log( 'Directory check result: ' . ( $directory_check ? 'ALLOWED' : 'DENIED' ) );
-        error_log( 'File exists: ' . ( file_exists( $full_path ) ? 'YES' : 'NO' ) );
-        
+
+
         if ( ! $directory_check ) {
             wp_die( esc_html( __( 'このファイルへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
         }
@@ -92,7 +83,6 @@ class FrontEnd {
         // 危険なファイルへのアクセスチェック
         $filename = basename( $full_path );
         if ( SecurityHelper::is_program_code_file( $filename ) ) {
-            error_log( 'Dangerous file access attempt: ' . $filename );
             wp_die( esc_html( __( 'このファイルタイプへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
@@ -103,8 +93,7 @@ class FrontEnd {
 
         // 認証チェック
         $auth_result = $this->check_authentication();
-        error_log( 'Authentication check result: ' . ( $auth_result ? 'PASSED' : 'FAILED' ) );
-        
+
         if ( ! $auth_result ) {
             $this->show_authentication_form();
             exit;
@@ -211,11 +200,9 @@ class FrontEnd {
      * @return bool 認証成功フラグ
      */
     private function check_authentication() {
-        error_log( 'Starting authentication check...' );
-        
+
         // Nonce検証（POSTリクエストの場合）
         if ( isset( $_SERVER['REQUEST_METHOD'] ) && $_SERVER['REQUEST_METHOD'] === 'POST' && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'bf_sfd_auth' ) ) {
-            error_log( 'Nonce verification failed' );
             return false;
         }
 
@@ -227,23 +214,19 @@ class FrontEnd {
         if ( $directory_path === '.' ) {
             $directory_path = '';
         }
-        
-        error_log( 'Directory path for auth: ' . $directory_path );
+
 
         // ディレクトリ固有の認証設定をチェック
         $directory_auth = $this->get_directory_auth( $directory_path );
-        error_log( 'Directory auth settings: ' . ( $directory_auth !== false ? 'FOUND' : 'NOT FOUND' ) );
-        
+
         if ( $directory_auth !== false ) {
             // ディレクトリ固有の認証設定が優先
             $result = $this->check_directory_auth( $directory_auth );
-            error_log( 'Directory auth result: ' . ( $result ? 'PASSED' : 'FAILED' ) );
             return $result;
         }
 
         // 共通設定の認証チェック
         $auth_methods = get_option( 'bf_sfd_auth_methods', array( 'logged_in' ) );
-        error_log( 'Global auth methods: ' . implode( ', ', $auth_methods ) );
 
         // 認証方法が設定されていない場合はアクセス拒否
         if ( empty( $auth_methods ) ) {
@@ -255,6 +238,10 @@ class FrontEnd {
             if ( is_user_logged_in() ) {
                 // ユーザーロールチェック
                 if ( $this->check_user_role() ) {
+                    // ログインユーザーの場合もタイムスタンプを記録
+                    if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
+                        $_SESSION['bf_auth_timestamp'] = time();
+                    }
                     return true;
                 }
             }
@@ -262,9 +249,7 @@ class FrontEnd {
 
         // 簡易認証チェック
         if ( in_array( 'simple_auth', $auth_methods ) ) {
-            error_log( 'Checking simple auth...' );
             $simple_auth_result = $this->check_simple_auth();
-            error_log( 'Simple auth result: ' . ( $simple_auth_result ? 'PASSED' : 'FAILED' ) );
             if ( $simple_auth_result ) {
                 return true;
             }
@@ -315,6 +300,10 @@ class FrontEnd {
             if ( is_user_logged_in() ) {
                 // ユーザーロールチェック
                 if ( $this->check_user_role_for_directory( $allowed_roles ) ) {
+                    // ログインユーザーの場合もタイムスタンプを記録
+                    if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
+                        $_SESSION['bf_auth_timestamp'] = time();
+                    }
                     return true;
                 }
             }
@@ -364,6 +353,11 @@ class FrontEnd {
     private function check_simple_auth_for_directory( $directory_password ) {
         // セッションから簡易認証済みかチェック
         if ( isset( $_SESSION['bf_directory_simple_auth_verified'] ) && $_SESSION['bf_directory_simple_auth_verified'] === true ) {
+            // セッションタイムアウトチェック
+            if ( $this->is_session_timeout() ) {
+                $this->clear_auth_sessions();
+                return false;
+            }
             return true;
         }
 
@@ -374,6 +368,7 @@ class FrontEnd {
             if ( ! empty( $directory_password ) && $submitted_password === $directory_password ) {
                 // セッションに認証情報を保存
                 $_SESSION['bf_directory_simple_auth_verified'] = true;
+                $_SESSION['bf_auth_timestamp'] = time();
                 return true;
             }
         }
@@ -418,39 +413,35 @@ class FrontEnd {
      * @return bool 簡易認証成功フラグ
      */
     private function check_simple_auth() {
-        error_log( 'check_simple_auth: Starting check...' );
-        
+
         // セッションから簡易認証済みかチェック
         $session_verified = isset( $_SESSION['bf_simple_auth_verified'] ) && $_SESSION['bf_simple_auth_verified'] === true;
-        error_log( 'check_simple_auth: Session verified: ' . ( $session_verified ? 'YES' : 'NO' ) );
-        
+
         if ( $session_verified ) {
+            // セッションタイムアウトチェック
+            if ( $this->is_session_timeout() ) {
+                $this->clear_auth_sessions();
+                return false;
+            }
             return true;
         }
 
         // POSTで簡易認証パスワードが送信された場合
         $password_posted = isset( $_POST['simple_auth_password'] );
-        error_log( 'check_simple_auth: Password posted: ' . ( $password_posted ? 'YES' : 'NO' ) );
-        
+
         if ( $password_posted ) {
             $submitted_password = sanitize_text_field( wp_unslash( $_POST['simple_auth_password'] ) );
             $stored_password = get_option( 'bf_sfd_simple_auth_password', '' );
-
-            error_log( 'check_simple_auth: Submitted password: ' . ( ! empty( $submitted_password ) ? '[PROVIDED]' : '[EMPTY]' ) );
-            error_log( 'check_simple_auth: Stored password: ' . ( ! empty( $stored_password ) ? '[EXISTS]' : '[EMPTY]' ) );
-            
             $password_match = ! empty( $stored_password ) && $submitted_password === $stored_password;
-            error_log( 'check_simple_auth: Password match: ' . ( $password_match ? 'YES' : 'NO' ) );
 
             if ( $password_match ) {
                 // セッションに認証情報を保存
                 $_SESSION['bf_simple_auth_verified'] = true;
-                error_log( 'check_simple_auth: Session set to verified' );
+                $_SESSION['bf_auth_timestamp'] = time();
                 return true;
             }
         }
 
-        error_log( 'check_simple_auth: Authentication failed' );
         return false;
     }
 
@@ -596,6 +587,43 @@ class FrontEnd {
         </body>
         </html>
         <?php
+    }
+
+    /**
+     * セッションがタイムアウトしているかチェックします
+     *
+     * @return bool タイムアウトしている場合true
+     */
+    private function is_session_timeout() {
+        // タイムアウト設定を取得（秒数）
+        $timeout_minutes = get_option( 'bf_sfd_auth_timeout', 30 );
+        $timeout_seconds = $timeout_minutes * 60;
+
+        // 認証時刻がセッションに記録されているかチェック
+        if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
+            return true; // 認証時刻が記録されていない場合はタイムアウトとみなす
+        }
+
+        // 設定変更時刻をチェック（管理者が設定を変更した場合の強制再認証）
+        $settings_changed_time = get_option( 'bf_sfd_auth_settings_changed', 0 );
+        if ( $settings_changed_time > 0 && $settings_changed_time > $_SESSION['bf_auth_timestamp'] ) {
+             return true; // 設定変更後の認証は無効
+        }
+
+        // 現在時刻と認証時刻の差分を計算
+        $elapsed_time = time() - $_SESSION['bf_auth_timestamp'];
+
+        return $elapsed_time > $timeout_seconds;
+    }
+
+    /**
+     * 認証セッションをクリアします
+     */
+    private function clear_auth_sessions() {
+        unset( $_SESSION['bf_simple_auth_verified'] );
+        unset( $_SESSION['bf_directory_simple_auth_verified'] );
+        unset( $_SESSION['bf_auth_timestamp'] );
+
     }
 
     /**

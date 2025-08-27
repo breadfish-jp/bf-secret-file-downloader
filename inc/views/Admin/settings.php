@@ -15,6 +15,7 @@
  * @var string $simple_auth_password 簡易認証パスワード
  * @var string $menu_title         メニュータイトル
  * @var bool   $allow_editor_admin 編集者管理権限有効フラグ
+ * @var int    $auth_timeout       認証タイムアウト時間（分）
  *
  * @var string $nonce              AJAXノンス
  *
@@ -137,6 +138,16 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     </div>
                                 </fieldset>
                                 <p class="description"><?php esc_html_e( 'ファイルアクセスを許可する認証方法を選択してください。複数選択可能です。', 'bf-secret-file-downloader' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( '認証タイムアウト', 'bf-secret-file-downloader' ); ?></th>
+                            <td>
+                                <input type="number" name="bf_sfd_auth_timeout" id="bf_sfd_auth_timeout"
+                                       value="<?php echo isset( $auth_timeout ) ? esc_attr( $auth_timeout ) : '30'; ?>"
+                                       min="1" max="1440" class="small-text" />
+                                <span><?php esc_html_e( '分', 'bf-secret-file-downloader' ); ?></span>
+                                <p class="description"><?php esc_html_e( '認証後の有効時間を設定します。この時間が経過すると再認証が必要になります。（1分〜24時間）', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                     </table>
