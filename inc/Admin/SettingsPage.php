@@ -444,17 +444,14 @@ class SettingsPage {
             unset( $_SESSION['bf_auth_timestamp'] );
         }
 
-        error_log( 'All authentication sessions cleared by admin settings change' );
-    }
+      }
 
     /**
      * 認証設定変更時にタイムスタンプを更新します
      */
     public function clear_sessions_on_auth_change() {
-        error_log( 'SettingsPage::clear_sessions_on_auth_change called' );
         // 設定変更時刻を記録（全ユーザーの認証を無効化するため）
         update_option( 'bf_sfd_auth_settings_changed', time() );
-        error_log( 'Auth settings change timestamp updated: ' . time() );
     }
 
     /**
