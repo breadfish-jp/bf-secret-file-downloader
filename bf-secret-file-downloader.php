@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BF Secret File Downloader
  * Plugin URI: https://sfd.breadfish.jp/
- * Description: Manage and provide download functionality for files protected by Basic Authentication or located in private areas. Provides file management, directory management, download functionality, and Gutenberg block features.
+ * Description: 非公開ファイルを認証されたユーザーに安全に管理・配布するプラグインです。
  * Version: 1.0.0
  * Author: BREADFISH
  * Author URI: https://breadfish.jp/

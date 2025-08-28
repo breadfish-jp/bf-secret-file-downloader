@@ -157,7 +157,13 @@ class SettingsPageTest extends \BF_SFD_TestCase {
             });
 
         // Mock get_option for password validation
+        // Mock get_option for different calls
         WP_Mock::userFunction( 'get_option' )
+            ->with( 'bf_sfd_auth_methods', \WP_Mock\Functions::type( 'array' ) )
+            ->andReturn( array() );
+            
+        WP_Mock::userFunction( 'get_option' )
+            ->with( 'bf_sfd_simple_auth_password', '' )
             ->andReturn( 'existing_password' );
 
         // Mock translation function

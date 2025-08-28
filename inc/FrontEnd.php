@@ -48,6 +48,9 @@ class FrontEnd {
         $file_path = wp_unslash( $_GET['path'] ?? '' );
         // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
+        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = wp_strip_all_tags( $file_path );
         if ( empty( $file_path ) ) {
             return; // ダウンロード要求でない場合は処理を終了
         }
@@ -210,6 +213,9 @@ class FrontEnd {
         $file_path = wp_unslash( $_GET['path'] ?? '' );
         // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
+        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
         if ( $directory_path === '.' ) {
             $directory_path = '';
@@ -480,31 +486,6 @@ class FrontEnd {
     }
 
     /**
-     * ディレクトリにパスワードが設定されているかチェックします
-     *
-     * @param string $relative_path 相対パス
-     * @return bool パスワード設定フラグ
-     */
-    private function has_directory_password( $relative_path ) {
-        $directory_passwords = get_option( 'bf_sfd_directory_passwords', array() );
-
-        if ( ! isset( $directory_passwords[ $relative_path ] ) ) {
-            return false;
-        }
-
-        // 新しい配列形式をチェック
-        if ( is_array( $directory_passwords[ $relative_path ] ) ) {
-            return ! empty( $directory_passwords[ $relative_path ]['hash'] );
-        }
-
-        // 古い文字列形式（後方互換性）
-        return ! empty( $directory_passwords[ $relative_path ] );
-    }
-
-
-
-
-    /**
      * 認証フォームを表示します
      */
     private function show_authentication_form() {
@@ -514,12 +495,18 @@ class FrontEnd {
         $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
         // REQUEST_URIの基本的なサニタイズ（危険な文字のみ除去）
         $request_uri = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $request_uri );
+        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        $request_uri = htmlspecialchars_decode( $request_uri, ENT_QUOTES | ENT_HTML5 );
+        $request_uri = wp_strip_all_tags( $request_uri );
         $current_url = $https . '://' . $host . $request_uri;
 
         // 現在のファイルパスからディレクトリパスを取得
         $file_path = wp_unslash( $_GET['path'] ?? '' );
         // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
+        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
         if ( $directory_path === '.' ) {
             $directory_path = '';
@@ -529,64 +516,19 @@ class FrontEnd {
         $directory_auth = $this->get_directory_auth( $directory_path );
         if ( $directory_auth !== false ) {
             $auth_methods = $directory_auth['auth_methods'] ?? array();
-            $simple_auth_password = $directory_auth['simple_auth_password'] ?? '';
         } else {
             $auth_methods = get_option( 'bf_sfd_auth_methods', array( 'logged_in' ) );
-            $simple_auth_password = '';
         }
 
-        ?>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?php echo esc_html( __( '認証が必要です', 'bf-secret-file-downloader' ) ); ?></title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-                .auth-container { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                .auth-title { text-align: center; margin-bottom: 30px; color: #333; }
-                .auth-description { text-align: center; margin-bottom: 20px; color: #666; }
-                .form-group { margin-bottom: 20px; }
-                label { display: block; margin-bottom: 5px; color: #555; }
-                input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-                .submit-btn { width: 100%; padding: 12px; background-color: #0073aa; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-                .submit-btn:hover { background-color: #005a87; }
-                .error-message { color: #d63638; margin-top: 10px; text-align: center; }
-                .login-link { text-align: center; margin-top: 15px; }
-                .login-link a { color: #0073aa; text-decoration: none; }
-                .login-link a:hover { text-decoration: underline; }
-            </style>
-        </head>
-        <body>
-            <div class="auth-container">
-                <h2 class="auth-title"><?php echo esc_html( __( '認証が必要です', 'bf-secret-file-downloader' ) ); ?></h2>
-                <p class="auth-description"><?php echo esc_html( __( 'ファイルにアクセスするには認証が必要です。', 'bf-secret-file-downloader' ) ); ?></p>
+        // エラー表示フラグ
+        $show_error = isset( $_POST['simple_auth_password'] );
 
-                <?php if ( in_array( 'simple_auth', $auth_methods ) ): ?>
-                <form method="post" action="<?php echo esc_url( $current_url ); ?>">
-                    <?php wp_nonce_field( 'bf_sfd_auth', '_wpnonce' ); ?>
-                    <div class="form-group">
-                        <label for="simple_auth_password"><?php echo esc_html( __( '簡易認証パスワード', 'bf-secret-file-downloader' ) ); ?></label>
-                        <input type="password" id="simple_auth_password" name="simple_auth_password" required>
-                    </div>
-                    <button type="submit" class="submit-btn"><?php echo esc_html( __( '認証', 'bf-secret-file-downloader' ) ); ?></button>
-                </form>
-                <?php endif; ?>
-
-                <?php if ( in_array( 'logged_in', $auth_methods ) ): ?>
-                <div class="login-link">
-                    <a href="<?php echo esc_url( wp_login_url( $current_url ) ); ?>"><?php echo esc_html( __( 'ログインしてアクセス', 'bf-secret-file-downloader' ) ); ?></a>
-                </div>
-                <?php endif; ?>
-
-                <?php if ( isset( $_POST['simple_auth_password'] ) ): ?>
-                    <div class="error-message"><?php echo esc_html( __( 'パスワードが正しくありません。', 'bf-secret-file-downloader' ) ); ?></div>
-                <?php endif; ?>
-            </div>
-        </body>
-        </html>
-        <?php
+        // ViewRendererを使ってフォームを表示
+        ViewRenderer::render( 'authentication-form.php', array(
+            'current_url' => $current_url,
+            'auth_methods' => $auth_methods,
+            'show_error' => $show_error
+        ), 'FrontEnd' );
     }
 
     /**
@@ -626,60 +568,5 @@ class FrontEnd {
         unset( $_SESSION['bf_auth_timestamp'] );
 
     }
-
-    /**
-     * パスワード認証フォームを表示します
-     *
-     * @param string $relative_path 相対パス
-     */
-    private function show_password_form( $relative_path ) {
-        // 現在のURLを安全に構築（REQUEST_URIからスラッシュを削除しないよう注意）
-        $https = isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
-        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-        // REQUEST_URIの基本的なサニタイズ（危険な文字のみ除去）
-        $request_uri = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $request_uri );
-        $current_url = $https . '://' . $host . $request_uri;
-
-        ?>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?php echo esc_html( __( '認証が必要です', 'bf-secret-file-downloader' ) ); ?></title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-                .auth-container { max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                .auth-title { text-align: center; margin-bottom: 30px; color: #333; }
-                .form-group { margin-bottom: 20px; }
-                label { display: block; margin-bottom: 5px; color: #555; }
-                input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-                .submit-btn { width: 100%; padding: 12px; background-color: #0073aa; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-                .submit-btn:hover { background-color: #005a87; }
-                .error-message { color: #d63638; margin-top: 10px; text-align: center; }
-            </style>
-        </head>
-        <body>
-            <div class="auth-container">
-                <h2 class="auth-title"><?php echo esc_html( __( '認証が必要です', 'bf-secret-file-downloader' ) ); ?></h2>
-                <form method="post" action="<?php echo esc_url( $current_url ); ?>">
-                    <?php wp_nonce_field( 'bf_sfd_auth', '_wpnonce' ); ?>
-                    <input type="hidden" name="directory_path" value="<?php echo esc_attr( $relative_path ); ?>">
-                    <div class="form-group">
-                        <label for="password"><?php echo esc_html( __( 'パスワードを入力してください', 'bf-secret-file-downloader' ) ); ?></label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="submit-btn"><?php echo esc_html( __( '認証', 'bf-secret-file-downloader' ) ); ?></button>
-                </form>
-                <?php if ( isset( $_POST['password'] ) ): ?>
-                    <div class="error-message"><?php echo esc_html( __( 'パスワードが正しくありません。', 'bf-secret-file-downloader' ) ); ?></div>
-                <?php endif; ?>
-            </div>
-        </body>
-        </html>
-        <?php
-    }
-
 
 }

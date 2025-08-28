@@ -311,9 +311,14 @@ class SettingsPage {
     public function sanitize_password( $value ) {
         $sanitized_value = sanitize_text_field( $value );
 
-        // 簡易認証が有効かチェック（現在の設定から取得）
-        $current_auth_methods = get_option( 'bf_sfd_auth_methods', array() );
-        if ( is_array( $current_auth_methods ) && in_array( 'simple_auth', $current_auth_methods ) ) {
+        // Nonce検証
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bf_sfd_settings-options' ) ) {
+            return $sanitized_value;
+        }
+
+        // 簡易認証が有効かチェック
+        $auth_methods = array_map( 'sanitize_text_field', wp_unslash( $_POST['bf_sfd_auth_methods'] ?? array() ) );
+        if ( is_array( $auth_methods ) && in_array( 'simple_auth', $auth_methods ) ) {
             // 簡易認証が有効でパスワードが空の場合
             if ( empty( $sanitized_value ) ) {
                 add_settings_error(
@@ -377,7 +382,7 @@ class SettingsPage {
      */
     public function sanitize_auth_timeout( $value ) {
         $timeout = (int) $value;
-        return max( 1, min( 1440*30, $timeout ) ); // 1分-30日の範囲に制限
+        return max( 1, min( 1440, $timeout ) ); // 1分-24時間の範囲に制限
     }
 
     /**

@@ -1443,6 +1443,10 @@ class FileListPage {
 
         $directory_auths[ $relative_path ] = $auth_data;
         update_option( 'bf_sfd_directory_auths', $directory_auths );
+        
+        // 認証設定変更時刻を更新（全ユーザーの認証を無効化）
+        update_option( 'bf_sfd_auth_settings_changed', time() );
+        error_log( 'Directory auth settings updated. Timestamp: ' . time() );
     }
 
     /**
@@ -1456,6 +1460,10 @@ class FileListPage {
         if ( isset( $directory_auths[ $relative_path ] ) ) {
             unset( $directory_auths[ $relative_path ] );
             update_option( 'bf_sfd_directory_auths', $directory_auths );
+            
+            // 認証設定変更時刻を更新（全ユーザーの認証を無効化）
+            update_option( 'bf_sfd_auth_settings_changed', time() );
+            error_log( 'Directory auth settings removed. Timestamp: ' . time() );
         }
     }
 
