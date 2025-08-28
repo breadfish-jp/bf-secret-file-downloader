@@ -1,141 +1,179 @@
 # BF Secret File Downloader
 
-このプラグインは、`@wordpress/env`を使用したDockerベースのPHPUnitテスト環境が設定されています。
+非公開ファイルを認証されたユーザーに安全に管理・配布するWordPressプラグインです。
 
-## 前提条件
+## 📋 概要
 
+BF Secret File Downloaderは、プラグインが自動的にセキュアなディレクトリを作成し、その中に配置されたファイルを管理して認証されたユーザーに安全にダウンロード機能を提供するWordPressプラグインです。
+
+## ✨ 主な機能
+
+### 🔐 セキュリティ機能
+- **自動セキュアディレクトリ作成**: プラグイン有効化時に自動的に保護されたディレクトリを作成
+- **多層セキュリティ**: パストラバーサル攻撃対策、ファイルタイプ制限、アクセス制御
+- **認証システム**: WordPressログイン認証とシンプルパスワード認証をサポート
+
+### 📁 ファイル管理
+- **ファイルアップロード**: 管理画面からセキュアディレクトリへの安全なファイルアップロード
+- **ファイル一覧表示**: プラグインが作成したセキュアディレクトリ内のファイルを一覧表示
+- **ダウンロード制御**: 認証されたユーザーのみがセキュアディレクトリ内のファイルをダウンロード可能
+
+### 🎛️ 管理機能
+- **設定画面**: 認証方法、メニュータイトル、アクセス権限の設定
+- **権限管理**: 編集者レベルのユーザーにも管理権限を付与可能
+- **多言語対応**: 日本語・英語対応
+
+## 🚀 インストール
+
+### 前提条件
+- WordPress 6.8以上
+- PHP 7.4以上
+
+### インストール手順
+1. プラグインをWordPressの管理画面からアップロード
+2. プラグインを有効化
+3. 自動的にセキュアディレクトリが作成されます
+4. 「BF Secret File Downloader」メニューから設定を確認
+
+## 📖 使用方法
+
+### 1. 初期設定
+1. WordPress管理画面で「BF Secret File Downloader」→「設定」を開く
+2. 認証方法を選択（WordPressログイン認証またはシンプルパスワード認証）
+3. メニュータイトルやアクセス権限を設定
+
+### 2. ファイル管理
+1. 「BF Secret File Downloader」→「ファイル一覧」を開く
+2. 「ファイルを選択」ボタンでセキュアディレクトリにファイルをアップロード
+3. アップロードされたファイルがセキュアディレクトリ内に保存され、一覧に表示されます
+
+### 3. ダウンロードURLの共有
+- 生成されたダウンロードURLを認証されたユーザーに共有
+- ユーザーは認証後にファイルをダウンロード可能
+
+## 🛠️ 開発環境
+
+### 前提条件
 - Node.js 16以上
 - npm
 - Docker
 - Composer
 
-## テスト環境のセットアップ
-
-### 1. 依存関係のインストール
+### セットアップ
 
 ```bash
-# Composer依存関係のインストール
+# 依存関係のインストール
 composer install
-
-# npm依存関係のインストール
 npm install
-```
 
-### 2. WordPress環境の起動
-
-```bash
-# wp-env環境を起動
-npm run env:start
-```
-
-初回起動時は、WordPressとMySQLのDockerイメージをダウンロードするため時間がかかります。
-
-### 3. テストの実行
-
-```bash
-# すべてのテストを実行
-npm run phpunit
-
-# 特定のテストファイルを実行
-npm run wp-env run tests-cli --env-cwd=wp-content/plugins/bf-secret-file-downloader ./vendor/bin/phpunit tests/test-admin.php
-```
-
-## 利用可能なコマンド
-
-### 環境管理
-
-```bash
-# 環境を起動
+# WordPress環境の起動
 npm run env:start
 
-# 環境を停止
-npm run env:stop
-
-# 環境を完全に削除（データも削除されます）
-npm run env:destroy
-```
-
-### テスト
-
-```bash
-# テストを実行
+# テストの実行
 npm run phpunit
-
-# ウォッチモード（ファイル変更時に自動実行）
-npm run phpunit:watch
 ```
 
-### WordPress環境へのアクセス
+### 利用可能なコマンド
 
+#### 環境管理
+```bash
+npm run env:start    # 環境を起動
+npm run env:stop     # 環境を停止
+npm run env:destroy  # 環境を完全に削除
+```
+
+#### テスト
+```bash
+npm run phpunit      # テストを実行
+npm run phpunit:watch # ウォッチモード
+```
+
+#### コード品質
+```bash
+composer phpcs       # コードスタイルチェック
+composer phpstan     # 静的解析
+composer fix         # コードスタイル修正
+```
+
+#### 国際化
+```bash
+npm run makepot      # 翻訳テンプレート作成
+npm run update-po    # 翻訳ファイル更新
+npm run compile-mo   # 翻訳ファイルコンパイル
+npm run i18n         # 国際化処理一括実行
+```
+
+### 開発環境へのアクセス
 - **開発環境**: http://localhost:9999
   - ユーザー名: `admin`
   - パスワード: `password`
-
 - **テスト環境**: http://localhost:9998
   - ユーザー名: `admin`
   - パスワード: `password`
 
-## ディレクトリ構造
+## 📁 ディレクトリ構造
 
 ```
 bf-secret-file-downloader/
-├── .wp-env.json          # wp-env設定ファイル
-├── package.json          # npm設定とスクリプト
-├── composer.json         # Composer設定
-├── phpunit.xml.dist      # PHPUnit設定
-├── tests/                # テストファイル
-│   ├── bootstrap.php     # テストブートストラップ
-│   ├── test-admin.php    # Adminクラスのテスト
-│   └── test-sample.php   # サンプルテスト
-├── inc/                  # プラグインソースコード
-└── vendor/               # Composer依存関係
+├── bf-secret-file-downloader.php  # メインプラグインファイル
+├── inc/                           # プラグインソースコード
+│   ├── Admin/                     # 管理画面クラス
+│   │   ├── FileListPage.php      # ファイル一覧ページ
+│   │   └── SettingsPage.php      # 設定ページ
+│   ├── Admin.php                  # 管理画面メインクラス
+│   ├── DirectoryManager.php       # ディレクトリ管理
+│   ├── FrontEnd.php               # フロントエンド機能
+│   ├── SecurityHelper.php         # セキュリティヘルパー
+│   ├── ViewRenderer.php           # ビューレンダラー
+│   └── views/                     # ビューファイル
+├── assets/                        # フロントエンドアセット
+├── languages/                     # 翻訳ファイル
+├── tests/                         # テストファイル
+├── dist/                          # 配布用ファイル
+└── scripts/                       # ビルドスクリプト
 ```
 
-## テストの追加
+## 🔒 セキュリティ機能
 
-新しいテストファイルは `tests/` ディレクトリに `test-` プレフィックスで作成してください。
+### 実装されているセキュリティ対策
+- **自動セキュアディレクトリ作成**: プラグイン有効化時にユニークな名前の保護されたディレクトリを自動作成
+- **.htaccess保護**: セキュアディレクトリへの直接アクセスを防ぐための.htaccessファイル
+- **パストラバーサル攻撃対策**: 安全なパス構築とディレクトリ制限
+- **ファイルタイプ制限**: 危険なファイルタイプ（PHP、JS、Python等）のアップロードをブロック
+- **認証チェック**: セキュアディレクトリ内のファイルへのすべてのダウンロード要求に対して認証を要求
+- **nonce検証**: 管理画面のすべてのアクションでnonce検証を実装
+- **入力サニタイゼーション**: すべてのユーザー入力を適切にサニタイズ
 
-例：
-```php
-<?php
-namespace Breadfish\SecretFileDownloader\Tests;
+## 🌐 多言語対応
 
-use WP_UnitTestCase;
+プラグインは以下の言語をサポートしています：
+- 日本語（ja）
+- 英語（en_US）
 
-class MyNewTest extends WP_UnitTestCase {
-    public function test_something() {
-        $this->assertTrue( true );
-    }
-}
-```
+翻訳ファイルは `languages/` ディレクトリに配置されています。
 
-## トラブルシューティング
+## 📝 ライセンス
 
-### ポートが使用中の場合
+このプラグインは [GPL v2 or later](https://www.gnu.org/licenses/gpl-2.0.html) ライセンスの下で公開されています。
 
-`.wp-env.json` ファイルでポート番号を変更できます：
+## 🤝 サポート
 
-```json
-{
-  "port": 8080,
-  "testsPort": 8081
-}
-```
+- **公式サイト**: https://sfd.breadfish.jp/
+- **開発者**: BREADFISH (https://breadfish.jp/)
+- **ライセンス**: GPL v2 or later
 
-### 環境をリセットしたい場合
+## 📋 変更履歴
 
-```bash
-npm run env:destroy
-npm run env:start
-```
+### 1.0.0
+- 初回リリース
+- プラグイン有効化時の自動セキュアディレクトリ作成機能
+- セキュアディレクトリ内のファイル管理機能
+- 認証付きダウンロード機能
+- 多言語対応（日本語・英語）
+- 多層セキュリティ機能
 
-### テストが失敗する場合
+## ⚠️ 注意事項
 
-1. 環境が正しく起動しているか確認
-2. プラグインが正しくロードされているか確認
-3. 依存関係が最新か確認
-
-```bash
-composer update
-npm update
-```
+- 現在、マルチサイト対応はしていません
+- プログラムコードファイル（PHP、JavaScript、Python等）のアップロードはセキュリティ上の理由でブロックされます
+- プラグイン有効化時に自動的にセキュアディレクトリが作成され、その中でファイル管理が行われます
