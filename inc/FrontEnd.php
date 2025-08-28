@@ -1,6 +1,6 @@
 <?php
 /**
- * フロントエンド側のファイルダウンローダーを管理するクラス
+ * Manages the file downloader on the frontend
  *
  * @package BfSecretFileDownloader
  */
@@ -9,67 +9,66 @@ namespace Breadfish\SecretFileDownloader;
 
 use Breadfish\SecretFileDownloader\SecurityHelper;
 
-// セキュリティチェック：直接アクセスを防ぐ
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * FrontEnd クラス
- * フロントエンド側のファイルダウンロード機能を管理します
+ * FrontEnd class
+ * Manages the file downloader on the frontend
  */
 class FrontEnd {
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct() {
-        // コンストラクタではフックを登録しない
+        // Do not register hooks in the constructor
     }
 
     /**
-     * フックを初期化します
+     * Initialize hooks
      */
-        public function init() {
-        // セッション開始
+    public function init() {
+        // Start session
         if ( ! session_id() ) {
             session_start();
         }
 
-        // フロントエンドでのダウンロード処理をフック
+        // Hook the file downloader on the frontend
         add_action( 'template_redirect', array( $this, 'handle_file_download' ) );
     }
 
     /**
-     * フロントエンドでのファイルダウンロード処理
+     * Handle file download on the frontend
      */
     public function handle_file_download() {
-        // pathパラメータが存在するかチェック（ダウンロード要求の確認）
+        // Check if the path parameter exists (check for download request)
         $file_path = wp_unslash( $_GET['path'] ?? '' );
-        // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
+        // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        // Additional sanitization (remove HTML entities and special characters)
         $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
         $file_path = wp_strip_all_tags( $file_path );
         if ( empty( $file_path ) ) {
-            return; // ダウンロード要求でない場合は処理を終了
+            return; // If it is not a download request, end processing
         }
 
-        // ダウンロードフラグを取得（デフォルトはダウンロード）
+        // Get the download flag (default is download)
         $download_flag = sanitize_text_field( wp_unslash( $_GET['dflag'] ?? 'download' ) );
 
-        // ベースディレクトリを取得
+        // Get the base directory
         $base_directory = \Breadfish\SecretFileDownloader\DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_die( esc_html( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) ), 500 );
         }
 
-        // フルパスを構築
+        // Build the full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $file_path );
 
-        // セキュリティチェック：許可されたディレクトリのみ
-        // ファイルが存在する場合は、そのファイルのディレクトリをチェック
-        // ファイルが存在しない場合は、build_safe_pathが返したディレクトリをチェック
+        // Security check: only allowed directories
+        // If the file exists, check the directory of the file
+        // If the file does not exist, check the directory returned by build_safe_path
         $check_directory = is_file( $full_path ) ? dirname( $full_path ) : $full_path;
         $directory_check = SecurityHelper::is_allowed_directory( $check_directory );
 
@@ -78,23 +77,23 @@ class FrontEnd {
             wp_die( esc_html( __( 'このファイルへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // ファイル存在チェック
+        // Check if the file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
             wp_die( esc_html( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) ), 404 );
         }
 
-        // 危険なファイルへのアクセスチェック
+        // Check for access to dangerous files
         $filename = basename( $full_path );
         if ( SecurityHelper::is_program_code_file( $filename ) ) {
             wp_die( esc_html( __( 'このファイルタイプへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // 読み込み権限チェック
+        // Check for read permission
         if ( ! is_readable( $full_path ) ) {
             wp_die( esc_html( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // 認証チェック
+        // Check authentication
         $auth_result = $this->check_authentication();
 
         if ( ! $auth_result ) {
@@ -102,42 +101,42 @@ class FrontEnd {
             exit;
         }
 
-        // ファイル情報を取得
+        // Get file information
         $filename = basename( $full_path );
         $filesize = filesize( $full_path );
         $mime_type = wp_check_filetype( $filename )['type'] ?? 'application/octet-stream';
 
-        // ダウンロードログを記録（設定が有効な場合）
+        // Record download log (if enabled)
         if ( get_option( 'bf_sfd_log_downloads', false ) ) {
             $this->log_download( $file_path, $filename );
         }
 
-        // ヘッダーを設定
+        // Set headers
         if ( ! headers_sent() ) {
-            // キャッシュ制御
+            // Cache control
             header( 'Cache-Control: no-cache, must-revalidate' );
             header( 'Pragma: no-cache' );
             header( 'Expires: 0' );
 
             if ( $download_flag === 'display' ) {
-                // その場で表示
+                // Display on the spot
                 header( 'Content-Type: ' . $mime_type );
                 header( 'Content-Length: ' . $filesize );
             } else {
-                // ダウンロード
+                // Download
                 header( 'Content-Type: ' . $mime_type );
                 header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
                 header( 'Content-Length: ' . $filesize );
             }
 
-            // ファイルを出力
+            // Output the file
             global $wp_filesystem;
             if ( empty( $wp_filesystem ) ) {
                 require_once ABSPATH . 'wp-admin/includes/file.php';
                 WP_Filesystem();
             }
 
-            // ファイル内容を取得して出力
+            // Get the file content and output it
             $file_content = $wp_filesystem->get_contents( $full_path );
             if ( $file_content !== false ) {
                 echo $file_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -148,10 +147,10 @@ class FrontEnd {
     }
 
     /**
-     * ダウンロードログを記録します
+     * Record download log
      *
-     * @param string $file_path ファイルパス
-     * @param string $filename ファイル名
+     * @param string $file_path the file path
+     * @param string $filename the file name
      */
     private function log_download( $file_path, $filename ) {
         $log_entry = array(
@@ -163,11 +162,11 @@ class FrontEnd {
             'user_agent' => sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) )
         );
 
-        // ログをデータベースに保存（簡易版）
+        // Save the log to the database (simplified version)
         $download_logs = get_option( 'bf_sfd_download_logs', array() );
         $download_logs[] = $log_entry;
 
-        // ログ数を制限（最新1000件）
+        // Limit the number of logs (latest 1000 items)
         if ( count( $download_logs ) > 1000 ) {
             $download_logs = array_slice( $download_logs, -1000 );
         }
@@ -176,9 +175,9 @@ class FrontEnd {
     }
 
     /**
-     * クライアントのIPアドレスを取得します
+     * Get the client's IP address
      *
-     * @return string IPアドレス
+     * @return string IP address
      */
     private function get_client_ip() {
         $ip_keys = array( 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR' );
@@ -198,22 +197,22 @@ class FrontEnd {
     }
 
         /**
-     * 認証チェックを行います
+     * Check authentication
      *
-     * @return bool 認証成功フラグ
+     * @return bool true if authentication is successful
      */
     private function check_authentication() {
 
-        // Nonce検証（POSTリクエストの場合）
+        // Nonce verification (for POST requests)
         if ( isset( $_SERVER['REQUEST_METHOD'] ) && $_SERVER['REQUEST_METHOD'] === 'POST' && ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'bf_sfd_auth' ) ) {
             return false;
         }
 
-        // 現在のファイルパスからディレクトリパスを取得
+        // Get the directory path from the current file path
         $file_path = wp_unslash( $_GET['path'] ?? '' );
-        // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
+        // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+        // Additional sanitization (remove HTML entities and special characters)
         $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
         $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
@@ -222,29 +221,29 @@ class FrontEnd {
         }
 
 
-        // ディレクトリ固有の認証設定をチェック
+        // Check directory-specific authentication settings
         $directory_auth = $this->get_directory_auth( $directory_path );
 
         if ( $directory_auth !== false ) {
-            // ディレクトリ固有の認証設定が優先
+            // Directory-specific authentication settings take precedence
             $result = $this->check_directory_auth( $directory_auth );
             return $result;
         }
 
-        // 共通設定の認証チェック
+        // Check common authentication settings
         $auth_methods = get_option( 'bf_sfd_auth_methods', array( 'logged_in' ) );
 
-        // 認証方法が設定されていない場合はアクセス拒否
+        // If no authentication method is set, deny access
         if ( empty( $auth_methods ) ) {
             return false;
         }
 
-        // ログインユーザー認証チェック
+        // Check logged-in user authentication
         if ( in_array( 'logged_in', $auth_methods ) ) {
             if ( is_user_logged_in() ) {
-                // ユーザーロールチェック
+                // Check user role
                 if ( $this->check_user_role() ) {
-                    // ログインユーザーの場合もタイムスタンプを記録
+                    // Record timestamp even for logged-in users
                     if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
                         $_SESSION['bf_auth_timestamp'] = time();
                     }
@@ -253,7 +252,7 @@ class FrontEnd {
             }
         }
 
-        // 簡易認証チェック
+        // Check simple authentication
         if ( in_array( 'simple_auth', $auth_methods ) ) {
             $simple_auth_result = $this->check_simple_auth();
             if ( $simple_auth_result ) {
@@ -265,9 +264,9 @@ class FrontEnd {
     }
 
     /**
-     * ユーザーロールをチェックします
+     * Check user role
      *
-     * @return bool ロール許可フラグ
+     * @return bool true if the role is allowed
      */
     private function check_user_role() {
         $allowed_roles = get_option( 'bf_sfd_allowed_roles', array( 'administrator' ) );
@@ -291,22 +290,22 @@ class FrontEnd {
     }
 
     /**
-     * ディレクトリ固有の認証設定をチェックします
+     * Check directory-specific authentication settings
      *
-     * @param array $directory_auth ディレクトリの認証設定
-     * @return bool 認証成功フラグ
+     * @param array $directory_auth the directory authentication settings
+     * @return bool true if authentication is successful
      */
     private function check_directory_auth( $directory_auth ) {
         $auth_methods = $directory_auth['auth_methods'] ?? array();
         $allowed_roles = $directory_auth['allowed_roles'] ?? array();
         $simple_auth_password = $directory_auth['simple_auth_password'] ?? '';
 
-        // ログインユーザー認証チェック
+        // Check logged-in user authentication
         if ( in_array( 'logged_in', $auth_methods ) ) {
             if ( is_user_logged_in() ) {
-                // ユーザーロールチェック
+                // Check user role
                 if ( $this->check_user_role_for_directory( $allowed_roles ) ) {
-                    // ログインユーザーの場合もタイムスタンプを記録
+                    // Record timestamp even for logged-in users
                     if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
                         $_SESSION['bf_auth_timestamp'] = time();
                     }
@@ -315,7 +314,7 @@ class FrontEnd {
             }
         }
 
-        // 簡易認証チェック
+        // Check simple authentication
         if ( in_array( 'simple_auth', $auth_methods ) ) {
             if ( $this->check_simple_auth_for_directory( $simple_auth_password ) ) {
                 return true;
@@ -326,14 +325,14 @@ class FrontEnd {
     }
 
     /**
-     * ディレクトリ固有のユーザーロールをチェックします
+     * Check directory-specific user role
      *
-     * @param array $allowed_roles 許可するユーザーロールの配列
-     * @return bool ロール許可フラグ
+     * @param array $allowed_roles the array of allowed user roles
+     * @return bool true if the role is allowed
      */
     private function check_user_role_for_directory( $allowed_roles ) {
         if ( empty( $allowed_roles ) ) {
-            return false; // ロールが選択されていない場合はアクセス拒否
+            return false; // If no role is selected, deny access
         }
 
         $user = wp_get_current_user();
@@ -351,15 +350,15 @@ class FrontEnd {
     }
 
     /**
-     * ディレクトリ固有の簡易認証をチェックします
+     * Check directory-specific simple authentication
      *
-     * @param string $directory_password ディレクトリの簡易認証パスワード
-     * @return bool 簡易認証成功フラグ
+     * @param string $directory_password the directory simple authentication password
+     * @return bool true if simple authentication is successful
      */
     private function check_simple_auth_for_directory( $directory_password ) {
-        // セッションから簡易認証済みかチェック
+        // Check if simple authentication is verified from the session
         if ( isset( $_SESSION['bf_directory_simple_auth_verified'] ) && $_SESSION['bf_directory_simple_auth_verified'] === true ) {
-            // セッションタイムアウトチェック
+            // Check if the session has timed out
             if ( $this->is_session_timeout() ) {
                 $this->clear_auth_sessions();
                 return false;
@@ -367,12 +366,12 @@ class FrontEnd {
             return true;
         }
 
-        // POSTで簡易認証パスワードが送信された場合
+        // If a simple authentication password is sent via POST
         if ( isset( $_POST['simple_auth_password'] ) ) {
             $submitted_password = sanitize_text_field( wp_unslash( $_POST['simple_auth_password'] ) );
 
             if ( ! empty( $directory_password ) && $submitted_password === $directory_password ) {
-                // セッションに認証情報を保存
+                // Save authentication information to the session
                 $_SESSION['bf_directory_simple_auth_verified'] = true;
                 $_SESSION['bf_auth_timestamp'] = time();
                 return true;
@@ -383,10 +382,10 @@ class FrontEnd {
     }
 
     /**
-     * ディレクトリの認証設定を取得します
+     * Get the directory authentication settings
      *
-     * @param string $relative_path 相対パス
-     * @return array|false 認証設定、または失敗時はfalse
+     * @param string $relative_path the relative path
+     * @return array|false the authentication settings, or false if it fails
      */
     private function get_directory_auth( $relative_path ) {
         $directory_auths = get_option( 'bf_sfd_directory_auths', array() );
@@ -405,7 +404,7 @@ class FrontEnd {
             'allowed_roles' => $auth_data['allowed_roles'] ?? array(),
         );
 
-        // 簡易認証パスワードを復号化
+        // Decrypt the simple authentication password
         if ( isset( $auth_data['simple_auth_encrypted'] ) ) {
             $result['simple_auth_password'] = $this->decrypt_password( $auth_data['simple_auth_encrypted'] );
         }
@@ -414,17 +413,17 @@ class FrontEnd {
     }
 
     /**
-     * 簡易認証をチェックします
+     * Check simple authentication
      *
-     * @return bool 簡易認証成功フラグ
+     * @return bool true if simple authentication is successful
      */
     private function check_simple_auth() {
 
-        // セッションから簡易認証済みかチェック
+        // Check if simple authentication is verified from the session
         $session_verified = isset( $_SESSION['bf_simple_auth_verified'] ) && $_SESSION['bf_simple_auth_verified'] === true;
 
         if ( $session_verified ) {
-            // セッションタイムアウトチェック
+            // Check if the session has timed out
             if ( $this->is_session_timeout() ) {
                 $this->clear_auth_sessions();
                 return false;
@@ -432,7 +431,7 @@ class FrontEnd {
             return true;
         }
 
-        // POSTで簡易認証パスワードが送信された場合
+        // If a simple authentication password is sent via POST
         $password_posted = isset( $_POST['simple_auth_password'] );
 
         if ( $password_posted ) {
@@ -441,7 +440,7 @@ class FrontEnd {
             $password_match = ! empty( $stored_password ) && $submitted_password === $stored_password;
 
             if ( $password_match ) {
-                // セッションに認証情報を保存
+                // Save authentication information to the session
                 $_SESSION['bf_simple_auth_verified'] = true;
                 $_SESSION['bf_auth_timestamp'] = time();
                 return true;
@@ -452,10 +451,10 @@ class FrontEnd {
     }
 
     /**
-     * パスワードを復号化します
+     * Decrypt the password
      *
-     * @param string $encrypted_password 暗号化されたパスワード
-     * @return string|false 復号化されたパスワード、または失敗時はfalse
+     * @param string $encrypted_password the encrypted password
+     * @return string|false the decrypted password, or false if it fails
      */
     private function decrypt_password( $encrypted_password ) {
         if ( ! function_exists( 'openssl_decrypt' ) ) {
@@ -475,36 +474,40 @@ class FrontEnd {
     }
 
     /**
-     * 暗号化キーを取得します
+     * Get the encryption key
      *
-     * @return string 暗号化キー
+     * @return string the encryption key
      */
     private function get_encryption_key() {
-        // WordPressのソルトを使用してキーを生成
+        // Use WordPress's salt to generate the key
         $salt_keys = array( AUTH_KEY, SECURE_AUTH_KEY, LOGGED_IN_KEY, NONCE_KEY );
         return hash( 'sha256', implode( '', $salt_keys ) );
     }
 
     /**
-     * 認証フォームを表示します
+     * Show the authentication form
      */
     private function show_authentication_form() {
-        // 現在のURLを安全に構築（REQUEST_URIからスラッシュを削除しないよう注意）
+        // Build the current URL safely (be careful not to remove slashes from REQUEST_URI)
         $https = isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
         $host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
         $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-        // REQUEST_URIの基本的なサニタイズ（危険な文字のみ除去）
+
+        // Basic sanitization of REQUEST_URI (remove dangerous characters only)
         $request_uri = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $request_uri );
-        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+
+        // Additional sanitization (remove HTML entities and special characters)
         $request_uri = htmlspecialchars_decode( $request_uri, ENT_QUOTES | ENT_HTML5 );
         $request_uri = wp_strip_all_tags( $request_uri );
         $current_url = $https . '://' . $host . $request_uri;
 
-        // 現在のファイルパスからディレクトリパスを取得
+        // Get the directory path from the current file path
         $file_path = wp_unslash( $_GET['path'] ?? '' );
-        // パスの基本的なサニタイズ（ヌルバイトやコントロール文字を除去）
+
+        // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-        // 追加のサニタイズ（HTMLエンティティと特殊文字を除去）
+
+        // Additional sanitization (remove HTML entities and special characters)
         $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
         $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
@@ -512,7 +515,7 @@ class FrontEnd {
             $directory_path = '';
         }
 
-        // ディレクトリ固有の認証設定を取得
+        // Get the directory-specific authentication settings
         $directory_auth = $this->get_directory_auth( $directory_path );
         if ( $directory_auth !== false ) {
             $auth_methods = $directory_auth['auth_methods'] ?? array();
@@ -520,10 +523,10 @@ class FrontEnd {
             $auth_methods = get_option( 'bf_sfd_auth_methods', array( 'logged_in' ) );
         }
 
-        // エラー表示フラグ
+        // Error display flag
         $show_error = isset( $_POST['simple_auth_password'] );
 
-        // ViewRendererを使ってフォームを表示
+        // Show the form using ViewRenderer
         ViewRenderer::render( 'authentication-form.php', array(
             'current_url' => $current_url,
             'auth_methods' => $auth_methods,
@@ -532,35 +535,35 @@ class FrontEnd {
     }
 
     /**
-     * セッションがタイムアウトしているかチェックします
+     * Check if the session has timed out
      *
-     * @return bool タイムアウトしている場合true
+     * @return bool true if the session has timed out
      */
     private function is_session_timeout() {
-        // タイムアウト設定を取得（秒数）
+        // Get the timeout setting (in seconds)
         $timeout_minutes = get_option( 'bf_sfd_auth_timeout', 30 );
         $timeout_seconds = $timeout_minutes * 60;
 
-        // 認証時刻がセッションに記録されているかチェック
+        // Check if the authentication timestamp is recorded in the session
         if ( ! isset( $_SESSION['bf_auth_timestamp'] ) ) {
-            return true; // 認証時刻が記録されていない場合はタイムアウトとみなす
+            return true;
         }
 
-        // 設定変更時刻をチェック（管理者が設定を変更した場合の強制再認証）
+        // Check if the settings have been changed (forced re-authentication when the administrator changes the settings)
         $settings_changed_time = get_option( 'bf_sfd_auth_settings_changed', 0 );
         $auth_timestamp = intval( $_SESSION['bf_auth_timestamp'] );
         if ( $settings_changed_time > 0 && $settings_changed_time > $auth_timestamp ) {
-             return true; // 設定変更後の認証は無効
+            return true;
         }
 
-        // 現在時刻と認証時刻の差分を計算
+        // Calculate the difference between the current time and the authentication time
         $elapsed_time = time() - $auth_timestamp;
 
         return $elapsed_time > $timeout_seconds;
     }
 
     /**
-     * 認証セッションをクリアします
+     * Clear the authentication session
      */
     private function clear_auth_sessions() {
         unset( $_SESSION['bf_simple_auth_verified'] );

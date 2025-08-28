@@ -1,35 +1,34 @@
 <?php
 /**
- * ビューレンダラークラス
+ * ViewRenderer class
  *
  * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;
 
-// セキュリティチェック：直接アクセスを防ぐ
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * ViewRenderer クラス
- * ビューファイルのレンダリングと変数スコープを管理します
+ * ViewRenderer class
+ * Manages the rendering of view files and variable scope
  */
 class ViewRenderer {
 
     /**
-     * ビューファイルをレンダリングします
+     * Render a view file
      *
-     * @param string $view_file ビューファイルのパス（相対パス）
-     * @param array  $import    ビューに渡す変数の配列
-     * @param string $view_type ビューの種類（Admin, Frontend, Blocks等）
+     * @param string $view_file the path to the view file (relative path)
+     * @param array  $import    the array of variables to pass to the view
+     * @param string $view_type the type of view (Admin, Frontend, Blocks, etc.)
      */
     public static function render( $view_file, $import = array(), $view_type = 'Admin' ) {
-        // ビューファイルの完全パスを構築
+        // Build the full path to the view file
         $view_path = BF_SECRET_FILE_DOWNLOADER_PLUGIN_DIR . 'inc/views/' . $view_type . '/' . $view_file;
 
-        // ファイルが存在するかチェック
+        // Check if the file exists
         if ( ! file_exists( $view_path ) ) {
             wp_die(
                 sprintf(
@@ -40,9 +39,9 @@ class ViewRenderer {
             );
         }
 
-        // ビューファイルを安全にインクルード
-        // 変数を明示的に渡す（extractを使用しない）
-        // グローバルスコープで変数を利用可能にする
+        // Include the view file safely
+        // Pass variables explicitly (do not use extract)
+        // Make variables available in the global scope
         foreach ( $import as $key => $value ) {
             $$key = $value;
         }
@@ -50,20 +49,20 @@ class ViewRenderer {
     }
 
     /**
-     * 管理画面用ビューをレンダリングします（ショートカット）
+     * Render the view for the admin panel (shortcut)
      *
-     * @param string $view_file ビューファイルのパス（相対パス）
-     * @param array  $import    ビューに渡す変数の配列
+     * @param string $view_file the path to the view file (relative path)
+     * @param array  $import    the array of variables to pass to the view
      */
     public static function admin( $view_file, $import = array() ) {
         self::render( $view_file, $import, 'Admin' );
     }
 
     /**
-     * フロントエンド用ビューをレンダリングします（ショートカット）
+     * Render the view for the frontend (shortcut)
      *
-     * @param string $view_file ビューファイルのパス（相対パス）
-     * @param array  $import    ビューに渡す変数の配列
+     * @param string $view_file the path to the view file (relative path)
+     * @param array  $import    the array of variables to pass to the view
      */
     public static function frontend( $view_file, $import = array() ) {
         self::render( $view_file, $import, 'Frontend' );
