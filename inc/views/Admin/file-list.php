@@ -1,38 +1,38 @@
 <?php
 /**
- * ファイルリストページのビューファイル
+ * File list page view file
  *
  * @package BfSecretFileDownloader
  *
- * 利用可能な変数:
- * @var array    $files                    ファイルリスト
- * @var int      $total_files             ファイル総数
- * @var string   $upload_limit            アップロード制限
- * @var bool     $current_user_can_upload アップロード権限
- * @var bool     $current_user_can_delete 削除権限
- * @var bool     $current_user_can_create_dir ディレクトリ作成権限
- * @var bool     $current_user_can_manage_auth 認証管理権限
- * @var string   $current_path            現在のパス
- * @var int      $page                    現在のページ
- * @var int      $total_pages             総ページ数
- * @var int      $files_per_page          1ページあたりのファイル数
- * @var string   $nonce                   ナンス
- * @var bool     $target_directory_set    対象ディレクトリが設定されているか
- * @var bool     $current_directory_has_password 現在のディレクトリにパスワード設定があるか
+ * Available variables:
+ * @var array    $files                    File list
+ * @var int      $total_files             Total number of files
+ * @var string   $upload_limit            Upload limit
+ * @var bool     $current_user_can_upload Upload permission
+ * @var bool     $current_user_can_delete Delete permission
+ * @var bool     $current_user_can_create_dir Directory creation permission
+ * @var bool     $current_user_can_manage_auth Authentication management permission
+ * @var string   $current_path            Current path
+ * @var int      $page                    Current page
+ * @var int      $total_pages             Total number of pages
+ * @var int      $files_per_page          Number of files per page
+ * @var string   $nonce                   Nonce
+ * @var bool     $target_directory_set    Target directory is set
+ * @var bool     $current_directory_has_password  Current directory has password
  *
- * 利用可能な関数:
- * @var callable $__                      翻訳関数
- * @var callable $esc_html               HTMLエスケープ関数
- * @var callable $esc_html_e             HTMLエスケープ出力関数
- * @var callable $get_admin_page_title   ページタイトル取得関数
+ * Available functions:
+ * @var callable $__                      Translation function
+ * @var callable $esc_html                HTML escape function
+ * @var callable $esc_html_e              HTML escape output function
+ * @var callable $get_admin_page_title    Page title retrieval function
  */
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// 変数が存在しない場合のフォールバック設定
+// Fallback settings if variables are not set
 if ( ! isset( $current_user_can_delete ) ) {
     $current_user_can_delete = current_user_can( 'manage_options' );
 }
@@ -85,7 +85,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 
         <?php if ( $target_directory_set && $secure_directory_exists ) : ?>
             <div class="bf-secret-file-downloader-content">
-                <!-- 現在のパス表示 -->
+                <!-- Current path display -->
                 <div class="bf-secret-file-downloader-path">
                     <div class="bf-path-info">
                         <strong><?php esc_html_e( '現在のディレクトリ:', 'bf-secret-file-downloader' ); ?></strong>
@@ -99,7 +99,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             <div class="bf-auth-details">
                                 <div class="auth-details-title"><?php esc_html_e( 'ディレクトリ毎認証設定詳細:', 'bf-secret-file-downloader' ); ?></div>
                                 <div id="auth-details-content">
-                                    <!-- JavaScriptで動的に設定内容を表示 -->
+                                    <!-- Display settings content dynamically with JavaScript -->
                                 </div>
                                 <button type="button" id="remove-auth-btn" class="button button-small">
                                     <span class="dashicons dashicons-trash"></span>
@@ -120,7 +120,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                                 <?php esc_html_e( '上の階層へ', 'bf-secret-file-downloader' ); ?>
                             </button>
                         <?php endif; ?>
-                        <!-- ディレクトリ毎認証設定ボタン（ルートディレクトリ以外に表示） -->
+                        <!-- Directory-specific authentication button (displayed for non-root directories) -->
                         <?php if ( ! empty( $current_path ) ) : ?>
                             <button type="button" id="directory-auth-btn" class="button button-small">
                                 <span class="dashicons dashicons-admin-users"></span>
@@ -130,9 +130,9 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     </div>
                 </div>
 
-                <!-- ファイル操作エリア -->
+                <!-- File operation area -->
                 <?php if ( $current_user_can_upload && $current_path_writable ) : ?>
-                    <!-- ディレクトリ作成とファイルアップロード -->
+                    <!-- Directory creation and file upload -->
                     <div class="bf-secret-file-downloader-actions">
                         <div class="bf-actions-header">
                             <h3><?php esc_html_e( 'ファイル操作', 'bf-secret-file-downloader' ); ?></h3>
@@ -149,7 +149,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             </div>
                         </div>
 
-                        <!-- ディレクトリ作成フォーム -->
+                        <!-- Directory creation form -->
                         <div id="create-directory-form" class="bf-create-directory-form" style="display: none;">
                             <div class="form-group">
                                 <label for="directory-name-input"><?php esc_html_e( 'ディレクトリ名:', 'bf-secret-file-downloader' ); ?></label>
@@ -164,7 +164,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             </p>
                         </div>
 
-                        <!-- ファイルアップロードエリア -->
+                        <!-- File upload area -->
                         <div id="drop-zone" class="bf-secret-file-downloader-drop-zone">
                             <div class="drop-zone-content">
                                 <span class="dashicons dashicons-upload"></span>
@@ -180,7 +180,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             </div>
                         </div>
 
-                        <!-- アップロード進捗表示 -->
+                        <!-- Upload progress display -->
                         <div id="upload-progress" style="display: none; margin: 20px 0;">
                             <div class="upload-progress-bar" style="background: #f1f1f1; border-radius: 3px; overflow: hidden;">
                                 <div class="upload-progress-fill" style="background: #0073aa; height: 20px; width: 0%; transition: width 0.3s;"></div>
@@ -190,7 +190,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     </div>
                 <?php endif; ?>
 
-                <!-- ファイル統計 -->
+                <!-- File statistics -->
                 <div class="bf-secret-file-downloader-stats">
                     <p>
                         <?php
@@ -204,7 +204,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     </p>
                 </div>
 
-                <!-- 一括操作とページング（上部） -->
+                <!-- Bulk operations and pagination (top) -->
                 <div class="tablenav top">
                     <div class="alignleft actions bulkactions">
                         <label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e( '一括操作を選択', 'bf-secret-file-downloader' ); ?></label>
@@ -223,7 +223,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     <?php endif; ?>
                 </div>
 
-                <!-- ファイルリストテーブル -->
+                <!-- File list table -->
                 <div class="bf-secret-file-downloader-file-table">
                     <table class="wp-list-table widefat fixed striped">
                         <thead>
@@ -256,12 +256,12 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             </tr>
                         </thead>
                         <tbody id="file-list-tbody">
-                            <!-- ファイルリストはJavaScriptで動的に生成されます -->
+                            <!-- File list is generated dynamically with JavaScript -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- ページング（下部） -->
+                <!-- Pagination (bottom) -->
                 <?php if ( $total_pages > 1 ) : ?>
                     <div class="tablenav bottom">
                         <div class="tablenav-pages">
@@ -273,7 +273,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
         <?php endif; ?>
     </div>
 
-    <!-- ローディング表示 -->
+    <!-- Loading display -->
     <div id="bf-secret-file-downloader-loading" style="display: none; text-align: center; margin: 20px;">
         <span class="spinner is-active"></span>
         <span><?php esc_html_e( '読み込み中...', 'bf-secret-file-downloader' ); ?></span>
@@ -281,7 +281,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 
 </div>
 
-<!-- ディレクトリ認証設定モーダル -->
+<!-- Directory authentication settings modal -->
 <div id="bf-directory-auth-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 70%; max-width: 700px;">
         <div class="bf-modal-header">
@@ -289,7 +289,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
             <span class="bf-modal-close">&times;</span>
         </div>
         <div class="bf-modal-body">
-            <!-- 現在の状態表示 -->
+            <!-- Current status display -->
             <div id="bf-current-auth-status" class="bf-status-box">
                 <div class="bf-status-content">
                     <span class="bf-auth-status-icon">
@@ -306,7 +306,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                 <?php esc_html_e( 'このディレクトリ内のファイルをダウンロードする際に要求する認証設定を行ってください。', 'bf-secret-file-downloader' ); ?>
             </p>
 
-            <!-- 認証設定 -->
+            <!-- Authentication settings -->
             <div class="bf-auth-section">
                 <h4><?php esc_html_e( '認証方法', 'bf-secret-file-downloader' ); ?></h4>
                 <fieldset>
@@ -382,7 +382,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
     </div>
 </div>
 
-<!-- ディレクトリパスワード設定モーダル -->
+<!-- Directory password settings modal -->
 <div id="bf-directory-password-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 60%; max-width: 600px;">
         <div class="bf-modal-header">
@@ -390,7 +390,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
             <span class="bf-modal-close">&times;</span>
         </div>
         <div class="bf-modal-body">
-            <!-- 現在の状態表示 -->
+            <!-- Current status display -->
             <div id="bf-current-status" class="bf-status-box">
                 <div class="bf-status-content">
                     <span class="bf-status-icon">
@@ -444,7 +444,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
     </div>
 </div>
 
-<!-- URLコピーモーダル -->
+<!-- URL copy modal -->
 <div id="bf-url-copy-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 70%; max-width: 700px;">
         <div class="bf-modal-header">
@@ -519,15 +519,15 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 <script type="text/javascript">
 jQuery(document).ready(function($) {
 
-    // Dashiconsが読み込まれているかチェック
+    // Check if Dashicons are loaded
     checkDashicons();
 
-    // ページ読み込み時の認証設定詳細表示を初期化
+    // Initialize authentication details display on page load
     setTimeout(function() {
         initializeAuthDetails();
     }, 200);
 
-    // 認証設定詳細テンプレート関数
+    // Authentication details template function
     function getAuthDetailsTemplate() {
         return '<div class="bf-auth-details">' +
                '<div class="auth-details-title"><?php esc_html_e( 'ディレクトリ毎認証設定詳細:', 'bf-secret-file-downloader' ); ?></div>' +
@@ -538,27 +538,27 @@ jQuery(document).ready(function($) {
                '</div>';
     }
 
-    // ページ読み込み時の認証設定詳細表示
+    // Initialize authentication details display on page load
     function initializeAuthDetails() {
         var currentPath = $('#current-path').val();
         var hasAuth = checkCurrentDirectoryHasAuth();
 
         if (hasAuth && currentPath) {
-            // 認証設定詳細が既に表示されているかチェック
+            // Check if authentication details are already displayed
             var authDetails = $('.bf-auth-details');
             if (authDetails.length === 0) {
                 $('.bf-path-info').append(getAuthDetailsTemplate());
             }
 
-            // 認証設定詳細を読み込んで表示
+            // Load and display authentication settings
             loadDirectoryAuthSettings(currentPath);
         }
     }
 
-    // 削除リンクのイベント（マウスオーバーメニューから）
+    // Delete link event (from mouse over menu)
     $(document).on('click', '.delete-file-link', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // イベントの伝播を確実に停止
+        e.stopPropagation(); // Stop event propagation
         var $link = $(this);
         var filePath = $link.data('file-path');
         var fileName = $link.data('file-name');
@@ -568,27 +568,27 @@ jQuery(document).ready(function($) {
         deleteFile(filePath, fileName, fileType);
     });
 
-        // ディレクトリクリック時の処理を削除 - 行アクションリンクのみで操作
+    // Remove directory click processing - only row action links are used
 
-    // ディレクトリ認証設定ボタンのクリック処理
+    // Directory authentication settings button click processing
     $('#directory-auth-btn').on('click', function(e) {
         e.preventDefault();
         openDirectoryAuthModal();
     });
 
-    // 認証設定モーダル関連イベント
+    // Authentication settings modal related events
     $('.bf-modal-close, #bf-cancel-auth').on('click', function() {
         closeDirectoryAuthModal();
     });
 
-    // 認証設定モーダル外クリックで閉じる
+    // Close authentication settings modal by clicking outside
     $('#bf-directory-auth-modal').on('click', function(e) {
         if (e.target === this) {
             closeDirectoryAuthModal();
         }
     });
 
-    // 簡易認証チェックボックスの制御
+    // Simple authentication checkbox control
     $(document).on('change', '#bf-auth-methods-simple-auth', function() {
         if ($(this).is(':checked')) {
             $('#bf-simple-auth-password-section').show();
@@ -597,41 +597,41 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // 認証設定保存ボタン
+    // Authentication settings save button
     $('#bf-save-auth').on('click', function() {
         saveDirectoryAuth();
     });
 
-    // 認証設定削除ボタン
+    // Authentication settings delete button
     $('#bf-remove-auth').on('click', function() {
         removeDirectoryAuth();
     });
 
-    // モーダル関連イベント
+    // Modal related events
     $('.bf-modal-close, #bf-cancel-password').on('click', function() {
         closeDirectoryPasswordModal();
     });
 
-    // モーダル外クリックで閉じる
+    // Close modal by clicking outside
     $('#bf-directory-password-modal').on('click', function(e) {
         if (e.target === this) {
             closeDirectoryPasswordModal();
         }
     });
 
-    // URLコピーモーダル関連イベント
+    // URL copy modal related events
     $('.bf-modal-close, #bf-close-url-modal').on('click', function() {
         closeUrlCopyModal();
     });
 
-    // URLコピーモーダル外クリックで閉じる
+    // Close URL copy modal by clicking outside
     $('#bf-url-copy-modal').on('click', function(e) {
         if (e.target === this) {
             closeUrlCopyModal();
         }
     });
 
-    // パスワード表示/非表示切り替え
+    // Password display/hide toggle
     $('#bf-password-toggle').on('click', function() {
         var passwordField = $('#bf-directory-password-input');
         var button = $(this);
@@ -645,22 +645,22 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // パスワード保存ボタン
+    // Password save button
     $('#bf-save-password').on('click', function() {
         saveDirectoryPassword();
     });
 
-    // パスワード削除ボタン
+    // Password delete button
     $('#bf-remove-password').on('click', function() {
         removeDirectoryPassword();
     });
 
-    // 現在のパスワード表示ボタン
+    // Current password display button
     $('#bf-show-current-password').on('click', function() {
         showCurrentPassword();
     });
 
-    // Enterキーでパスワード保存
+    // Enter key to save password
     $('#bf-directory-password-input').on('keypress', function(e) {
         if (e.which == 13) {
             e.preventDefault();
@@ -668,22 +668,22 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // URLコピーモーダル内のイベント
+    // URL copy modal related events
     $(document).on('change', 'input[name="url_type"]', function() {
         updateUrlDisplay();
     });
 
-    // URLコピーボタン
+    // URL copy button
     $('#bf-copy-url-btn').on('click', function() {
         copyUrlToClipboard();
     });
 
-    // 新しいタブで開くボタン
+    // Open in new tab button
     $('#bf-open-url-btn').on('click', function() {
         openUrlInNewTab();
     });
 
-    // 上の階層へボタンのクリック処理
+    // Go up button click processing
     $('#go-up-btn').on('click', function(e) {
         e.preventDefault();
         var currentPath = $('#current-path').val();
@@ -693,7 +693,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ソートリンクのクリック処理
+    // Sort link click processing
     $(document).on('click', '.sort-link', function(e) {
         e.preventDefault();
         var sortBy = $(this).data('sort');
@@ -701,7 +701,7 @@ jQuery(document).ready(function($) {
         var currentSortBy = getCurrentSortBy();
         var currentSortOrder = getCurrentSortOrder();
 
-        // 同じカラムをクリックした場合は順序を逆転
+        // If the same column is clicked, reverse the order
         var newSortOrder = 'asc';
         if (sortBy === currentSortBy && currentSortOrder === 'asc') {
             newSortOrder = 'desc';
@@ -710,7 +710,7 @@ jQuery(document).ready(function($) {
         navigateToDirectoryWithSort(currentPath, 1, sortBy, newSortOrder);
     });
 
-    // ページングリンクのクリック処理
+    // Paging link click processing
     $(document).on('click', '.pagination-links a', function(e) {
         e.preventDefault();
         var url = new URL(this.href);
@@ -719,27 +719,27 @@ jQuery(document).ready(function($) {
         navigateToDirectory(path, page);
     });
 
-    // ディレクトリ作成ボタンのクリック処理
+    // Directory creation button click processing
     $('#create-directory-btn').on('click', function(e) {
         e.preventDefault();
         $('#create-directory-form').slideDown();
         $('#directory-name-input').focus();
     });
 
-    // ディレクトリ作成フォームのキャンセル
+    // Directory creation form cancel
     $('#create-directory-cancel').on('click', function(e) {
         e.preventDefault();
         $('#create-directory-form').slideUp();
         $('#directory-name-input').val('');
     });
 
-    // ディレクトリ作成の実行
+    // Execute directory creation
     $('#create-directory-submit').on('click', function(e) {
         e.preventDefault();
         createDirectory();
     });
 
-    // Enterキーでディレクトリ作成
+    // Enter key to create directory
     $('#directory-name-input').on('keypress', function(e) {
         if (e.which == 13) {
             e.preventDefault();
@@ -747,10 +747,10 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ダウンロードリンクのイベント
+    // Download link event
     $(document).on('click', '.download-file-link', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // イベントの伝播を確実に停止
+        e.stopPropagation(); // Stop event propagation
         var $link = $(this);
         var filePath = $link.data('file-path');
         var fileName = $link.data('file-name');
@@ -758,10 +758,10 @@ jQuery(document).ready(function($) {
         downloadFile(filePath, fileName);
     });
 
-    // URLコピーリンクのイベント
+    // URL copy link event
     $(document).on('click', '.copy-url-link', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // イベントの伝播を確実に停止
+        e.stopPropagation(); // Stop event propagation
         var $link = $(this);
         var filePath = $link.data('file-path');
         var fileName = $link.data('file-name');
@@ -769,10 +769,10 @@ jQuery(document).ready(function($) {
         openUrlCopyModal(filePath, fileName);
     });
 
-        // ディレクトリを開くリンクのイベント
+    // Open directory link event
     $(document).on('click', '.open-directory', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // イベントの伝播を確実に停止
+        e.stopPropagation(); // Stop event propagation
         var $link = $(this);
         var path = $link.data('path');
 
@@ -781,32 +781,32 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // 全選択チェックボックスのイベント
+    // All selection checkbox event
     $(document).on('change', '#cb-select-all-1', function() {
         var isChecked = $(this).prop('checked');
         $('input[name="file_paths[]"]').prop('checked', isChecked);
     });
 
-    // 個別チェックボックスのイベント
+    // Individual checkbox event
     $(document).on('change', 'input[name="file_paths[]"]', function() {
         var totalCheckboxes = $('input[name="file_paths[]"]').length;
         var checkedCheckboxes = $('input[name="file_paths[]"]:checked').length;
 
-        // 全てチェックされている場合、全選択チェックボックスもチェック
+        // If all checkboxes are checked, check the all selection checkbox
         $('#cb-select-all-1').prop('checked', totalCheckboxes === checkedCheckboxes);
     });
 
-    // チェックボックスクリック時のイベント伝播を停止
+    // Stop event propagation when clicking checkbox
     $(document).on('click', 'input[name="file_paths[]"]', function(e) {
         e.stopPropagation();
     });
 
-    // チェックボックスラベルクリック時のイベント伝播を停止
+    // Stop event propagation when clicking checkbox label
     $(document).on('click', '.check-column label', function(e) {
         e.stopPropagation();
     });
 
-    // 一括操作ボタンのイベント
+    // Bulk operation button event
     $(document).on('click', '#doaction', function(e) {
         e.preventDefault();
 
@@ -827,13 +827,13 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ファイル選択ボタンのクリック処理
+    // File selection button click processing
     $('#select-files-btn').on('click', function(e) {
         e.preventDefault();
         $('#file-input').click();
     });
 
-    // ファイル選択時の処理
+    // File selection processing
     $('#file-input').on('change', function(e) {
         var files = e.target.files;
         if (files.length > 0) {
@@ -841,11 +841,11 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ドラッグアンドドロップの処理
+    // Drag and drop processing
     var dropZone = $('#drop-zone');
 
     if (dropZone.length > 0) {
-        // ドラッグエンター
+        // Drag enter
         dropZone.on('dragenter', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -853,13 +853,13 @@ jQuery(document).ready(function($) {
             $('.drop-zone-overlay').show();
         });
 
-        // ドラッグオーバー
+        // Drag over
         dropZone.on('dragover', function(e) {
             e.preventDefault();
             e.stopPropagation();
         });
 
-        // ドラッグリーブ
+        // Drag leave
         dropZone.on('dragleave', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -867,14 +867,14 @@ jQuery(document).ready(function($) {
             var x = e.originalEvent.clientX;
             var y = e.originalEvent.clientY;
 
-            // ドロップゾーンの外に出た場合のみ処理
+            // Only process if it is outside the drop zone
             if (x <= rect.left || x >= rect.right || y <= rect.top || y >= rect.bottom) {
                 $(this).removeClass('dragover');
                 $('.drop-zone-overlay').hide();
             }
         });
 
-        // ドロップ
+        // Drop
         dropZone.on('drop', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -887,15 +887,15 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // ページ全体のデフォルトドラッグアンドドロップを無効化
+        // Disable default drag and drop on the entire page
         $(document).on('dragenter dragover drop', function(e) {
             e.preventDefault();
         });
     }
 
-    // プログラムコードファイルかどうかを判定するJavaScript関数
+    // Check if the file is a program code file
     function isProgramCodeFile(filename) {
-        // プログラムコードファイルの拡張子リスト
+        // Program code file extension list
         var codeExtensions = [
             'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phps',
             'js', 'jsx', 'ts', 'tsx',
@@ -915,7 +915,7 @@ jQuery(document).ready(function($) {
             'cgi', 'fcgi'
         ];
 
-        // 設定ファイルや危険なファイル
+        // Configuration files and dangerous files
         var configFiles = [
             '.htaccess', '.htpasswd', '.env', '.ini',
             'web.config', 'composer.json', 'package.json',
@@ -923,18 +923,18 @@ jQuery(document).ready(function($) {
             'Makefile', 'CMakeLists.txt'
         ];
 
-        // 拡張子による判定
+        // Check by extension
         var extension = filename.split('.').pop().toLowerCase();
         if (codeExtensions.includes(extension)) {
             return true;
         }
 
-        // ファイル名による判定
+        // Check by filename
         if (configFiles.includes(filename)) {
             return true;
         }
 
-        // 拡張子なしでよく使われるスクリプトファイル名
+        // Script file names often used without extension
         var scriptNames = [
             'index', 'config', 'settings', 'install', 'setup',
             'admin', 'login', 'auth', 'database', 'db'
@@ -976,7 +976,7 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     updateFileListWithSort(response.data, sortBy, sortOrder);
-                    // URLを更新（ブラウザ履歴に追加）
+                    // Update URL (add to browser history)
                     var newUrl = new URL(window.location);
                     newUrl.searchParams.set('path', path);
                     newUrl.searchParams.set('paged', page);
@@ -984,12 +984,12 @@ jQuery(document).ready(function($) {
                     newUrl.searchParams.set('sort_order', sortOrder);
                     window.history.pushState({path: path, page: page, sortBy: sortBy, sortOrder: sortOrder}, '', newUrl);
                 } else {
-                    // ディレクトリにアクセスできない場合は親ディレクトリに移動を試行
+                    // If the directory cannot be accessed, try to move to the parent directory
                     var errorMessage = response.data || '<?php echo esc_js( __( 'エラーが発生しました', 'bf-secret-file-downloader' ) ); ?>';
 
                     if (errorMessage.indexOf('<?php echo esc_js( __( 'ディレクトリにアクセスできません', 'bf-secret-file-downloader' ) ); ?>') !== -1 ||
                         errorMessage.indexOf('アクセスできません') !== -1) {
-                        // ディレクトリアクセスエラーの場合、親ディレクトリに移動を試行
+                        // If the directory access error occurs, try to move to the parent directory
                         var parentPath = getParentPath(path);
                         if (parentPath !== path) {
                             console.log('ディレクトリアクセスエラー。親ディレクトリに移動します: ' + parentPath);
@@ -1033,7 +1033,7 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     updateFileList(response.data);
-                    // URLを更新（ブラウザ履歴に追加）
+                    // Update URL (add to browser history)
                     var newUrl = new URL(window.location);
                     newUrl.searchParams.set('path', path);
                     newUrl.searchParams.set('paged', page);
@@ -1052,7 +1052,7 @@ jQuery(document).ready(function($) {
     }
 
         function updateFileListWithSort(data, sortBy, sortOrder) {
-        // ソート状態を更新
+        // Update sort state
         $('.sortable').removeClass('sorted asc desc');
         $('.sortable').each(function() {
             var linkSortBy = $(this).find('.sort-link').data('sort');
@@ -1064,7 +1064,7 @@ jQuery(document).ready(function($) {
         updateFileList(data);
     }
 
-        // テンプレート関数群
+    // Template function group
     function createIconWrapper(file) {
         if (file.type === 'directory') {
             return '<span class="bf-icon-wrapper">' +
@@ -1158,7 +1158,7 @@ jQuery(document).ready(function($) {
             row.addClass('clickable-directory').css('cursor', 'pointer');
         }
 
-        // チェックボックス列
+        // Checkbox column
         var checkboxCell = $('<th scope="row" class="check-column"></th>');
         var checkbox = $('<input type="checkbox" name="file_paths[]">')
             .attr('value', file.path)
@@ -1196,7 +1196,7 @@ jQuery(document).ready(function($) {
             '</div>' +
             '<div class="bf-path-actions">';
 
-        // 上の階層へボタン
+        // Go up button
         if (data.current_path && data.current_path !== '') {
             pathHtml += '<button type="button" id="go-up-btn" class="button button-small">' +
                 '<span class="dashicons dashicons-arrow-up-alt2"></span>' +
@@ -1204,7 +1204,7 @@ jQuery(document).ready(function($) {
                 '</button>';
         }
 
-        // ディレクトリ毎認証設定ボタン（ルートディレクトリ以外に表示）
+        // Directory-specific authentication settings button (displayed only for non-root directories)
         <?php if ( current_user_can( 'manage_options' ) ) : ?>
         if (data.current_path && data.current_path !== '') {
             pathHtml += '<button type="button" id="directory-auth-btn" class="button button-small">' +
@@ -1219,18 +1219,18 @@ jQuery(document).ready(function($) {
     }
 
     function updateFileList(data) {
-        // 現在のパス更新
+        // Update current path
         $('#current-path').val(data.current_path);
         $('#current-path-display').text(data.current_path || '<?php esc_html_e( "ルートディレクトリ", "bf-secret-file-downloader" ); ?>');
 
-        // パス表示エリア全体を再構築
+        // Rebuild the entire path display area
         $('.bf-secret-file-downloader-path').html(createPathDisplayTemplate(data));
 
-        // 認証インジケーターの更新（パス表示エリア更新後に実行）
+        // Update authentication indicator (after updating the path display area)
         var hasAuth = data.current_directory_has_auth || false;
         updateAuthIndicator(hasAuth);
 
-        // イベントハンドラを再設定
+        // Reset event handlers
         $('#go-up-btn').on('click', function(e) {
             e.preventDefault();
             var currentPath = $('#current-path').val();
@@ -1245,7 +1245,7 @@ jQuery(document).ready(function($) {
             openDirectoryAuthModal();
         });
 
-        // 統計情報更新
+        // Update statistics
         var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
         $('.bf-secret-file-downloader-stats p').text(
             data.total_items > 0
@@ -1256,7 +1256,7 @@ jQuery(document).ready(function($) {
                 : (strings.noItemsFound || '<?php echo esc_js( __( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' ) ); ?>')
         );
 
-        // ファイルリスト更新
+        // Update file list
         var tbody = $('#file-list-tbody');
         tbody.empty();
 
@@ -1265,12 +1265,12 @@ jQuery(document).ready(function($) {
                 tbody.append(createFileRow(file));
             });
 
-            // 動的に生成されたチェックボックスのイベント伝播を停止
+            // Stop event propagation for dynamically generated checkboxes
             $('input[name="file_paths[]"]').off('click').on('click', function(e) {
                 e.stopPropagation();
             });
 
-            // 動的に生成されたチェックボックスラベルのイベント伝播を停止
+            // Stop event propagation for dynamically generated checkbox labels
             $('.check-column label').off('click').on('click', function(e) {
                 e.stopPropagation();
             });
@@ -1283,15 +1283,15 @@ jQuery(document).ready(function($) {
             );
         }
 
-        // ページング更新
+        // Update pagination
         updatePagination(data);
     }
 
     function updatePagination(data) {
-        // 既存のページング要素を削除
+        // Remove existing pagination elements
         $('.tablenav').remove();
 
-        // 一括操作メニューを含む上部tablenav
+        // Top tablenav including bulk action menu
         var topTablenav = '<div class="tablenav top">' +
             '<div class="alignleft actions bulkactions">' +
             '<label for="bulk-action-selector-top" class="screen-reader-text">' + '<?php echo esc_js( __( '一括操作を選択', 'bf-secret-file-downloader' ) ); ?>' + '</label>' +
@@ -1313,10 +1313,10 @@ jQuery(document).ready(function($) {
 
         topTablenav += '</div>';
 
-        // テーブルの前に上部tablenavを配置
+        // Place top tablenav before the table
         $('.bf-secret-file-downloader-file-table').before(topTablenav);
 
-        // ページングがある場合は下部tablenav も追加
+        // If there is pagination, add bottom tablenav
         if (data.total_pages > 1) {
             var pagination = generatePaginationHtml(data.current_page, data.total_pages, data.current_path);
             $('.bf-secret-file-downloader-file-table').after('<div class="tablenav bottom"><div class="tablenav-pages">' + pagination + '</div></div>');
@@ -1326,12 +1326,12 @@ jQuery(document).ready(function($) {
     function generatePaginationHtml(currentPage, totalPages, currentPath) {
         var html = '<span class="pagination-links">';
 
-        // 前のページ
+        // Previous page
         if (currentPage > 1) {
             html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + '<?php echo esc_js( __( '前', 'bf-secret-file-downloader' ) ); ?>' + '</a>';
         }
 
-        // ページ番号
+        // Page number
         var startPage = Math.max(1, currentPage - 2);
         var endPage = Math.min(totalPages, currentPage + 2);
 
@@ -1343,7 +1343,7 @@ jQuery(document).ready(function($) {
             }
         }
 
-        // 次のページ
+        // Next page
         if (currentPage < totalPages) {
             html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + '<?php echo esc_js( __( '次', 'bf-secret-file-downloader' ) ); ?>' + ' &raquo;</a>';
         }
@@ -1360,20 +1360,20 @@ jQuery(document).ready(function($) {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-        function getFileIconClass(fileExtension) {
-        // 画像ファイル
+    function getFileIconClass(fileExtension) {
+        // Image file
         var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico'];
         if (imageExtensions.includes(fileExtension)) {
             return 'image-file';
         }
 
-        // ドキュメントファイル
+        // Document file
         var documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'pages'];
         if (documentExtensions.includes(fileExtension)) {
             return 'document-file';
         }
 
-        // アーカイブファイル
+        // Archive file
         var archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'];
         if (archiveExtensions.includes(fileExtension)) {
             return 'archive-file';
@@ -1382,31 +1382,31 @@ jQuery(document).ready(function($) {
         return '';
     }
 
-            function getParentPath(currentPath) {
+    function getParentPath(currentPath) {
         if (!currentPath || currentPath === '') {
             return '';
         }
 
-        // パスをセパレータで分割
+        // Split path by separator
         var parts = currentPath.split('/').filter(function(part) {
             return part !== '';
         });
 
-        // 最後の部分を削除
+        // Remove the last part
         parts.pop();
 
-        // 親パスを再構築
+        // Rebuild the parent path
         return parts.join('/');
     }
 
     function checkDashicons() {
         console.log('Dashiconsチェック開始');
 
-        // Dashiconsフォントが読み込まれているかチェック
+        // Check if Dashicons font is loaded
         var testElement = $('<span class="dashicons dashicons-folder" style="font-family: dashicons; position: absolute; left: -9999px;"></span>');
         $('body').append(testElement);
 
-        // フォントが読み込まれているかチェック
+        // Check if the font is loaded
         setTimeout(function() {
             var computedStyle = window.getComputedStyle(testElement[0]);
             var fontFamily = computedStyle.getPropertyValue('font-family');
@@ -1415,11 +1415,11 @@ jQuery(document).ready(function($) {
 
             if (fontFamily.indexOf('dashicons') !== -1) {
                 console.log('Dashiconsが利用可能です - Dashiconsを表示します');
-                // Dashiconsが読み込まれている場合、Dashiconsを表示してフォールバックを非表示
+                // If Dashicons is loaded, display Dashicons and hide the fallback
                 $('.dashicons').css('display', 'inline-block !important').show();
                 $('.bf-fallback-icon').hide();
 
-                                // 追加のスタイル強制適用
+                // Additional style forced application
                 $('.bf-directory-icon').css({
                     'display': 'inline-block',
                     'font-family': 'dashicons',
@@ -1448,8 +1448,8 @@ jQuery(document).ready(function($) {
 
     function uploadFiles(files) {
         var currentPath = $('#current-path').val();
-        // 相対パスなので空文字でもOK（ルートディレクトリ）
 
+        // Relative path is OK even if it is empty (root directory)
         var maxFileSize = <?php echo esc_js( $max_file_size_mb ?? 10 ); ?> * 1024 * 1024; // MB to bytes
         var uploadedCount = 0;
         var totalFiles = files.length;
@@ -1458,20 +1458,20 @@ jQuery(document).ready(function($) {
         $('#upload-progress').show();
         updateUploadProgress(0, '<?php esc_html_e( 'アップロードを開始しています...', 'bf-secret-file-downloader' ); ?>');
 
-        // 各ファイルを順番にアップロード
+        // Upload each file in order
         function uploadNextFile(index) {
             if (index >= totalFiles) {
-                // 全てのアップロードが完了
+                // All uploads are complete
                 $('#upload-progress').hide();
 
                 if (errors.length > 0) {
                     alert('<?php esc_html_e( '一部のファイルでエラーが発生しました:', 'bf-secret-file-downloader' ); ?>\n' + errors.join('\n'));
                 } else {
-                    // 成功メッセージを表示
+                    // Show success message
                     showSuccessMessage(uploadedCount + '<?php esc_html_e( '個のファイルをアップロードしました。', 'bf-secret-file-downloader' ); ?>');
                 }
 
-                // ファイルリストを更新
+                // Update file list
                 navigateToDirectory(currentPath, 1);
                 return;
             }
@@ -1479,32 +1479,32 @@ jQuery(document).ready(function($) {
             var file = files[index];
             var fileName = file.name;
 
-            // ファイルサイズチェック
+            // File size check
             if (file.size > maxFileSize) {
                 errors.push(fileName + ': <?php esc_html_e( 'ファイルサイズが制限を超えています', 'bf-secret-file-downloader' ); ?>');
                 uploadNextFile(index + 1);
                 return;
             }
 
-            // プログラムコードファイルチェック
+            // Program code file check
             if (isProgramCodeFile(fileName)) {
                 errors.push(fileName + ': <?php esc_html_e( 'セキュリティ上の理由により、プログラムコードファイルはアップロードできません', 'bf-secret-file-downloader' ); ?>');
                 uploadNextFile(index + 1);
                 return;
             }
 
-            // FormDataを作成
+            // Create FormData
             var formData = new FormData();
             formData.append('action', 'bf_sfd_upload_file');
             formData.append('target_path', currentPath);
             formData.append('file', file);
             formData.append('nonce', '<?php echo esc_js( $nonce ); ?>');
 
-            // アップロード進捗を更新
+            // Update upload progress
             var progress = Math.round(((index + 1) / totalFiles) * 100);
             updateUploadProgress(progress, '<?php esc_html_e( 'アップロード中:', 'bf-secret-file-downloader' ); ?> ' + fileName);
 
-            // AJAX送信
+            // Send AJAX
             $.ajax({
                 url: ajaxurl,
                 type: 'POST',
@@ -1526,7 +1526,7 @@ jQuery(document).ready(function($) {
             });
         }
 
-        // アップロード開始
+        // Start upload
         uploadNextFile(0);
     }
 
@@ -1536,7 +1536,7 @@ jQuery(document).ready(function($) {
     }
 
     function showSuccessMessage(message) {
-        // 成功メッセージの表示（簡易版）
+        // Show success message (simplified version)
         $('<div class="notice notice-success is-dismissible" style="margin: 20px 0;"><p>' + message + '</p></div>')
             .insertAfter('.bf-secret-file-downloader-header')
             .delay(5000)
@@ -1547,15 +1547,14 @@ jQuery(document).ready(function($) {
         var currentPath = $('#current-path').val();
         var directoryName = $('#directory-name-input').val().trim();
 
-        // 相対パスなので空文字でもOK（ルートディレクトリ）
-
+        // Relative path is OK even if it is empty (root directory)
         if (!directoryName) {
             alert('<?php esc_html_e( 'ディレクトリ名を入力してください。', 'bf-secret-file-downloader' ); ?>');
             $('#directory-name-input').focus();
             return;
         }
 
-        // ディレクトリ名のバリデーション
+        // Directory name validation
         var validPattern = /^[a-zA-Z0-9_\-\.]+$/;
         if (!validPattern.test(directoryName)) {
             alert('<?php esc_html_e( 'ディレクトリ名に使用できない文字が含まれています。英数字、アンダーバー、ハイフン、ドットのみ使用できます。', 'bf-secret-file-downloader' ); ?>');
@@ -1563,14 +1562,14 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // ドットで始まるディレクトリ名をチェック
+        // Check if the directory name starts with a dot
         if (directoryName.charAt(0) === '.') {
             alert('<?php esc_html_e( 'ドットで始まるディレクトリ名は作成できません。', 'bf-secret-file-downloader' ); ?>');
             $('#directory-name-input').focus();
             return;
         }
 
-        // ボタンを無効化
+        // Disable button
         $('#create-directory-submit').prop('disabled', true).text('<?php esc_html_e( '作成中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1588,7 +1587,7 @@ jQuery(document).ready(function($) {
                     $('#create-directory-form').slideUp();
                     $('#directory-name-input').val('');
 
-                    // ファイルリストを更新
+                    // Update file list
                     navigateToDirectory(currentPath, 1);
                 } else {
                     alert(response.data || '<?php esc_html_e( 'ディレクトリの作成に失敗しました。', 'bf-secret-file-downloader' ); ?>');
@@ -1598,7 +1597,7 @@ jQuery(document).ready(function($) {
                 alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                // ボタンを有効化
+                // Enable button
                 $('#create-directory-submit').prop('disabled', false).text('<?php esc_html_e( '作成', 'bf-secret-file-downloader' ); ?>');
             }
         });
@@ -1610,7 +1609,7 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // ダウンロード処理開始のメッセージ
+        // Message for starting download process
         showSuccessMessage('<?php esc_html_e( 'ダウンロードを準備しています...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1623,7 +1622,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success && response.data.download_url) {
-                    // ダウンロード用の非表示リンクを作成してクリック
+                    // Create a hidden link for download
                     var link = document.createElement('a');
                     link.href = response.data.download_url;
                     link.download = response.data.filename || fileName;
@@ -1656,7 +1655,7 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // 削除処理中の表示を更新
+        // Update the display during the deletion process
         var deleteLink = $('a[data-file-path="' + filePath + '"].delete-file-link');
         var originalText = deleteLink.text();
         deleteLink.text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>').prop('disabled', true).css('color', '#999');
@@ -1673,31 +1672,31 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showSuccessMessage(response.data.message);
 
-                    // 削除後の適切なディレクトリに移動
+                    // Move to the appropriate directory after deletion
                     var currentPath = $('#current-path').val();
                     var targetPath = currentPath;
                     var deletedPath = response.data.deleted_path;
 
-                    // 削除されたのがディレクトリの場合、現在のパスが削除されたディレクトリ内にあるかチェック
+                    // Check if the deleted item is a directory and if the current path is within the deleted directory
                     if (fileType === 'directory') {
-                        // 削除されたディレクトリパスと現在のパスを比較
+                        // Compare the deleted directory path with the current path
                         if (currentPath === deletedPath ||
                             (currentPath && deletedPath && currentPath.indexOf(deletedPath + '/') === 0)) {
-                            // 現在のパスが削除されたディレクトリまたはそのサブディレクトリの場合、
-                            // サーバーから返された親パスに移動
+                            // If the current path is within the deleted directory or one of its subdirectories,
+                            // move to the parent path returned by the server
                             targetPath = response.data.parent_path || '';
                             console.log('削除されたディレクトリ内にいたため、親ディレクトリに移動: ' + targetPath);
                         }
                     }
 
-                    // ファイルリストを更新
+                    // Update file list
                     navigateToDirectory(targetPath, 1);
                 } else {
                     var errorMsg = response.data || '<?php esc_html_e( 'ファイルの削除に失敗しました。', 'bf-secret-file-downloader' ); ?>';
                     console.log('削除処理がサーバー側で失敗:', errorMsg);
                     alert(errorMsg);
 
-                    // 失敗時に削除ボタンを元に戻す
+                    // Restore the deleted button
                     deleteLink.text(originalText).prop('disabled', false).css('color', '');
                 }
             },
@@ -1705,7 +1704,7 @@ jQuery(document).ready(function($) {
                 console.log('削除処理で通信エラーが発生:', {xhr: xhr, status: status, error: error});
                 alert('<?php esc_html_e( '削除処理で通信エラーが発生しました。再度お試しください。', 'bf-secret-file-downloader' ); ?>');
 
-                // エラー時に削除ボタンを元に戻す
+                // Restore the deleted button when an error occurs
                 deleteLink.text(originalText).prop('disabled', false).css('color', '');
             }
         });
@@ -1725,7 +1724,7 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // 確認メッセージ
+        // Confirm message
         var confirmMessage;
         if (hasDirectories) {
             confirmMessage = '<?php
@@ -1741,7 +1740,7 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // 一括削除のボタンを無効化
+        // Disable the bulk delete button
         $('#doaction').prop('disabled', true).val('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1757,19 +1756,19 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     showSuccessMessage(response.data.message);
 
-                    // 削除結果の詳細表示（失敗があった場合）
+                    // Detailed display of the deletion result (if there are failures)
                     if (response.data.failed_count > 0) {
                         console.log('削除に失敗したファイル:', response.data.failed_files);
                     }
 
-                    // 現在のパスが削除された場合の処理
+                    // Processing when the current path is deleted
                     var targetPath = $('#current-path').val();
                     if (response.data.current_path_deleted && response.data.redirect_path !== undefined) {
                         targetPath = response.data.redirect_path;
                         console.log('現在のディレクトリが削除されたため、親ディレクトリに移動: ' + targetPath);
                     }
 
-                    // ファイルリストを更新
+                    // Update file list
                     navigateToDirectory(targetPath, 1);
                 } else {
                     var errorMsg = response.data || '<?php esc_html_e( '一括削除処理に失敗しました。', 'bf-secret-file-downloader' ); ?>';
@@ -1782,30 +1781,30 @@ jQuery(document).ready(function($) {
                 alert('<?php esc_html_e( '一括削除処理で通信エラーが発生しました。再度お試しください。', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                // ボタンを有効化
+                // Enable button
                 $('#doaction').prop('disabled', false).val('<?php esc_attr_e( '適用', 'bf-secret-file-downloader' ); ?>');
 
-                // チェックボックスをクリア
+                // Clear checkboxes
                 $('input[name="file_paths[]"]').prop('checked', false);
                 $('#cb-select-all-1').prop('checked', false);
             }
         });
     }
 
-        // ディレクトリパスワードモーダルを開く
+    // Open the directory password modal
     function openDirectoryPasswordModal() {
         var currentPath = $('#current-path').val();
         var currentPathDisplay = $('#current-path-display').text();
         var hasPassword = checkCurrentDirectoryHasPassword();
 
-        // モーダルタイトルの更新
+        // Update the modal title
         if (hasPassword) {
             $('#bf-password-modal-title').text('<?php esc_html_e( 'ディレクトリパスワード管理', 'bf-secret-file-downloader' ); ?>');
         } else {
             $('#bf-password-modal-title').text('<?php esc_html_e( 'ディレクトリパスワード設定', 'bf-secret-file-downloader' ); ?>');
         }
 
-        // 現在の状態表示を更新
+        // Update the current status display
         var statusIcon = $('.bf-status-icon .dashicons');
         var statusDescription = $('#bf-status-description');
 
@@ -1825,26 +1824,26 @@ jQuery(document).ready(function($) {
             $('#bf-show-current-password').hide();
         }
 
-        // パスワードフィールドをクリア
+        // Clear the password field
         $('#bf-directory-password-input').val('').attr('type', 'password');
         $('#bf-password-toggle').text('<?php esc_html_e( '表示', 'bf-secret-file-downloader' ); ?>');
 
-        // モーダルを表示
+        // Show the modal
         $('#bf-directory-password-modal').fadeIn(300);
         $('#bf-directory-password-input').focus();
     }
 
-    // ディレクトリパスワードモーダルを閉じる
+    // Close the directory password modal
     function closeDirectoryPasswordModal() {
         $('#bf-directory-password-modal').fadeOut(300);
     }
 
-    // 現在のディレクトリにパスワードが設定されているかチェック
+    // Check if the current directory has a password
     function checkCurrentDirectoryHasPassword() {
         return $('.bf-password-indicator').length > 0;
     }
 
-    // ディレクトリパスワードを保存
+    // Save the directory password
     function saveDirectoryPassword() {
         var currentPath = $('#current-path').val();
         var password = $('#bf-directory-password-input').val().trim();
@@ -1861,7 +1860,7 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // ボタンを無効化
+        // Disable button
         $('#bf-save-password').prop('disabled', true).text('<?php esc_html_e( '保存中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1887,13 +1886,13 @@ jQuery(document).ready(function($) {
                 alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                // ボタンを有効化
+                // Enable button
                 $('#bf-save-password').prop('disabled', false).text('<?php esc_html_e( '保存', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
-    // ディレクトリパスワードを削除
+    // Remove the directory password
     function removeDirectoryPassword() {
         if (!confirm('<?php esc_html_e( 'このディレクトリのパスワード保護を解除しますか？', 'bf-secret-file-downloader' ); ?>')) {
             return;
@@ -1901,7 +1900,7 @@ jQuery(document).ready(function($) {
 
         var currentPath = $('#current-path').val();
 
-        // ボタンを無効化
+        // Disable button
         $('#bf-remove-password').prop('disabled', true).text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1926,18 +1925,15 @@ jQuery(document).ready(function($) {
                 alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                // ボタンを有効化
+                // Enable button
                 $('#bf-remove-password').prop('disabled', false).text('<?php esc_html_e( 'パスワードを削除', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
-            // パスワードインジケーターを更新
+    // Update the password indicator
     function updatePasswordIndicator(hasPassword) {
-        // この関数はupdateFileList内で呼ばれるため、
-        // パス表示エリア全体の再構築で処理されるので、
-        // 個別の更新は不要です。
-        // ただし、モーダルでの操作後の更新用に残しておきます。
+
         var passwordIndicator = $('.bf-password-indicator');
         var passwordButton = $('#directory-password-btn');
 
@@ -1957,11 +1953,11 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // 現在のパスワードを表示
+    // Display the current password
     function showCurrentPassword() {
         var currentPath = $('#current-path').val();
 
-        // ボタンを無効化
+        // Disable button
         $('#bf-show-current-password').prop('disabled', true).text('<?php esc_html_e( '取得中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -1983,36 +1979,36 @@ jQuery(document).ready(function($) {
                 alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                // ボタンを有効化
+                // Enable button
                 $('#bf-show-current-password').prop('disabled', false).text('<?php esc_html_e( '現在のパスワード', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
-        // URLコピーモーダルを開く
+    // Open the URL copy modal
     function openUrlCopyModal(filePath, fileName) {
-        // モーダル内の要素を更新
+        // Update the modal elements
         $('#bf-url-file-name').text(fileName);
 
-        // ファイルパスをモーダルに保存
+        // Save the file path in the modal
         $('#bf-url-copy-modal').data('file-path', filePath);
 
-        // デフォルトでダウンロードを選択
+        // Select download by default
         $('input[name="url_type"][value="download"]').prop('checked', true);
 
-        // URLを更新
+        // Update URL
         updateUrlDisplay();
 
-        // モーダルを表示
+        // Show the modal
         $('#bf-url-copy-modal').fadeIn(300);
     }
 
-    // URLコピーモーダルを閉じる
+    // Close the URL copy modal
     function closeUrlCopyModal() {
         $('#bf-url-copy-modal').fadeOut(300);
     }
 
-    // URL表示を更新
+    // Update URL display
     function updateUrlDisplay() {
         var filePath = $('#bf-url-copy-modal').data('file-path');
         var urlType = $('input[name="url_type"]:checked').val();
@@ -2021,17 +2017,17 @@ jQuery(document).ready(function($) {
         var url = baseUrl + '&dflag=' + urlType;
         $('#bf-url-input').val(url);
 
-        // プレビューフレームを更新（画像ファイルの場合のみ）
+        // Update the preview frame (only for image files)
         updatePreviewFrame(url);
     }
 
-    // プレビューフレームを更新
+    // Update the preview frame
     function updatePreviewFrame(url) {
         var fileName = $('#bf-url-file-name').text();
         var urlType = $('input[name="url_type"]:checked').val();
         var previewFrame = $('#bf-url-preview-frame');
 
-        // 画像ファイルの場合のみプレビューを表示
+        // Display preview only for image files
         var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
         var fileExtension = fileName.split('.').pop().toLowerCase();
 
@@ -2044,11 +2040,11 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // URLをクリップボードにコピー
+    // Copy URL to clipboard
     function copyUrlToClipboard() {
         var url = $('#bf-url-input').val();
 
-        // モダンブラウザのClipboard APIを使用
+        // Use the modern browser Clipboard API
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(url).then(function() {
                 showSuccessMessage('<?php esc_html_e( 'URLをクリップボードにコピーしました:', 'bf-secret-file-downloader' ); ?> ' + url);
@@ -2057,18 +2053,18 @@ jQuery(document).ready(function($) {
                 copyUrlFallback(url);
             });
         } else {
-            // フォールバック（古いブラウザ用）
+            // Use a fallback (for older browsers)
             copyUrlFallback(url);
         }
     }
 
-    // 新しいタブでURLを開く
+    // Open URL in a new tab
     function openUrlInNewTab() {
         var url = $('#bf-url-input').val();
         window.open(url, '_blank');
     }
 
-    // URLコピーのフォールバック（古いブラウザ用）
+    // URL copy fallback (for older browsers)
     function copyUrlFallback(url) {
         var textArea = document.createElement('textarea');
         textArea.value = url;
@@ -2101,25 +2097,25 @@ jQuery(document).ready(function($) {
         document.body.removeChild(textArea);
     }
 
-    // URLを手動コピー用のプロンプトで表示
+    // Display URL for manual copy
     function showUrlPrompt(url) {
         prompt('<?php esc_html_e( '以下のURLをコピーしてください:', 'bf-secret-file-downloader' ); ?>', url);
     }
 
-    // ディレクトリ認証設定モーダルを開く
+    // Open the directory authentication modal
     function openDirectoryAuthModal() {
         var currentPath = $('#current-path').val();
         var currentPathDisplay = $('#current-path-display').text();
         var hasAuth = checkCurrentDirectoryHasAuth();
 
-        // モーダルタイトルの更新
+        // Update the modal title
         if (hasAuth) {
             $('#bf-auth-modal-title').text('<?php esc_html_e( 'ディレクトリ認証設定管理', 'bf-secret-file-downloader' ); ?>');
         } else {
             $('#bf-auth-modal-title').text('<?php esc_html_e( 'ディレクトリ認証設定', 'bf-secret-file-downloader' ); ?>');
         }
 
-        // 現在の状態表示を更新
+        // Update the current status display
         var statusIcon = $('.bf-auth-status-icon .dashicons');
         var statusDescription = $('#bf-auth-status-description');
 
@@ -2139,11 +2135,11 @@ jQuery(document).ready(function($) {
             $('#bf-show-current-auth').hide();
         }
 
-        // 認証設定を取得
+        // Get authentication settings
         if (hasAuth) {
             loadDirectoryAuthSettings(currentPath);
         } else {
-            // ディレクトリ毎設定がない場合は何もチェックされていない状態にする
+            // If no directory-specific settings, uncheck everything
             $('#bf-auth-methods-logged-in').prop('checked', false);
             $('#bf-auth-methods-simple-auth').prop('checked', false);
             $('input[name="bf_allowed_roles[]"]').prop('checked', false);
@@ -2152,30 +2148,30 @@ jQuery(document).ready(function($) {
             $('#bf-allowed-roles-section').hide();
         }
 
-        // モーダルを表示
+        // Show the modal
         $('#bf-directory-auth-modal').fadeIn(300);
     }
 
-    // ディレクトリ認証設定モーダルを閉じる
+    // Close the directory authentication modal
     function closeDirectoryAuthModal() {
         $('#bf-directory-auth-modal').fadeOut(300);
     }
 
-    // 現在のディレクトリに認証設定があるかチェック
+    // Check if the current directory has authentication settings
     function checkCurrentDirectoryHasAuth() {
         var indicator = $('.bf-auth-indicator');
         if (indicator.length === 0) {
             return false;
         }
 
-        // インジケーターのテキストをチェックして、ディレクトリ毎設定があるかどうかを判定
+        // Check the indicator text to determine if there are directory-specific settings
         var statusText = indicator.find('.bf-auth-status-text').text();
         var hasAuthDetails = $('.bf-auth-details').length > 0;
 
         return statusText.includes('ディレクトリ毎認証設定あり') || hasAuthDetails;
     }
 
-    // ディレクトリ認証設定を読み込み
+    // Load the directory authentication settings
     function loadDirectoryAuthSettings(currentPath) {
         $.ajax({
             url: ajaxurl,
@@ -2189,11 +2185,11 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     var authSettings = response.data;
 
-                    // 認証方法の設定
+                    // Authentication method settings
                     $('#bf-auth-methods-logged-in').prop('checked', authSettings.auth_methods.includes('logged_in'));
                     $('#bf-auth-methods-simple-auth').prop('checked', authSettings.auth_methods.includes('simple_auth'));
 
-                    // 許可ロールの設定
+                    // Allowed role settings
                     $('input[name="bf_allowed_roles[]"]').prop('checked', false);
                     if (authSettings.allowed_roles) {
                         authSettings.allowed_roles.forEach(function(role) {
@@ -2201,26 +2197,26 @@ jQuery(document).ready(function($) {
                         });
                     }
 
-                    // 簡易認証パスワードの設定
+                    // Simple authentication password settings
                     if (authSettings.simple_auth_password) {
                         $('#bf-simple-auth-password').val(authSettings.simple_auth_password);
                     }
 
-                    // 簡易認証パスワードセクションの表示/非表示
+                    // Display/hide simple authentication password section
                     if (authSettings.auth_methods.includes('simple_auth')) {
                         $('#bf-simple-auth-password-section').show();
                     } else {
                         $('#bf-simple-auth-password-section').hide();
                     }
 
-                    // ロール選択セクションの表示/非表示
+                    // Display/hide role selection section
                     if (authSettings.auth_methods.includes('logged_in')) {
                         $('#bf-allowed-roles-section').show();
                     } else {
                         $('#bf-allowed-roles-section').hide();
                     }
 
-                    // 認証設定の詳細を表示
+                    // Display authentication details
                     displayAuthDetails(authSettings);
                 }
             },
@@ -2230,19 +2226,19 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // ディレクトリ認証設定を保存
+    // Save the directory authentication settings
     function saveDirectoryAuth() {
         var currentPath = $('#current-path').val();
         var authMethods = [];
         var allowedRoles = [];
         var simpleAuthPassword = $('#bf-simple-auth-password').val().trim();
 
-        // 認証方法を取得
+        // Get authentication methods
         $('input[name="bf_auth_methods[]"]:checked').each(function() {
             authMethods.push($(this).val());
         });
 
-        // 許可ロールを取得
+        // Get allowed roles
         $('input[name="bf_allowed_roles[]"]:checked').each(function() {
             allowedRoles.push($(this).val());
         });
@@ -2252,14 +2248,14 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // 簡易認証が選択されている場合、パスワードが必要
+        // If simple authentication is selected, a password is required
         if (authMethods.includes('simple_auth') && !simpleAuthPassword) {
             alert('<?php esc_html_e( '簡易認証を選択した場合は、パスワードを設定してください。', 'bf-secret-file-downloader' ); ?>');
             $('#bf-simple-auth-password').focus();
             return;
         }
 
-        // ボタンを無効化
+        // Disable button
         $('#bf-save-auth').prop('disabled', true).text('<?php esc_html_e( '保存中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -2280,7 +2276,7 @@ jQuery(document).ready(function($) {
                     closeDirectoryAuthModal();
                     updateAuthIndicator(response.data.has_auth);
 
-                    // 認証設定の詳細を表示
+                    // Display authentication details
                     if (response.data.has_auth) {
                         loadDirectoryAuthSettings(currentPath);
                     }
@@ -2297,7 +2293,7 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // ディレクトリ認証設定を削除
+    // Remove the directory authentication settings
     function removeDirectoryAuth() {
         if (!confirm('<?php esc_html_e( 'このディレクトリの認証設定を削除しますか？共通設定に戻ります。', 'bf-secret-file-downloader' ); ?>')) {
             return;
@@ -2305,7 +2301,7 @@ jQuery(document).ready(function($) {
 
         var currentPath = $('#current-path').val();
 
-        // ボタンを無効化
+        // Disable button
         $('#bf-remove-auth').prop('disabled', true).text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
@@ -2337,11 +2333,11 @@ jQuery(document).ready(function($) {
 
 
 
-        // 認証設定の詳細を表示
+    // Display authentication details
     function displayAuthDetails(authSettings) {
         var detailsHtml = '<div class="auth-details-list">';
 
-        // 認証方法の表示
+        // Display authentication method
         detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '認証方法:', 'bf-secret-file-downloader' ); ?></strong> ';
         var authMethods = [];
         if (authSettings.auth_methods.includes('logged_in')) {
@@ -2352,7 +2348,7 @@ jQuery(document).ready(function($) {
         }
         detailsHtml += authMethods.join(', ') + '</div>';
 
-        // 許可ロールの表示
+        // Display allowed roles
         if (authSettings.allowed_roles && authSettings.allowed_roles.length > 0) {
             detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '許可ロール:', 'bf-secret-file-downloader' ); ?></strong> ';
             var roleLabels = {
@@ -2368,7 +2364,7 @@ jQuery(document).ready(function($) {
             detailsHtml += roles.join(', ') + '</div>';
         }
 
-        // 簡易認証パスワードの表示
+        // Display simple authentication password
         if (authSettings.auth_methods.includes('simple_auth') && authSettings.simple_auth_password) {
             detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '簡易認証パスワード:', 'bf-secret-file-downloader' ); ?></strong> ';
             detailsHtml += '••••••••</div>';
@@ -2380,7 +2376,7 @@ jQuery(document).ready(function($) {
 
 
 
-    // 認証設定インジケーターを更新
+    // Update the authentication setting indicator
     function updateAuthIndicator(hasAuth) {
         var indicator = $('.bf-auth-indicator');
         var authDetails = $('.bf-auth-details');
@@ -2390,20 +2386,20 @@ jQuery(document).ready(function($) {
             if (indicator.length === 0) {
                 $('.bf-path-info').append('<span class="bf-auth-indicator"><span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e( 'ディレクトリ毎認証設定あり', 'bf-secret-file-downloader' ); ?></span></span>');
             } else {
-                // 既存のインジケーターを更新
+                // Update the existing indicator
                 indicator.html('<span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e( 'ディレクトリ毎認証設定あり', 'bf-secret-file-downloader' ); ?></span>');
                 indicator.css('color', '');
             }
 
-            // 認証設定詳細を表示
+            // Display authentication details
             if (authDetails.length === 0) {
                 $('.bf-path-info').append(getAuthDetailsTemplate());
             }
 
-            // 認証設定詳細を読み込んで表示
+            // Display authentication details
             loadDirectoryAuthSettings(currentPath);
         } else {
-            // ディレクトリ毎設定がない場合は共通設定適用中の表示
+            // If there are no directory-specific settings, display "Common authentication settings applied"
             if (indicator.length === 0) {
                 $('.bf-path-info').append('<span class="bf-auth-indicator" style="color: #666;"><span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e( '共通認証設定適用中', 'bf-secret-file-downloader' ); ?></span></span>');
             } else {
@@ -2418,7 +2414,7 @@ jQuery(document).ready(function($) {
 
 
 
-    // 簡易認証チェックボックスの制御
+    // Control simple authentication checkbox
     $('#bf-auth-methods-simple-auth').on('change', function() {
         if ($(this).is(':checked')) {
             $('#bf-simple-auth-password-section').show();
@@ -2427,7 +2423,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ログインユーザーチェックボックスの制御
+    // Control login user checkbox
     $('#bf-auth-methods-logged-in').on('change', function() {
         if ($(this).is(':checked')) {
             $('#bf-allowed-roles-section').show();
@@ -2436,7 +2432,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ロール選択の制御
+    // Control role selection
     $('#bf-select-all-roles').on('click', function() {
         $('.bf-role-checkbox').prop('checked', true);
     });
@@ -2445,17 +2441,17 @@ jQuery(document).ready(function($) {
         $('.bf-role-checkbox').prop('checked', false);
     });
 
-    // 設定解除ボタンのイベントリスナー
+    // Remove authentication settings button event listener
     $(document).on('click', '#remove-auth-btn', function() {
         removeDirectoryAuth();
     });
 
-    // セキュアディレクトリ再作成ボタンの処理
+    // Secure directory re-creation button processing
     $('#bf-recreate-secure-directory').on('click', function() {
         var $button = $(this);
         var $status = $('#bf-recreate-status');
 
-        // ボタンを無効化
+        // Disable button
         $button.prop('disabled', true).text('<?php esc_html_e( '作成中...', 'bf-secret-file-downloader' ); ?>');
         $status.html('<span style="color: #0073aa;"><?php esc_html_e( '処理中...', 'bf-secret-file-downloader' ); ?></span>');
 
@@ -2470,7 +2466,7 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     $status.html('<span style="color: #46b450;">' + response.data.message + '</span>');
 
-                    // 3秒後にページをリロード
+                    // Reload the page after 3 seconds
                     setTimeout(function() {
                         location.reload();
                     }, 3000);
@@ -2486,7 +2482,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // 初期データの表示（wp_localize_scriptで渡されたデータを使用）
+    // Display initial data (using data passed from wp_localize_script)
     if (typeof bfFileListData !== 'undefined' && bfFileListData.initialData) {
         updateFileList(bfFileListData.initialData);
     }

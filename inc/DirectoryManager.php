@@ -1,57 +1,57 @@
 <?php
 /**
- * セキュアディレクトリ管理機能を提供するクラス
+ * Provides secure directory management functionality
  *
  * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * DirectoryManager クラス
- * セキュアディレクトリの作成・取得・管理機能を提供します
+ * DirectoryManager class
+ * Provides functionality for creating, retrieving, and managing secure directories
  */
 class DirectoryManager {
 
     /**
-     * セキュアなディレクトリを作成
+     * Create a secure directory
      *
-     * @param bool $force_create 既存ディレクトリがあっても強制的に新しいディレクトリを作成するか
-     * @return bool 作成に成功した場合はtrue
+     * @param bool $force_create Whether to force the creation of a new directory even if an existing directory exists
+     * @return bool true on successful creation
      */
     public static function create_secure_directory( $force_create = false ) {
-        // 既にディレクトリIDが設定されている場合は、force_createがfalseならスキップ
+        // Skip if the directory ID is already set and force_create is false
         if ( ! $force_create && get_option( 'bf_sfd_secure_directory_id' ) ) {
             return true;
         }
 
-        // ランダムな文字列を生成（32文字の英数字）
+        // Generate a random string (32 characters of alphanumeric)
         $random_id = bin2hex( random_bytes( 16 ) );
 
-        // wp-content/uploads配下にディレクトリを作成
+        // Create a directory under wp-content/uploads
         $uploads_dir = wp_upload_dir();
         $secure_base_dir = $uploads_dir['basedir'] . '/bf-secret-file-downloader';
         $secure_dir = $secure_base_dir . '/' . $random_id;
 
-        // ディレクトリを作成
+        // Create a directory
         if ( ! wp_mkdir_p( $secure_dir ) ) {
             return false;
         }
 
-        // .htaccessファイルを作成してアクセスを完全に遮断
+        // Create an .htaccess file to completely block access
         $htaccess_content = "# Deny all access\nDeny from all\n";
         file_put_contents( $secure_dir . '/.htaccess', $htaccess_content );
 
-        // index.phpファイルも作成してさらなる保護
+        // Create an index.php file to provide further protection
         $index_content = "<?php\n// Silence is golden.\nexit;";
         file_put_contents( $secure_dir . '/index.php', $index_content );
 
-        // 既存の設定を更新（add_optionではなくupdate_optionを使用）
+        // Update existing settings (using update_option instead of add_option)
         update_option( 'bf_sfd_secure_directory_id', $random_id );
         update_option( 'bf_sfd_target_directory', $secure_dir );
 
@@ -59,9 +59,9 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリのパスを取得
+     * Get the path to the secure directory
      *
-     * @return string セキュアディレクトリのパス（存在しない場合は空文字）
+     * @return string the path to the secure directory (empty if it does not exist)
      */
     public static function get_secure_directory() {
         $secure_id = get_option( 'bf_sfd_secure_directory_id', '' );
@@ -74,9 +74,9 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリが存在するかチェック
+     * Check if the secure directory exists
      *
-     * @return bool 存在する場合はtrue
+     * @return bool true if it exists
      */
     public static function secure_directory_exists() {
         $secure_dir = self::get_secure_directory();
@@ -84,9 +84,9 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリの保護ファイルが適切に設置されているかチェック
+     * Check if the secure directory's protection files are properly set
      *
-     * @return bool 保護ファイルが適切な場合はtrue
+     * @return bool true if the protection files are properly set
      */
     public static function is_secure_directory_protected() {
         $secure_dir = self::get_secure_directory();
@@ -94,19 +94,19 @@ class DirectoryManager {
             return false;
         }
 
-        // .htaccessファイルの存在チェック
+        // Check if the .htaccess file exists
         $htaccess_path = $secure_dir . '/.htaccess';
         if ( ! file_exists( $htaccess_path ) ) {
             return false;
         }
 
-        // .htaccessの内容チェック
+        // Check the content of the .htaccess file
         $htaccess_content = file_get_contents( $htaccess_path );
         if ( strpos( $htaccess_content, 'Deny from all' ) === false ) {
             return false;
         }
 
-        // index.phpファイルの存在チェック
+        // Check if the index.php file exists
         $index_path = $secure_dir . '/index.php';
         if ( ! file_exists( $index_path ) ) {
             return false;
@@ -116,9 +116,9 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリの保護ファイルを修復
+     * Repair the secure directory's protection files
      *
-     * @return bool 修復に成功した場合はtrue
+     * @return bool true if the repair is successful
      */
     public static function repair_secure_directory_protection() {
         $secure_dir = self::get_secure_directory();
@@ -126,13 +126,13 @@ class DirectoryManager {
             return false;
         }
 
-        // .htaccessファイルを再作成
+        // Re-create the .htaccess file
         $htaccess_content = "# Deny all access\nDeny from all\n";
         if ( file_put_contents( $secure_dir . '/.htaccess', $htaccess_content ) === false ) {
             return false;
         }
 
-        // index.phpファイルを再作成
+        // Re-create the index.php file
         $index_content = "<?php\n// Silence is golden.\nexit;";
         if ( file_put_contents( $secure_dir . '/index.php', $index_content ) === false ) {
             return false;
@@ -142,25 +142,25 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリのIDを取得
+     * Get the ID of the secure directory
      *
-     * @return string セキュアディレクトリのID
+     * @return string the ID of the secure directory
      */
     public static function get_secure_directory_id() {
         return get_option( 'bf_sfd_secure_directory_id', '' );
     }
 
     /**
-     * セキュアディレクトリとその設定を削除
+     * Remove the secure directory and its settings
      *
-     * @param bool $delete_files ファイルも削除するかどうか（デフォルト: true）
-     * @return bool 削除に成功した場合はtrue
+     * @param bool $delete_files Whether to delete the files (default: true)
+     * @return bool true if the removal is successful
      */
     public static function remove_secure_directory( $delete_files = true ) {
         $secure_dir = self::get_secure_directory();
 
         if ( $delete_files && ! empty( $secure_dir ) && is_dir( $secure_dir ) ) {
-            // ディレクトリ内のファイルを削除
+            // Delete files in the directory
             $files = scandir( $secure_dir );
             foreach ( $files as $file ) {
                 if ( $file !== '.' && $file !== '..' ) {
@@ -171,7 +171,7 @@ class DirectoryManager {
                 }
             }
 
-            // ディレクトリを削除
+            // Delete the directory
             global $wp_filesystem;
             if ( empty( $wp_filesystem ) ) {
                 require_once ABSPATH . '/wp-admin/includes/file.php';
@@ -180,7 +180,7 @@ class DirectoryManager {
             $wp_filesystem->rmdir( $secure_dir );
         }
 
-        // オプションを削除
+        // Delete the options
         delete_option( 'bf_sfd_secure_directory_id' );
         delete_option( 'bf_sfd_target_directory' );
 
@@ -188,9 +188,9 @@ class DirectoryManager {
     }
 
     /**
-     * セキュアディレクトリ内のユーザーファイルのみを削除（保護ファイルは残す）
+     * Delete user files only in the secure directory (keep the protection files)
      *
-     * @return bool 削除に成功した場合はtrue
+     * @return bool true if the deletion is successful
      */
     public static function clear_user_files() {
         $secure_dir = self::get_secure_directory();
