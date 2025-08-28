@@ -1,6 +1,6 @@
 <?php
 /**
- * ファイルリストページを管理するクラス
+ * Manage file list page
  *
  * @package BfSecretFileDownloader
  */
@@ -11,36 +11,36 @@ use Breadfish\SecretFileDownloader\SecurityHelper;
 use Breadfish\SecretFileDownloader\DirectoryManager;
 
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * FileListPage クラス
- * ファイルリスト機能を管理します
+ * FileListPage class
+ * Manage file list functionality
  */
 class FileListPage {
 
     /**
-     * ページスラッグ
+     * Page slug
      */
     const PAGE_SLUG = 'bf-secret-file-downloader';
 
     /**
-     * 1ページあたりのファイル表示数
+     * Number of files per page
      */
     const FILES_PER_PAGE = 20;
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct() {
-        // コンストラクタではフックを登録しない
+        // Do not register hooks in constructor
     }
 
     /**
-     * フックを初期化します
+     * Initialize hooks
      */
     public function init() {
         add_action( 'wp_ajax_bf_sfd_browse_files', array( $this, 'ajax_browse_files' ) );
@@ -60,21 +60,21 @@ class FileListPage {
     }
 
     /**
-     * 管理画面用のスクリプトとスタイルをエンキューします
+     * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts( $hook ) {
-        // 現在のページが該当するページかチェック
+        // Check if current page is the appropriate page
         if ( $hook !== 'toplevel_page_bf-secret-file-downloader' ) {
             return;
         }
 
-        // Dashiconsを確実に読み込む
+        // Ensure Dashicons is loaded
         wp_enqueue_style( 'dashicons' );
 
-        // jQueryを読み込み
+        // Load jQuery
         wp_enqueue_script( 'jquery' );
 
-        // 管理画面用CSSを読み込み
+        // Load admin CSS
         $css_file_path = plugin_dir_path( dirname( dirname( __FILE__ ) ) ) . 'assets/css/file-list-admin.css';
         if ( file_exists( $css_file_path ) ) {
             wp_enqueue_style(
@@ -85,7 +85,7 @@ class FileListPage {
             );
         }
 
-        // 初期データをJavaScriptに渡す
+        // Pass initial data to JavaScript
         $initial_data = $this->prepare_data();
 
         wp_localize_script( 'jquery', 'bfFileListData', array(
@@ -126,10 +126,10 @@ class FileListPage {
     }
 
     /**
-     * ファイルブラウズのAJAXハンドラ
+     * AJAX handler for file browsing
      */
     public function ajax_browse_files() {
-        // 権限チェック
+        // Check permissions
         if ( ! $this->can_access_files() ) {
             wp_die( 'Unauthorized' );
         }
@@ -142,21 +142,21 @@ class FileListPage {
         $sort_by = sanitize_text_field( wp_unslash( $_POST['sort_by'] ?? 'name' ) );
         $sort_order = sanitize_text_field( wp_unslash( $_POST['sort_order'] ?? 'asc' ) );
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック
+        // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
             wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ディレクトリの存在チェック
+        // Check if directory exists
         if ( ! is_dir( $full_path ) || ! is_readable( $full_path ) ) {
             wp_send_json_error( __( 'ディレクトリにアクセスできません。', 'bf-secret-file-downloader' ) );
         }
@@ -170,10 +170,10 @@ class FileListPage {
     }
 
     /**
-     * ファイルアップロードのAJAXハンドラ
+     * AJAX handler for file upload
      */
     public function ajax_upload_file() {
-        // 権限チェック
+        // Check permissions
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -182,13 +182,13 @@ class FileListPage {
 
         $relative_path = sanitize_text_field( wp_unslash( $_POST['target_path'] ?? '' ) );
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $target_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
         global $wp_filesystem;
@@ -201,31 +201,31 @@ class FileListPage {
             wp_send_json_error( __( 'アップロード先ディレクトリに書き込み権限がありません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ファイルがアップロードされているかチェック
+        // Check if file is uploaded
         if ( ! isset( $_FILES['file'] ) || ! isset( $_FILES['file']['error'] ) || $_FILES['file']['error'] !== UPLOAD_ERR_OK ) {
             wp_send_json_error( __( 'ファイルのアップロードに失敗しました。', 'bf-secret-file-downloader' ) );
         }
 
         $uploaded_file = array_map( 'sanitize_text_field', $_FILES['file'] );
 
-        // ファイル名のサニタイゼーション
+        // Sanitize file name
         $filename = sanitize_file_name( $uploaded_file['name'] );
         if ( empty( $filename ) ) {
             wp_send_json_error( __( '無効なファイル名です。', 'bf-secret-file-downloader' ) );
         }
 
-        // セキュリティチェック
+        // Security check
         $security_check = SecurityHelper::check_file_upload_security( $filename, $target_path );
         if ( ! $security_check['allowed'] ) {
             wp_send_json_error( $security_check['error_message'] );
         }
 
-        // プログラムコードファイルのアップロード禁止
+        // Prevent uploading program code files
         if ( SecurityHelper::is_program_code_file( $filename ) ) {
             wp_send_json_error( __( 'セキュリティ上の理由により、プログラムコードファイルはアップロードできません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ファイルサイズチェック
+        // Check file size
         $max_size = get_option( 'bf_sfd_max_file_size', 10 ) * 1024 * 1024; // MB to bytes
         if ( $uploaded_file['size'] > $max_size ) {
             wp_send_json_error( sprintf(
@@ -235,12 +235,12 @@ class FileListPage {
             ));
         }
 
-        // アップロード先のファイルパス
+        // Target file path
         $target_file_path = $target_path . DIRECTORY_SEPARATOR . $filename;
 
-        // 既存ファイルの確認
+        // Check if file exists
         if ( file_exists( $target_file_path ) ) {
-            // ファイル名に連番を追加
+            // Add counter to filename
             $file_info = pathinfo( $filename );
             $counter = 1;
             do {
@@ -254,9 +254,9 @@ class FileListPage {
             $filename = $new_filename;
         }
 
-        // ファイルを移動
+        // Move file
         if ( $wp_filesystem->put_contents( $target_file_path, $wp_filesystem->get_contents( $uploaded_file['tmp_name'] ) ) ) {
-            // アップロード成功
+            // Upload success
             wp_send_json_success( array(
                 /* translators: %s: uploaded filename */
                 'message' => sprintf( __( '%s をアップロードしました。', 'bf-secret-file-downloader' ), $filename ),
@@ -269,17 +269,17 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリ作成のAJAXハンドラ
+     * AJAX handler for directory creation
      */
     public function ajax_create_directory() {
-        // セキュリティチェック
+        // Security check
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
         check_ajax_referer( 'bf_sfd_file_list_nonce', 'nonce' );
 
-        // WordPress Filesystem APIを初期化
+        // Initialize WordPress Filesystem API
         global $wp_filesystem;
         if ( ! function_exists( 'WP_Filesystem' ) ) {
             require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -289,40 +289,40 @@ class FileListPage {
         $relative_path = sanitize_text_field( wp_unslash( $_POST['parent_path'] ?? '' ) );
         $directory_name = sanitize_text_field( wp_unslash( $_POST['directory_name'] ?? '' ) );
 
-        // 入力値チェック
+        // Check input values
         if ( empty( $directory_name ) ) {
             wp_send_json_error( __( 'ディレクトリ名が指定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $parent_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック
+        // Security check
         $security_check = SecurityHelper::check_ajax_create_directory_security( $parent_path, $directory_name );
         if ( ! $security_check['allowed'] ) {
             wp_send_json_error( $security_check['error_message'] );
         }
 
-        // ドットで始まるディレクトリ名を禁止
+        // Prevent creating directories starting with a dot
         if ( strpos( $directory_name, '.' ) === 0 ) {
             wp_send_json_error( __( 'ドットで始まるディレクトリ名は作成できません。', 'bf-secret-file-downloader' ) );
         }
 
-        // 書き込み権限チェック
+        // Check write permission
         if ( ! $wp_filesystem->is_writable( $parent_path ) ) {
             wp_send_json_error( __( '親ディレクトリに書き込み権限がありません。', 'bf-secret-file-downloader' ) );
         }
 
-        // 新しいディレクトリのパス
+        // New directory path
         $new_directory_path = $parent_path . DIRECTORY_SEPARATOR . $directory_name;
 
-        // ディレクトリ作成
+        // Create directory
         if ( wp_mkdir_p( $new_directory_path ) ) {
             wp_send_json_success( array(
                 /* translators: %s: directory name */
@@ -336,10 +336,10 @@ class FileListPage {
     }
 
     /**
-     * ファイル削除のAJAXハンドラ
+     * AJAX handler for file deletion
      */
     public function ajax_delete_file() {
-        // 権限チェック
+        // Check permissions
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -348,38 +348,38 @@ class FileListPage {
 
         $relative_path = sanitize_text_field( wp_unslash( $_POST['file_path'] ?? '' ) );
 
-        // 入力値チェック
+        // Check input values
         if ( empty( $relative_path ) ) {
             wp_send_json_error( __( 'ファイルパスが指定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック：許可されたディレクトリのみ
+        // Security check: only allowed directories
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
             wp_send_json_error( __( 'このファイルの削除は許可されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ファイル存在チェック
+        // Check if file exists
         if ( ! file_exists( $full_path ) ) {
             wp_send_json_error( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) );
         }
 
-        // WordPress Filesystem APIを初期化
+        // Initialize WordPress Filesystem API
         global $wp_filesystem;
         if ( empty( $wp_filesystem ) ) {
             require_once ABSPATH . '/wp-admin/includes/file.php';
             WP_Filesystem();
         }
 
-        // 削除権限チェック
+        // Check delete permission
         $parent_dir = dirname( $full_path );
         if ( ! $wp_filesystem->is_writable( $parent_dir ) ) {
             wp_send_json_error( __( 'このファイルを削除する権限がありません。', 'bf-secret-file-downloader' ) );
@@ -388,11 +388,11 @@ class FileListPage {
         $filename = basename( $full_path );
         $is_directory = is_dir( $full_path );
 
-        // 削除実行
+        // Execute deletion
         if ( $is_directory ) {
-            // ディレクトリの削除
+            // Delete directory
             if ( $this->delete_directory_recursive( $full_path ) ) {
-                // 親ディレクトリの相対パスを取得
+                // Get parent directory relative path
                 $parent_relative_path = dirname( $relative_path );
                 if ( $parent_relative_path === '.' ) {
                     $parent_relative_path = '';
@@ -409,9 +409,9 @@ class FileListPage {
                 wp_send_json_error( __( 'ディレクトリの削除に失敗しました。', 'bf-secret-file-downloader' ) );
             }
         } else {
-            // ファイルの削除
+            // Delete file
             if ( wp_delete_file( $full_path ) ) {
-                // 親ディレクトリの相対パスを取得
+                // Get parent directory relative path
                 $parent_relative_path = dirname( $relative_path );
                 if ( $parent_relative_path === '.' ) {
                     $parent_relative_path = '';
@@ -431,10 +431,10 @@ class FileListPage {
     }
 
     /**
-     * 一括削除のAJAXハンドラ
+     * AJAX handler for bulk deletion
      */
     public function ajax_bulk_delete() {
-        // 権限チェック
+        // Check permissions
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -443,18 +443,18 @@ class FileListPage {
 
         $file_paths = array_map( 'sanitize_text_field', wp_unslash( $_POST['file_paths'] ?? array() ) );
 
-        // 入力値チェック
+        // Check input values
         if ( empty( $file_paths ) || ! is_array( $file_paths ) ) {
             wp_send_json_error( __( '削除するファイルが選択されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // WordPress Filesystem APIを初期化
+        // Initialize WordPress Filesystem API
         global $wp_filesystem;
         if ( empty( $wp_filesystem ) ) {
             require_once ABSPATH . '/wp-admin/includes/file.php';
@@ -473,10 +473,10 @@ class FileListPage {
                 continue;
             }
 
-            // フルパスを構築
+            // Build full path
             $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-            // セキュリティチェック：許可されたディレクトリのみ
+            // Security check: only allowed directories
             if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
                 $failed_files[] = array(
                     'path' => $relative_path,
@@ -485,7 +485,7 @@ class FileListPage {
                 continue;
             }
 
-            // ファイル存在チェック
+            // Check if file exists
             if ( ! file_exists( $full_path ) ) {
                 $failed_files[] = array(
                     'path' => $relative_path,
@@ -494,7 +494,7 @@ class FileListPage {
                 continue;
             }
 
-            // 削除権限チェック
+            // Check delete permission
             $parent_dir = dirname( $full_path );
             if ( ! $wp_filesystem->is_writable( $parent_dir ) ) {
                 $failed_files[] = array(
@@ -507,7 +507,7 @@ class FileListPage {
             $filename = basename( $full_path );
             $is_directory = is_dir( $full_path );
 
-            // 削除実行
+            // Execute deletion
             $delete_success = false;
             if ( $is_directory ) {
                 $delete_success = $this->delete_directory_recursive( $full_path );
@@ -522,7 +522,7 @@ class FileListPage {
                     'type' => $is_directory ? 'directory' : 'file'
                 );
 
-                // 現在のパスが削除されたかチェック
+                // Check if current path was deleted
                 if ( $is_directory ) {
                     $current_path = sanitize_text_field( wp_unslash( $_POST['current_path'] ?? '' ) );
                     if ( $current_path === $relative_path ||
@@ -544,7 +544,7 @@ class FileListPage {
             }
         }
 
-        // 結果をまとめる
+        // Summarize results
         $response_data = array(
             'deleted_files' => $deleted_files,
             'failed_files' => $failed_files,
@@ -555,7 +555,7 @@ class FileListPage {
         );
 
         if ( count( $deleted_files ) > 0 && count( $failed_files ) === 0 ) {
-            // 全て成功
+            // All successful
             $message = sprintf(
                 /* translators: %d: number of deleted items */
                 _n(
@@ -569,7 +569,7 @@ class FileListPage {
             $response_data['message'] = $message;
             wp_send_json_success( $response_data );
         } elseif ( count( $deleted_files ) > 0 && count( $failed_files ) > 0 ) {
-            // 一部成功
+            // Some successful
             $message = sprintf(
                 /* translators: 1: number of deleted items, 2: number of failed items */
                 __( '%1$d個のアイテムを削除しました。%2$d個のアイテムで失敗しました。', 'bf-secret-file-downloader' ),
@@ -579,16 +579,16 @@ class FileListPage {
             $response_data['message'] = $message;
             wp_send_json_success( $response_data );
         } else {
-            // 全て失敗
+            // All failed
             wp_send_json_error( __( '選択されたアイテムの削除に失敗しました。', 'bf-secret-file-downloader' ) );
         }
     }
 
     /**
-     * ファイルダウンロードのAJAXハンドラ
+     * AJAX handler for file download
      */
     public function ajax_download_file() {
-        // セキュリティチェック
+        // Check security
         if ( ! current_user_can( 'read' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -597,47 +597,47 @@ class FileListPage {
 
         $relative_path = sanitize_text_field( wp_unslash( $_POST['file_path'] ?? '' ) );
 
-        // 入力値チェック
+        // Check input values
         if ( empty( $relative_path ) ) {
             wp_send_json_error( __( 'ファイルパスが指定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック：許可されたディレクトリのみ
+        // Security check: only allowed directories
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
             wp_send_json_error( __( 'このファイルのダウンロードは許可されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ファイル存在チェック
+        // Check if file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
             wp_send_json_error( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) );
         }
 
-        // 読み込み権限チェック
+        // Check read permission
         if ( ! is_readable( $full_path ) ) {
             wp_send_json_error( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ダウンロード用の一時的なトークンを生成
+        // Generate temporary token for download
         $download_token = wp_generate_password( 32, false );
         $token_data = array(
             'file_path' => $relative_path,
             'user_id' => get_current_user_id(),
-            'expires' => time() + 300, // 5分間有効
+            'expires' => time() + 300, // 5 minutes valid
         );
 
-        // トークンをトランジェントとして保存
+        // Save token as transient
         set_transient( 'bf_sfd_download_' . $download_token, $token_data, 300 );
 
-        // ダウンロードURLを生成
+        // Generate download URL
         $download_url = add_query_arg( array(
             'action' => 'bf_sfd_file_download',
             'bf_download' => $download_token
@@ -650,7 +650,7 @@ class FileListPage {
     }
 
     /**
-     * ファイルダウンロード処理
+     * File download processing
      */
     public function handle_file_download() {
         $download_token = sanitize_text_field( wp_unslash( $_GET['bf_download'] ?? '' ) );
@@ -660,61 +660,61 @@ class FileListPage {
             wp_die( esc_html( __( '無効なダウンロードトークンです。', 'bf-secret-file-downloader' ) ), 400 );
         }
 
-        // トークンを検証
+        // Check token
         $token_data = get_transient( 'bf_sfd_download_' . $download_token );
         if ( $token_data === false ) {
             /* translators: Error message for invalid or expired download token */
             wp_die( esc_html( __( 'ダウンロードトークンが無効または期限切れです。', 'bf-secret-file-downloader' ) ), 400 );
         }
 
-        // トークンを削除（一回限りの使用）
+        // Delete token (one-time use)
         delete_transient( 'bf_sfd_download_' . $download_token );
 
-        // トークンの有効期限をチェック
+        // Check token expiration
         if ( time() > $token_data['expires'] ) {
             /* translators: Error message for expired download token */
             wp_die( esc_html( __( 'ダウンロードトークンの有効期限が切れています。', 'bf-secret-file-downloader' ) ), 400 );
         }
 
-        // ユーザー権限チェック
+        // Check user permissions
         if ( ! current_user_can( 'read' ) ) {
             /* translators: Error message for insufficient download permissions */
             wp_die( esc_html( __( 'ファイルをダウンロードする権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             /* translators: Error message for missing target directory */
             wp_die( esc_html( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) ), 500 );
         }
 
-        // フルパスを構築
+        // Build full path
         $relative_path = $token_data['file_path'];
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック
+        // Check security
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
             /* translators: Error message for unauthorized file download */
             wp_die( esc_html( __( 'このファイルのダウンロードは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // ファイル存在チェック
+        // Check if file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
             wp_die( esc_html( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) ), 404 );
         }
 
-        // 読み込み権限チェック
+        // Check read permission
         if ( ! is_readable( $full_path ) ) {
             wp_die( esc_html( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // ファイル情報を取得
+        // Get file information
         $filename = basename( $full_path );
         $filesize = filesize( $full_path );
         $mime_type = wp_check_filetype( $filename )['type'] ?? 'application/octet-stream';
 
-        // ダウンロード用のヘッダーを設定
+        // Set headers for download
         if ( ! headers_sent() ) {
             header( 'Content-Type: ' . $mime_type );
             header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -723,7 +723,7 @@ class FileListPage {
             header( 'Pragma: no-cache' );
             header( 'Expires: 0' );
 
-            // ファイルを出力
+            // Output file
             global $wp_filesystem;
             if ( empty( $wp_filesystem ) ) {
                 require_once ABSPATH . '/wp-admin/includes/file.php';
@@ -737,37 +737,37 @@ class FileListPage {
     }
 
     /**
-     * ページを表示します
+     * Render page
      */
     public function render() {
-        // 権限チェック
+        // Check permissions
         if ( ! $this->can_access_files() ) {
             wp_die( esc_html( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
-        // ビューで使用するデータを準備
+        // Prepare data for view
         $import = $this->prepare_data();
 
-        // ViewRendererを使用してビューをレンダリング
+        // Render view using ViewRenderer
         \Breadfish\SecretFileDownloader\ViewRenderer::admin( 'file-list.php', $import );
     }
 
     /**
-     * 現在のパスを取得します（相対パス）
+     * Get current path (relative path)
      *
-     * @return string 現在の相対パス
+     * @return string Current relative path
      */
     private function get_current_path() {
         return sanitize_text_field( wp_unslash( $_GET['path'] ?? '' ) );
     }
 
     /**
-     * アイテムをソートします
+     * Sort items
      *
-     * @param array $items ソート対象のアイテム配列
-     * @param string $sort_by ソートフィールド
-     * @param string $sort_order ソート順序
-     * @return array ソート済みアイテム配列
+     * @param array $items Items to sort
+     * @param string $sort_by Sort field
+     * @param string $sort_order Sort order
+     * @return array Sorted items array
      */
     private function sort_items( $items, $sort_by, $sort_order ) {
         usort( $items, function( $a, $b ) use ( $sort_by, $sort_order ) {
@@ -778,7 +778,7 @@ class FileListPage {
                     $result = strcmp( strtolower( $a['name'] ), strtolower( $b['name'] ) );
                     break;
                 case 'size':
-                    // ディレクトリのサイズは比較対象外
+                    // Directory size is not compared
                     if ( $a['size'] === '-' && $b['size'] === '-' ) {
                         $result = strcmp( strtolower( $a['name'] ), strtolower( $b['name'] ) );
                     } elseif ( $a['size'] === '-' ) {
@@ -804,27 +804,27 @@ class FileListPage {
     }
 
     /**
-     * ファイルタイプに応じたCSSクラスを取得します
+     * Get CSS class for file type
      *
-     * @param string $filename ファイル名
-     * @return string CSSクラス
+     * @param string $filename File name
+     * @return string CSS class
      */
     private function get_file_type_class( $filename ) {
         $extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
 
-        // 画像ファイル
+        // Image files
         $image_extensions = array( 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico' );
         if ( in_array( $extension, $image_extensions ) ) {
             return 'image-file';
         }
 
-        // ドキュメントファイル
+        // Document files
         $document_extensions = array( 'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'pages' );
         if ( in_array( $extension, $document_extensions ) ) {
             return 'document-file';
         }
 
-        // アーカイブファイル
+        // Archive files
         $archive_extensions = array( 'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz' );
         if ( in_array( $extension, $archive_extensions ) ) {
             return 'archive-file';
@@ -834,9 +834,9 @@ class FileListPage {
     }
 
     /**
-     * ビューで使用するデータを準備します
+     * Prepare data for view
      *
-     * @return array ビューで使用するデータ
+     * @return array Data for view
      */
     private function prepare_data() {
 
@@ -845,7 +845,7 @@ class FileListPage {
         $sort_by = $this->get_current_sort_by();
         $sort_order = $this->get_current_sort_order();
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) || ! is_dir( $base_directory ) ) {
             return array(
@@ -875,14 +875,14 @@ class FileListPage {
         $files = $this->get_files( $full_path, $relative_path, $page, $sort_by, $sort_order );
         $total_pages = $this->get_total_pages( $full_path );
 
-        // WP_Filesystemを初期化
+        // Initialize WP_Filesystem
         global $wp_filesystem;
         if ( empty( $wp_filesystem ) ) {
             require_once ABSPATH . '/wp-admin/includes/file.php';
             WP_Filesystem();
         }
 
-        // ファイルデータにフォーマット済みサイズとタイプクラスを追加
+        // Add formatted size and type class to file data
         $formatted_files = array();
         foreach ( $files as $file ) {
             $formatted_file = $file;
@@ -892,14 +892,14 @@ class FileListPage {
                 $formatted_file['formatted_size'] = '-';
             }
 
-            // ファイルタイプクラスを追加
+            // Add file type class
             if ( $file['type'] === 'file' ) {
                 $formatted_file['type_class'] = $this->get_file_type_class( $file['name'] );
             } else {
                 $formatted_file['type_class'] = '';
             }
 
-            // 削除権限情報を追加
+            // Add delete permission information
             $formatted_file['can_delete'] = current_user_can( 'manage_options' );
 
             $formatted_files[] = $formatted_file;
@@ -932,14 +932,14 @@ class FileListPage {
     }
 
     /**
-     * ファイルリストを取得します
+     * Get file list
      *
-     * @param string $full_path フルパス
-     * @param string $relative_path 相対パス
-     * @param int $page ページ番号
-     * @param string $sort_by ソートフィールド
-     * @param string $sort_order ソート順序
-     * @return array ファイルリスト
+     * @param string $full_path Full path
+     * @param string $relative_path Relative path
+     * @param int $page Page number
+     * @param string $sort_by Sort field
+     * @param string $sort_order Sort order
+     * @return array File list
      */
     private function get_files( $full_path = '', $relative_path = '', $page = 1, $sort_by = 'name', $sort_order = 'asc' ) {
         if ( empty( $full_path ) ) {
@@ -959,14 +959,14 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリの内容を取得します
+     * Get directory contents
      *
-     * @param string $full_path フルパス
-     * @param string $relative_path 相対パス
-     * @param int $page ページ番号
-     * @param string $sort_by ソートフィールド
-     * @param string $sort_order ソート順序
-     * @return array ディレクトリの内容
+     * @param string $full_path Full path
+     * @param string $relative_path Relative path
+     * @param int $page Page number
+     * @param string $sort_by Sort field
+     * @param string $sort_order Sort order
+     * @return array Directory contents
      */
     private function get_directory_contents( $full_path, $relative_path = '', $page = 1, $sort_by = 'name', $sort_order = 'asc' ) {
         $directories = array();
@@ -979,24 +979,24 @@ class FileListPage {
                 continue;
             }
 
-            // 隠しファイル（ドットから始まるファイル）を除外
+            // Exclude hidden files (files starting with a dot)
             if ( strpos( $item, '.' ) === 0 ) {
                 continue;
             }
 
-            // プログラムコードファイルを除外
+            // Exclude program code files
             if ( SecurityHelper::is_program_code_file( $item ) ) {
                 continue;
             }
 
-            // セキュアディレクトリの保護ファイルを除外
+            // Exclude protected files in secure directory
             if ( $item === 'index.php' ) {
                 continue;
             }
 
             $full_item_path = $full_path . DIRECTORY_SEPARATOR . $item;
 
-            // 相対パスを構築
+            // Build relative path
             $item_relative_path = empty( $relative_path )
                 ? $item
                 : $relative_path . DIRECTORY_SEPARATOR . $item;
@@ -1025,15 +1025,15 @@ class FileListPage {
             }
         }
 
-        // ソート処理
+        // Sort processing
         $directories = $this->sort_items( $directories, $sort_by, $sort_order );
         $files = $this->sort_items( $files, $sort_by, $sort_order );
 
-        // 全アイテムを結合（ディレクトリを先頭に）
+        // Combine all items (directories first)
         $all_items = array_merge( $directories, $files );
         $total_items = count( $all_items );
 
-        // ページング処理
+        // Paging processing
         $offset = ( $page - 1 ) * self::FILES_PER_PAGE;
         $paged_items = array_slice( $all_items, $offset, self::FILES_PER_PAGE );
 
@@ -1050,10 +1050,10 @@ class FileListPage {
     }
 
     /**
-     * 親ディレクトリの相対パスを取得します
+     * Get parent directory relative path
      *
-     * @param string $relative_path 現在の相対パス
-     * @return string 親ディレクトリの相対パス
+     * @param string $relative_path Current relative path
+     * @return string Parent directory relative path
      */
     private function get_parent_relative_path( $relative_path ) {
         if ( empty( $relative_path ) ) {
@@ -1067,34 +1067,34 @@ class FileListPage {
     }
 
     /**
-     * 親ディレクトリへのナビゲーションが可能かチェックします
+     * Check if navigation to parent directory is possible
      *
-     * @param string $relative_path 現在の相対パス
-     * @return bool ナビゲーション可能フラグ
+     * @param string $relative_path Current relative path
+     * @return bool Navigation possible flag
      */
     private function can_navigate_to_parent( $relative_path ) {
-        // ルートディレクトリの場合はfalse
+        // If it is the root directory, return false
         return ! empty( $relative_path );
     }
 
     /**
-     * ページタイトルを取得します
+     * Get page title
      *
-     * @return string ページタイトル
+     * @return string Page title
      */
     public function get_page_title() {
         return __( 'ファイルリスト', 'bf-secret-file-downloader' );
     }
 
     /**
-     * ページングHTMLを生成します
+     * Generate paging HTML
      *
-     * @param int $current_page 現在のページ
-     * @param int $total_pages 総ページ数
-     * @param string $current_path 現在のパス
-     * @param string $sort_by ソートフィールド
-     * @param string $sort_order ソート順序
-     * @return string ページングHTML
+     * @param int $current_page Current page
+     * @param int $total_pages Total pages
+     * @param string $current_path Current path
+     * @param string $sort_by Sort field
+     * @param string $sort_order Sort order
+     * @return string Paging HTML
      */
     public function render_pagination( $current_page, $total_pages, $current_path, $sort_by = 'name', $sort_order = 'asc' ) {
         if ( $total_pages <= 1 ) {
@@ -1103,7 +1103,7 @@ class FileListPage {
 
         $html = '<span class="pagination-links">';
 
-        // 前のページ
+        // Previous page
         if ( $current_page > 1 ) {
             $prev_url = add_query_arg( array(
                 'page' => 'bf-secret-file-downloader',
@@ -1115,7 +1115,7 @@ class FileListPage {
             $html .= '<a href="' . esc_url( $prev_url ) . '">&laquo; ' . __( '前', 'bf-secret-file-downloader' ) . '</a>';
         }
 
-        // ページ番号
+        // Page number
         $start_page = max( 1, $current_page - 2 );
         $end_page = min( $total_pages, $current_page + 2 );
 
@@ -1134,7 +1134,7 @@ class FileListPage {
             }
         }
 
-        // 次のページ
+        // Next page
         if ( $current_page < $total_pages ) {
             $next_url = add_query_arg( array(
                 'page' => 'bf-secret-file-downloader',
@@ -1151,10 +1151,10 @@ class FileListPage {
     }
 
     /**
-     * ファイルサイズをフォーマットします
+     * Format file size
      *
-     * @param int $bytes バイト数
-     * @return string フォーマット済みファイルサイズ
+     * @param int $bytes Bytes
+     * @return string Formatted file size
      */
     public function format_file_size( $bytes ) {
         if ( $bytes == 0 ) {
@@ -1169,18 +1169,18 @@ class FileListPage {
     }
 
     /**
-     * メニュータイトルを取得します
+     * Get menu title
      *
-     * @return string メニュータイトル
+     * @return string Menu title
      */
     public function get_menu_title() {
         return __( 'ファイルリスト', 'bf-secret-file-downloader' );
     }
 
     /**
-     * 現在のユーザーがファイルアクセス権限を持っているかチェック
+     * Check if the current user has file access permission
      *
-     * @return bool アクセス権限の有無
+     * @return bool File access permission flag
      */
     private function can_access_files() {
         $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
@@ -1189,10 +1189,10 @@ class FileListPage {
     }
 
     /**
-     * ファイル総数を取得します
+     * Get total number of files
      *
-     * @param string $path ディレクトリパス
-     * @return int ファイル総数
+     * @param string $path Directory path
+     * @return int Total number of files
      */
     private function get_total_files( $path = '' ) {
         if ( empty( $path ) ) {
@@ -1208,15 +1208,15 @@ class FileListPage {
             $count = 0;
             foreach ( $items as $item ) {
                 if ( $item !== '.' && $item !== '..' ) {
-                    // 隠しファイル（ドットから始まるファイル）を除外
+                    // Exclude hidden files (files starting with a dot)
                     if ( strpos( $item, '.' ) === 0 ) {
                         continue;
                     }
-                    // プログラムコードファイルを除外
+                    // Exclude program code files
                     if ( SecurityHelper::is_program_code_file( $item ) ) {
                         continue;
                     }
-                    // セキュアディレクトリの保護ファイルを除外
+                    // Exclude protected files in secure directory
                     if ( $item === 'index.php' ) {
                         continue;
                     }
@@ -1230,10 +1230,10 @@ class FileListPage {
     }
 
     /**
-     * 総ページ数を取得します
+     * Get total number of pages
      *
-     * @param string $path ディレクトリパス
-     * @return int 総ページ数
+     * @param string $path Directory path
+     * @return int Total number of pages
      */
     private function get_total_pages( $path = '' ) {
         $total_files = $this->get_total_files( $path );
@@ -1242,9 +1242,9 @@ class FileListPage {
 
 
     /**
-     * アップロード制限を取得します
+     * Get upload limit
      *
-     * @return string アップロード制限
+     * @return string Upload limit
      */
     private function get_upload_limit() {
         $max_size = get_option( 'bf_sfd_max_file_size', 10 );
@@ -1252,18 +1252,18 @@ class FileListPage {
     }
 
     /**
-     * 現在のページ番号を取得します
+     * Get current page number
      *
-     * @return int 現在のページ番号
+     * @return int Current page number
      */
     private function get_current_page() {
         return max( 1, intval( $_GET['paged'] ?? 1 ) );
     }
 
     /**
-     * 現在のソートフィールドを取得します
+     * Get current sort field
      *
-     * @return string 現在のソートフィールド
+     * @return string Current sort field
      */
     private function get_current_sort_by() {
         $sort_by = sanitize_text_field( wp_unslash( $_GET['sort_by'] ?? 'name' ) );
@@ -1272,9 +1272,9 @@ class FileListPage {
     }
 
     /**
-     * 現在のソート順序を取得します
+     * Get current sort order
      *
-     * @return string 現在のソート順序
+     * @return string Current sort order
      */
     private function get_current_sort_order() {
         $sort_order = sanitize_text_field( wp_unslash( $_GET['sort_order'] ?? 'asc' ) );
@@ -1282,17 +1282,17 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリを再帰的に削除します
+     * Delete directory recursively
      *
-     * @param string $directory_path 削除するディレクトリパス
-     * @return bool 削除成功フラグ
+     * @param string $directory_path Directory path to delete
+     * @return bool Delete success flag
      */
     private function delete_directory_recursive( $directory_path ) {
         if ( ! is_dir( $directory_path ) ) {
             return false;
         }
 
-        // WP_Filesystemを初期化
+        // Initialize WP_Filesystem
         global $wp_filesystem;
         if ( empty( $wp_filesystem ) ) {
             require_once ABSPATH . '/wp-admin/includes/file.php';
@@ -1308,27 +1308,27 @@ class FileListPage {
             $item_path = $directory_path . DIRECTORY_SEPARATOR . $item;
 
             if ( is_dir( $item_path ) ) {
-                // サブディレクトリを再帰的に削除
+                // Delete subdirectories recursively
                 if ( ! $this->delete_directory_recursive( $item_path ) ) {
                     return false;
                 }
             } else {
-                // ファイルを削除
+                // Delete file
                 if ( ! wp_delete_file( $item_path ) ) {
                     return false;
                 }
             }
         }
 
-        // 空になったディレクトリを削除
+        // Delete empty directory
         return $wp_filesystem->rmdir( $directory_path );
     }
 
     /**
-     * ディレクトリ認証設定のAJAXハンドラ
+     * Directory authentication settings AJAX handler
      */
     public function ajax_set_directory_auth() {
-        // セキュリティチェック
+        // Security check
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -1341,39 +1341,39 @@ class FileListPage {
         $simple_auth_password = sanitize_text_field( wp_unslash( $_POST['simple_auth_password'] ?? '' ) );
         $action_type = sanitize_text_field( wp_unslash( $_POST['action_type'] ?? 'set' ) ); // set, remove
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック
+        // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
             wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // ディレクトリの存在チェック
+        // Check if directory exists
         if ( ! is_dir( $full_path ) ) {
             wp_send_json_error( __( 'ディレクトリが存在しません。', 'bf-secret-file-downloader' ) );
         }
 
         if ( $action_type === 'remove' ) {
-            // 認証設定を削除
+            // Delete authentication settings
             $this->remove_directory_auth( $relative_path );
             wp_send_json_success( array(
                 'message' => __( 'ディレクトリの認証設定を削除しました。', 'bf-secret-file-downloader' ),
                 'has_auth' => false
             ));
         } else {
-            // 認証設定を保存
+            // Save authentication settings
             if ( empty( $auth_methods ) || ! is_array( $auth_methods ) ) {
                 wp_send_json_error( __( '認証方法を選択してください。', 'bf-secret-file-downloader' ) );
             }
 
-            // 簡易認証が選択されている場合、パスワードが必要
+            // If simple authentication is selected, a password is required
             if ( in_array( 'simple_auth', $auth_methods ) && empty( $simple_auth_password ) ) {
                 wp_send_json_error( __( '簡易認証を選択した場合は、パスワードを設定してください。', 'bf-secret-file-downloader' ) );
             }
@@ -1387,10 +1387,10 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリ認証設定取得のAJAXハンドラ
+     * Directory authentication settings retrieval AJAX handler
      */
     public function ajax_get_directory_auth() {
-        // セキュリティチェック
+        // Security check
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
@@ -1399,21 +1399,21 @@ class FileListPage {
 
         $relative_path = sanitize_text_field( wp_unslash( $_POST['path'] ?? '' ) );
 
-        // ベースディレクトリを取得
+        // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // フルパスを構築
+        // Build full path
         $full_path = SecurityHelper::build_safe_path( $base_directory, $relative_path );
 
-        // セキュリティチェック
+        // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
             wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
         }
 
-        // 認証設定を取得
+        // Get authentication settings
         $auth_settings = $this->get_directory_auth( $relative_path );
 
         if ( $auth_settings !== false ) {
@@ -1424,12 +1424,12 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリに認証設定を保存します
+     * Save directory authentication settings
      *
-     * @param string $relative_path 相対パス
-     * @param array $auth_methods 認証方法の配列
-     * @param array $allowed_roles 許可するユーザーロールの配列
-     * @param string $simple_auth_password 簡易認証パスワード
+     * @param string $relative_path Relative path
+     * @param array $auth_methods Authentication methods array
+     * @param array $allowed_roles Allowed user roles array
+     * @param string $simple_auth_password Simple authentication password
      */
     private function set_directory_auth( $relative_path, $auth_methods, $allowed_roles, $simple_auth_password ) {
         $directory_auths = get_option( 'bf_sfd_directory_auths', array() );
@@ -1439,7 +1439,7 @@ class FileListPage {
             'allowed_roles' => $allowed_roles,
         );
 
-        // 簡易認証パスワードが設定されている場合
+        // If simple authentication password is set
         if ( ! empty( $simple_auth_password ) ) {
             $auth_data['simple_auth_hash'] = wp_hash_password( $simple_auth_password );
             $auth_data['simple_auth_encrypted'] = $this->encrypt_password( $simple_auth_password );
@@ -1447,16 +1447,16 @@ class FileListPage {
 
         $directory_auths[ $relative_path ] = $auth_data;
         update_option( 'bf_sfd_directory_auths', $directory_auths );
-        
-        // 認証設定変更時刻を更新（全ユーザーの認証を無効化）
+
+        // Update authentication settings change timestamp (invalidate all users' authentication)
         update_option( 'bf_sfd_auth_settings_changed', time() );
         error_log( 'Directory auth settings updated. Timestamp: ' . time() );
     }
 
     /**
-     * ディレクトリの認証設定を削除します
+     * Delete directory authentication settings
      *
-     * @param string $relative_path 相対パス
+     * @param string $relative_path Relative path
      */
     private function remove_directory_auth( $relative_path ) {
         $directory_auths = get_option( 'bf_sfd_directory_auths', array() );
@@ -1464,18 +1464,18 @@ class FileListPage {
         if ( isset( $directory_auths[ $relative_path ] ) ) {
             unset( $directory_auths[ $relative_path ] );
             update_option( 'bf_sfd_directory_auths', $directory_auths );
-            
-            // 認証設定変更時刻を更新（全ユーザーの認証を無効化）
+
+            // Update authentication settings change timestamp (invalidate all users' authentication)
             update_option( 'bf_sfd_auth_settings_changed', time() );
             error_log( 'Directory auth settings removed. Timestamp: ' . time() );
         }
     }
 
     /**
-     * ディレクトリに認証設定があるかチェックします
+     * Check if directory has authentication settings
      *
-     * @param string $relative_path 相対パス
-     * @return bool 認証設定フラグ
+     * @param string $relative_path Relative path
+     * @return bool Authentication settings flag
      */
     private function has_directory_auth( $relative_path ) {
         $directory_auths = get_option( 'bf_sfd_directory_auths', array() );
@@ -1489,10 +1489,10 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリにパスワードが設定されているかチェックします
+     * Check if directory has password
      *
-     * @param string $relative_path 相対パス
-     * @return bool パスワード設定フラグ
+     * @param string $relative_path Relative path
+     * @return bool Password setting flag
      */
     private function has_directory_password( $relative_path ) {
         $directory_passwords = get_option( 'bf_sfd_directory_passwords', array() );
@@ -1501,20 +1501,20 @@ class FileListPage {
             return false;
         }
 
-        // 新しい配列形式をチェック
+        // Check new array format
         if ( is_array( $directory_passwords[ $relative_path ] ) ) {
             return ! empty( $directory_passwords[ $relative_path ]['hash'] );
         }
 
-        // 古い文字列形式（後方互換性）
+        // Check old string format (backward compatibility)
         return ! empty( $directory_passwords[ $relative_path ] );
     }
 
     /**
-     * ディレクトリの認証設定を取得します
+     * Get directory authentication settings
      *
-     * @param string $relative_path 相対パス
-     * @return array|false 認証設定、または失敗時はfalse
+     * @param string $relative_path Relative path
+     * @return array|false Authentication settings, or false on failure
      */
     private function get_directory_auth( $relative_path ) {
         $directory_auths = get_option( 'bf_sfd_directory_auths', array() );
@@ -1533,7 +1533,7 @@ class FileListPage {
             'allowed_roles' => $auth_data['allowed_roles'] ?? array(),
         );
 
-        // 簡易認証パスワードを復号化
+        // Decrypt simple authentication password
         if ( isset( $auth_data['simple_auth_encrypted'] ) ) {
             $result['simple_auth_password'] = $this->decrypt_password( $auth_data['simple_auth_encrypted'] );
         }
@@ -1542,10 +1542,10 @@ class FileListPage {
     }
 
     /**
-     * パスワードを暗号化します
+     * Encrypt password
      *
-     * @param string $password 平文パスワード
-     * @return string 暗号化されたパスワード
+     * @param string $password Plain text password
+     * @return string Encrypted password
      */
     private function encrypt_password( $password ) {
         if ( ! function_exists( 'openssl_encrypt' ) ) {
@@ -1560,10 +1560,10 @@ class FileListPage {
     }
 
     /**
-     * パスワードを復号化します
+     * Decrypt password
      *
-     * @param string $encrypted_password 暗号化されたパスワード
-     * @return string|false 復号化されたパスワード、または失敗時はfalse
+     * @param string $encrypted_password Encrypted password
+     * @return string|false Decrypted password, or false on failure
      */
     private function decrypt_password( $encrypted_password ) {
         if ( ! function_exists( 'openssl_decrypt' ) ) {
@@ -1583,28 +1583,28 @@ class FileListPage {
     }
 
     /**
-     * 暗号化キーを取得します
+     * Get encryption key
      *
-     * @return string 暗号化キー
+     * @return string Encryption key
      */
     private function get_encryption_key() {
-        // WordPressのソルトを使用してキーを生成
+        // Use WordPress salt to generate key
         $salt_keys = array( AUTH_KEY, SECURE_AUTH_KEY, LOGGED_IN_KEY, NONCE_KEY );
         return hash( 'sha256', implode( '', $salt_keys ) );
     }
 
     /**
-     * 共通認証設定を取得するAJAXハンドラ
+     * Common authentication settings retrieval AJAX handler
      */
     public function ajax_get_global_auth() {
-        // セキュリティチェック
+        // Security check
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
         check_ajax_referer( 'bf_sfd_file_list_nonce', 'nonce' );
 
-        // 共通設定を取得
+        // Get common settings
         $auth_methods = get_option( 'bf_sfd_auth_methods', array( 'logged_in' ) );
         $allowed_roles = get_option( 'bf_sfd_allowed_roles', array( 'administrator' ) );
         $simple_auth_password = get_option( 'bf_sfd_simple_auth_password', '' );
@@ -1619,17 +1619,17 @@ class FileListPage {
     }
 
     /**
-     * セキュアディレクトリ再作成のAJAXハンドラ
+     * Secure directory recreation AJAX handler
      */
     public function ajax_recreate_secure_directory() {
-        // セキュリティチェック
+        // Security check
         if ( ! $this->can_access_files() || ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
         check_ajax_referer( 'bf_sfd_file_list_nonce', 'nonce' );
 
-        // 新しいセキュアディレクトリを強制作成
+        // Force create new secure directory
         $result = DirectoryManager::create_secure_directory( true );
 
         if ( $result ) {

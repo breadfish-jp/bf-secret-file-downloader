@@ -1,122 +1,122 @@
 <?php
 /**
- * 管理画面メニューを管理するクラス
+ * Manage admin menu
  *
  * @package BfSecretFileDownloader
  */
 
 namespace Breadfish\SecretFileDownloader;
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * Admin クラス
- * WordPressの管理画面メニューを管理し、各ページクラスにルーティングします
+ * Admin class
+ * Manage WordPress admin menu and route to each page class
  */
 class Admin {
 
     /**
-     * ファイルリストページインスタンス
+     * File list page instance
      *
      * @var \Breadfish\SecretFileDownloader\Admin\FileListPage
      */
     private $file_list_page;
 
     /**
-     * 設定ページインスタンス
+     * Settings page instance
      *
      * @var \Breadfish\SecretFileDownloader\Admin\SettingsPage
      */
     private $settings_page;
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct() {
-        // コンストラクタではフックを登録しない
+        // Do not register hooks in constructor
         $this->file_list_page = new \Breadfish\SecretFileDownloader\Admin\FileListPage();
         $this->settings_page = new \Breadfish\SecretFileDownloader\Admin\SettingsPage();
     }
 
     /**
-     * フックを初期化します
+     * Initialize hooks
      */
     public function init() {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 
-        // 各ページの初期化も実行
+        // Initialize each page
         $this->file_list_page->init();
         $this->settings_page->init();
     }
 
     /**
-     * 管理画面メニューを追加します
+     * Add admin menu
      */
     public function add_admin_menu() {
-        // 編集者管理権限設定をチェック
+        // Check editor admin privilege setting
         $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
 
-        // 編集者管理権限が無効で、現在のユーザーが編集者の場合はメニューを表示しない
+        // If editor admin privilege is disabled and current user is editor, do not show menu
         if ( ! $allow_editor_admin && current_user_can( 'editor' ) && ! current_user_can( 'manage_options' ) ) {
             return;
         }
 
-        // 設定からメニュータイトルを取得
+        // Get menu title from settings
         $menu_title = get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
 
-        // ファイルリスト用の権限を決定
+        // Determine file list capability
         $file_capability = $this->get_file_access_capability();
 
-        // メインメニューページを追加
+        // Add main menu page
         add_menu_page(
-            $menu_title, // ページタイトル
-            $menu_title, // メニュータイトル
-            $file_capability, // 権限
-            $this->file_list_page::PAGE_SLUG, // メニュースラッグ
-            array( $this->file_list_page, 'render' ), // コールバック関数
-            'dashicons-lock', // アイコン
-            30 // メニューの位置
+            $menu_title, // Page title
+            $menu_title, // Menu title
+            $file_capability, // Capability
+            $this->file_list_page::PAGE_SLUG, // Menu slug
+            array( $this->file_list_page, 'render' ), // Callback function
+            'dashicons-lock', // Icon
+            30 // Menu position
         );
 
-        // サブメニューページを追加
+        // Add submenu page
         add_submenu_page(
-            $this->file_list_page::PAGE_SLUG, // 親メニューのスラッグ
-            $this->file_list_page->get_page_title(), // ページタイトル
-            $this->file_list_page->get_menu_title(), // メニュータイトル
-            $file_capability, // 権限
-            $this->file_list_page::PAGE_SLUG, // メニュースラッグ（メインページと同じ）
-            array( $this->file_list_page, 'render' ) // コールバック関数
+            $this->file_list_page::PAGE_SLUG, // Parent menu slug
+            $this->file_list_page->get_page_title(), // Page title
+            $this->file_list_page->get_menu_title(), // Menu title
+            $file_capability, // Capability
+            $this->file_list_page::PAGE_SLUG, // Menu slug (same as main page)
+            array( $this->file_list_page, 'render' ) // Callback function
         );
 
         add_submenu_page(
-            $this->file_list_page::PAGE_SLUG, // 親メニューのスラッグ
-            $this->settings_page->get_page_title(), // ページタイトル
-            $this->settings_page->get_menu_title(), // メニュータイトル
-            'manage_options', // 権限
-            $this->settings_page::PAGE_SLUG, // メニュースラッグ
-            array( $this->settings_page, 'render' ) // コールバック関数
+            $this->file_list_page::PAGE_SLUG, // Parent menu slug
+            $this->settings_page->get_page_title(), // Page title
+            $this->settings_page->get_menu_title(), // Menu title
+            'manage_options', // Capability
+            $this->settings_page::PAGE_SLUG, // Menu slug
+            array( $this->settings_page, 'render' ) // Callback function
         );
     }
 
     /**
-     * ファイルアクセス用の権限を取得します
+     * Get file access capability
      *
-     * @return string 権限文字列
+     * @return string Capability string
      */
     private function get_file_access_capability() {
         $allow_editor_admin = (bool) get_option( 'bf_sfd_allow_editor_admin', false );
 
-        // 編集者管理権限が有効の場合は編集者以上、無効の場合は管理者のみ
+        // If editor admin privilege is enabled, editor or higher, otherwise only admin
         return $allow_editor_admin ? 'edit_posts' : 'manage_options';
     }
 
     /**
-     * 現在のユーザーがファイルアクセス権限を持っているかチェック
+     * Check if current user has file access capability
      *
-     * @return bool アクセス権限の有無
+     * @return bool File access capability
      */
     public function can_access_files() {
         $capability = $this->get_file_access_capability();

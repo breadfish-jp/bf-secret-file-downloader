@@ -7,46 +7,44 @@
 
 namespace Breadfish\SecretFileDownloader\Admin;
 
-
-// セキュリティチェック：直接アクセスを防ぐ
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * SettingsPage クラス
- * 設定機能を管理します
+ * SettingsPage class
+ * Manage the settings page
  */
 class SettingsPage {
 
     /**
-     * ページスラッグ
+     * Page slug
      */
     const PAGE_SLUG = 'bf-secret-file-downloader-settings';
 
     /**
-     * コンストラクタ
+     * Constructor
      */
     public function __construct() {
-        // コンストラクタではフックを登録しない
+        // Constructor does not register hooks
     }
 
     /**
-     * フックを初期化します
+     * Initialize hooks
      */
     public function init() {
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'wp_ajax_bf_sfd_reset_settings', array( $this, 'ajax_reset_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-        // 設定変更時のセッションクリア
+        // Clear session on setting change
         add_action( 'update_option_bf_sfd_auth_methods', array( $this, 'clear_sessions_on_auth_change' ) );
         add_action( 'update_option_bf_sfd_simple_auth_password', array( $this, 'clear_sessions_on_auth_change' ) );
         add_action( 'update_option_bf_sfd_allowed_roles', array( $this, 'clear_sessions_on_auth_change' ) );
     }
 
     /**
-     * 設定を登録します
+     * Register settings
      */
     public function register_settings() {
         register_setting( 'bf_sfd_settings', 'bf_sfd_max_file_size', array(
@@ -55,40 +53,42 @@ class SettingsPage {
             'sanitize_callback' => array( $this, 'sanitize_file_size' )
         ) );
 
-        // 認証設定を追加
+        // Add authentication settings
         register_setting( 'bf_sfd_settings', 'bf_sfd_auth_methods', array(
             'type' => 'array',
             'default' => array(),
             'sanitize_callback' => array( $this, 'sanitize_auth_methods' )
         ) );
 
+        // Allowed roles
         register_setting( 'bf_sfd_settings', 'bf_sfd_allowed_roles', array(
             'type' => 'array',
             'default' => array(),
             'sanitize_callback' => array( $this, 'sanitize_roles' )
         ) );
 
+        // Password for simple authentication
         register_setting( 'bf_sfd_settings', 'bf_sfd_simple_auth_password', array(
             'type' => 'string',
             'default' => '',
             'sanitize_callback' => array( $this, 'sanitize_password' )
         ) );
 
-        // 認証タイムアウト設定を追加
+        // Add authentication timeout settings
         register_setting( 'bf_sfd_settings', 'bf_sfd_auth_timeout', array(
             'type' => 'integer',
             'default' => 30,
             'sanitize_callback' => array( $this, 'sanitize_auth_timeout' )
         ) );
 
-        // メニュータイトル設定を追加
+        // Menu title settings
         register_setting( 'bf_sfd_settings', 'bf_sfd_menu_title', array(
             'type' => 'string',
             'default' => __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ),
             'sanitize_callback' => array( $this, 'sanitize_menu_title' )
         ) );
 
-        // 編集者管理権限設定を追加
+        // Editor admin permission settings
         register_setting( 'bf_sfd_settings', 'bf_sfd_allow_editor_admin', array(
             'type' => 'boolean',
             'default' => false,
@@ -97,33 +97,33 @@ class SettingsPage {
     }
 
     /**
-     * 設定をリセットします
+     * Reset settings
      */
     public function ajax_reset_settings() {
-        // セキュリティチェック
+        // Security check
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( 'Unauthorized' );
         }
 
         check_ajax_referer( 'bf_sfd_browse_nonce', 'nonce' );
 
-        // ファイル削除オプションをチェック
+        // Check file deletion option
         $delete_files = isset( $_POST['delete_files'] ) && $_POST['delete_files'] === 'true';
 
-        // ディレクトリとファイルの処理
+        // Process directory and files
         if ( $delete_files ) {
-            // ファイルも含めて完全削除
+            // Delete all files and settings
             \Breadfish\SecretFileDownloader\DirectoryManager::remove_secure_directory( true );
             $message = 'すべての設定とファイルがリセットされました。新しいセキュアディレクトリが作成されました。';
         } else {
-            // 旧ディレクトリは残したまま新しいディレクトリを作成
+            // Keep old directory and create new secure directory
             $message = '設定がリセットされました。新しいセキュアディレクトリが作成され、旧ディレクトリのファイルは保持されています。';
         }
 
-        // 新しいセキュアディレクトリを強制作成
+        // Create new secure directory
         \Breadfish\SecretFileDownloader\DirectoryManager::create_secure_directory( true );
 
-        // その他の設定を削除
+        // Delete other settings
         delete_option( 'bf_sfd_max_file_size' );
         delete_option( 'bf_sfd_auth_methods' );
         delete_option( 'bf_sfd_allowed_roles' );
@@ -132,30 +132,30 @@ class SettingsPage {
         delete_option( 'bf_sfd_auth_timeout' );
         delete_option( 'bf_sfd_auth_settings_changed' );
 
-        // 認証セッションをクリア
+        // Clear authentication sessions
         $this->clear_all_auth_sessions();
 
-        // ディレクトリパスワードもクリア
+        // Clear directory passwords
         $this->clear_all_directory_passwords();
 
         wp_send_json_success( array( 'message' => $message ) );
     }
 
     /**
-     * ページを表示します
+     * Render the page
      */
         public function render() {
-        // ビューで使用するデータを準備
+        // Prepare data for the view
         $import = $this->prepare_data();
 
-        // ViewRendererを使用してビューをレンダリング
+        // Render the view using ViewRenderer
         \Breadfish\SecretFileDownloader\ViewRenderer::admin( 'settings.php', $import );
     }
 
     /**
-     * ビューで使用するデータを準備します
+     * Prepare data for the view
      *
-     * @return array ビューで使用するデータ
+     * @return array Data for the view
      */
     private function prepare_data() {
         return array(
@@ -176,119 +176,119 @@ class SettingsPage {
     }
 
     /**
-     * BASIC認証設定を取得します
+     * Get BASIC authentication settings
      *
-     * @return bool BASIC認証有効フラグ
+     * @return bool BASIC authentication enabled flag
      */
     private function get_enable_auth() {
         return (bool) get_option( 'bf_sfd_enable_auth', false );
     }
 
     /**
-     * 最大ファイルサイズ設定を取得します
+     * Get maximum file size settings
      *
-     * @return int 最大ファイルサイズ（MB）
+     * @return int Maximum file size (MB)
      */
     private function get_max_file_size() {
         return (int) get_option( 'bf_sfd_max_file_size', 10 );
     }
 
     /**
-     * ダウンロードログ設定を取得します
+     * Get download log settings
      *
-     * @return bool ダウンロードログ有効フラグ
+     * @return bool Download log enabled flag
      */
     private function get_log_downloads() {
         return (bool) get_option( 'bf_sfd_log_downloads', true );
     }
 
     /**
-     * セキュリティレベル設定を取得します
+     * Get security level settings
      *
-     * @return string セキュリティレベル
+     * @return string Security level
      */
     private function get_security_level() {
         return get_option( 'bf_sfd_security_level', 'medium' );
     }
 
     /**
-     * 対象ディレクトリ設定を取得します
+     * Get target directory settings
      *
-     * @return string 対象ディレクトリ
+     * @return string Target directory
      */
     private function get_target_directory() {
         return \Breadfish\SecretFileDownloader\DirectoryManager::get_secure_directory();
     }
 
     /**
-     * 認証方法設定を取得します
+     * Get authentication method settings
      *
-     * @return array 認証方法の配列
+     * @return array Authentication method array
      */
     private function get_auth_methods() {
         return get_option( 'bf_sfd_auth_methods', array() );
     }
 
     /**
-     * 許可するユーザーロール設定を取得します
+     * Get allowed user roles settings
      *
-     * @return array 許可するユーザーロールの配列
+     * @return array Allowed user roles array
      */
     private function get_allowed_roles() {
         return get_option( 'bf_sfd_allowed_roles', array() );
     }
 
     /**
-     * 簡易認証パスワード設定を取得します
+     * Get simple authentication password settings
      *
-     * @return string 簡易認証パスワード
+     * @return string Simple authentication password
      */
     private function get_simple_auth_password() {
         return get_option( 'bf_sfd_simple_auth_password', '' );
     }
 
     /**
-     * プラグインのメニュータイトル設定を取得します
+     * Get plugin menu title settings
      *
-     * @return string プラグインのメニュータイトル
+     * @return string Plugin menu title
      */
     private function get_plugin_menu_title() {
         return get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
     }
 
     /**
-     * 編集者管理権限設定を取得します
+     * Get editor admin permission settings
      *
-     * @return bool 編集者管理権限有効フラグ
+     * @return bool Editor admin permission enabled flag
      */
     private function get_allow_editor_admin() {
         return (bool) get_option( 'bf_sfd_allow_editor_admin', false );
     }
 
     /**
-     * 認証タイムアウト設定を取得します
+     * Get authentication timeout settings
      *
-     * @return int 認証タイムアウト時間（分）
+     * @return int Authentication timeout (minutes)
      */
     private function get_auth_timeout() {
         return (int) get_option( 'bf_sfd_auth_timeout', 30 );
     }
 
     /**
-     * サニタイズ: ブール値
+     * Sanitize boolean value
      *
-     * @param mixed $value 値
-     * @return bool サニタイズされたブール値
+     * @param mixed $value Value
+     * @return bool Sanitized boolean value
      */
     public function sanitize_boolean( $value ) {
         return (bool) $value;
     }
 
     /**
-     * サニタイズ: メニュータイトル
+     * Sanitize menu title
      *
-     * @param string $value メニュータイトル
-     * @return string サニタイズされたメニュータイトル
+     * @param string $value Menu title
+     * @return string Sanitized menu title
      */
     public function sanitize_menu_title( $value ) {
         $sanitized = sanitize_text_field( trim( $value ) );
@@ -303,23 +303,23 @@ class SettingsPage {
     }
 
     /**
-     * サニタイズ: 簡易認証パスワード
+     * Sanitize simple authentication password
      *
-     * @param string $value パスワード
-     * @return string サニタイズされたパスワード
+     * @param string $value Password
+     * @return string Sanitized password
      */
     public function sanitize_password( $value ) {
         $sanitized_value = sanitize_text_field( $value );
 
-        // Nonce検証
+        // Nonce check
         if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'bf_sfd_settings-options' ) ) {
             return $sanitized_value;
         }
 
-        // 簡易認証が有効かチェック
+        // Check if simple authentication is enabled
         $auth_methods = array_map( 'sanitize_text_field', wp_unslash( $_POST['bf_sfd_auth_methods'] ?? array() ) );
         if ( is_array( $auth_methods ) && in_array( 'simple_auth', $auth_methods ) ) {
-            // 簡易認証が有効でパスワードが空の場合
+            // If simple authentication is enabled and password is empty
             if ( empty( $sanitized_value ) ) {
                 add_settings_error(
                     'bf_sfd_simple_auth_password',
@@ -327,7 +327,7 @@ class SettingsPage {
                     __( '簡易認証を有効にする場合は、パスワードの設定が必要です。', 'bf-secret-file-downloader' ),
                     'error'
                 );
-                // 現在のパスワードを維持（空にしない）
+                // Keep current password (do not empty)
                 return get_option( 'bf_sfd_simple_auth_password', '' );
             }
         }
@@ -336,34 +336,34 @@ class SettingsPage {
     }
 
     /**
-     * サニタイズ: ファイルサイズ
+     * Sanitize file size
      *
-     * @param mixed $value ファイルサイズ
-     * @return int サニタイズされたファイルサイズ
+     * @param mixed $value File size
+     * @return int Sanitized file size
      */
     public function sanitize_file_size( $value ) {
         $size = (int) $value;
-        return max( 1, min( 100, $size ) ); // 1-100MBの範囲に制限
+        return max( 1, min( 100, $size ) ); // 1-100MB range
     }
 
     /**
-     * 認証方法をサニタイズします
+     * Sanitize authentication methods
      *
-     * @param array $value 認証方法の配列
-     * @return array サニタイズされた認証方法の配列
+     * @param array $value Authentication methods array
+     * @return array Sanitized authentication methods array
      */
     public function sanitize_auth_methods( $value ) {
         $allowed_methods = array( 'logged_in', 'simple_auth' );
 
-        // $valueがnullまたは配列でない場合は空配列を返す
+        // If $value is null or not an array, return empty array
         if ( ! is_array( $value ) ) {
             return array();
         }
 
-        // サニタイズ
+        // Sanitize
         $sanitized_value = array_map( 'sanitize_text_field', $value );
 
-        // 入力順序を保持しつつ、許可されたメソッドのみを返す
+        // Keep input order and return only allowed methods
         $result = array();
         foreach ( $sanitized_value as $method ) {
             if ( in_array( $method, $allowed_methods ) ) {
@@ -375,10 +375,10 @@ class SettingsPage {
     }
 
     /**
-     * 認証タイムアウト時間をサニタイズします
+     * Sanitize authentication timeout
      *
-     * @param mixed $value タイムアウト時間（分）
-     * @return int サニタイズされたタイムアウト時間
+     * @param mixed $value Authentication timeout (minutes)
+     * @return int Sanitized authentication timeout
      */
     public function sanitize_auth_timeout( $value ) {
         $timeout = (int) $value;
@@ -386,10 +386,10 @@ class SettingsPage {
     }
 
     /**
-     * 許可するユーザーロールをサニタイズします
+     * Sanitize allowed user roles
      *
-     * @param array $value ユーザーロールの配列
-     * @return array サニタイズされたユーザーロールの配列
+     * @param array $value User roles array
+     * @return array Sanitized user roles array
      */
     public function sanitize_roles( $value ) {
         $allowed_roles = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
@@ -399,10 +399,10 @@ class SettingsPage {
             return array();
         }
 
-        // サニタイズ
+        // Sanitize
         $sanitized_value = array_map( 'sanitize_text_field', $value );
 
-        // 入力順序を保持しつつ、許可されたロールのみを返す
+        // Keep input order and return only allowed roles
         $result = array();
         foreach ( $sanitized_value as $role ) {
             if ( in_array( $role, $allowed_roles ) ) {
@@ -414,29 +414,29 @@ class SettingsPage {
     }
 
     /**
-     * すべてのディレクトリパスワードをクリアします
+     * Clear all directory passwords
      */
     private function clear_all_directory_passwords() {
         delete_option( 'bf_sfd_directory_passwords' );
     }
 
     /**
-     * すべての認証セッションをクリアします
+     * Clear all authentication sessions
      */
     private function clear_all_auth_sessions() {
-        // テスト環境チェック（複数の定数をチェック）
+        // Test environment check (multiple constants)
         $is_test_env = defined( 'PHPUNIT_COMPOSER_INSTALL' ) ||
                        defined( 'WP_TESTS_CONFIG_FILE_PATH' ) ||
                        ( defined( 'WP_RUN_CORE_TESTS' ) && WP_RUN_CORE_TESTS );
 
         if ( ! $is_test_env ) {
-            // セッションが開始されていない場合は開始
+            // If session is not started, start it
             if ( ! session_id() ) {
                 @session_start();
             }
         }
 
-        // 認証関連のセッション変数をクリア
+        // Clear authentication related session variables
         if ( isset( $_SESSION ) ) {
             unset( $_SESSION['bf_simple_auth_verified'] );
             unset( $_SESSION['bf_directory_simple_auth_verified'] );
@@ -446,43 +446,43 @@ class SettingsPage {
       }
 
     /**
-     * 認証設定変更時にタイムスタンプを更新します
+     * Update timestamp when authentication settings change
      */
     public function clear_sessions_on_auth_change() {
-        // 設定変更時刻を記録（全ユーザーの認証を無効化するため）
+        // Record the time of setting change (to invalidate all users' authentication)
         update_option( 'bf_sfd_auth_settings_changed', time() );
     }
 
     /**
-     * ページタイトルを取得します
+     * Get page title
      *
-     * @return string ページタイトル
+     * @return string Page title
      */
     public function get_page_title() {
         return __( '設定', 'bf-secret-file-downloader' );
     }
 
     /**
-     * メニュータイトルを取得します
+     * Get menu title
      *
-     * @return string メニュータイトル
+     * @return string Menu title
      */
     public function get_menu_title() {
         return __( '設定', 'bf-secret-file-downloader' );
     }
 
     /**
-     * 管理画面のアセット（CSS/JS）をエンキューします
+     * Enqueue admin assets (CSS/JS)
      *
-     * @param string $hook_suffix 現在の管理画面のフックサフィックス
+     * @param string $hook_suffix Current admin screen hook suffix
      */
     public function enqueue_admin_assets( $hook_suffix ) {
-        // 設定ページでのみアセットを読み込む
+        // Load assets only on settings page
         if ( strpos( $hook_suffix, self::PAGE_SLUG ) === false ) {
             return;
         }
 
-        // CSSファイルをエンキュー
+        // Enqueue CSS file
         wp_enqueue_style(
             'bf-sfd-admin-settings',
             plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'assets/css/admin-settings.css',
