@@ -1294,16 +1294,16 @@ jQuery(document).ready(function($) {
         // 一括操作メニューを含む上部tablenav
         var topTablenav = '<div class="tablenav top">' +
             '<div class="alignleft actions bulkactions">' +
-            '<label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e( '一括操作を選択', 'bf-secret-file-downloader' ); ?></label>' +
+            '<label for="bulk-action-selector-top" class="screen-reader-text">' + '<?php echo esc_js( __( '一括操作を選択', 'bf-secret-file-downloader' ) ); ?>' + '</label>' +
             '<select name="action" id="bulk-action-selector-top">' +
-            '<option value="-1"><?php esc_html_e( '一括操作', 'bf-secret-file-downloader' ); ?></option>';
+            '<option value="-1">' + '<?php echo esc_js( __( '一括操作', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
 
         if (data.current_user_can_delete) {
-            topTablenav += '<option value="delete"><?php esc_html_e( '削除', 'bf-secret-file-downloader' ); ?></option>';
+            topTablenav += '<option value="delete">' + '<?php echo esc_js( __( '削除', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
         }
 
         topTablenav += '</select>' +
-            '<input type="submit" id="doaction" class="button action" value="<?php esc_attr_e( '適用', 'bf-secret-file-downloader' ); ?>">' +
+            '<input type="submit" id="doaction" class="button action" value="' + '<?php echo esc_js( __( '適用', 'bf-secret-file-downloader' ) ); ?>' + '">' +
             '</div>';
 
         if (data.total_pages > 1) {
@@ -1328,7 +1328,7 @@ jQuery(document).ready(function($) {
 
         // 前のページ
         if (currentPage > 1) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; <?php esc_html_e( '前', 'bf-secret-file-downloader' ); ?></a>';
+            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + '<?php echo esc_js( __( '前', 'bf-secret-file-downloader' ) ); ?>' + '</a>';
         }
 
         // ページ番号
@@ -1345,7 +1345,7 @@ jQuery(document).ready(function($) {
 
         // 次のページ
         if (currentPage < totalPages) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '"><?php esc_html_e( '次', 'bf-secret-file-downloader' ); ?> &raquo;</a>';
+            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + '<?php echo esc_js( __( '次', 'bf-secret-file-downloader' ) ); ?>' + ' &raquo;</a>';
         }
 
         html += '</span>';

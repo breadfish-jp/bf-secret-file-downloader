@@ -11,7 +11,8 @@ const includeFiles = [
   'languages/',
   'assets/',
   'vendor/',
-  'readme.txt'
+  'readme.txt',
+  'LICENSE'
 ];
 
 function createRelease() {

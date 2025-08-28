@@ -1,12 +1,13 @@
 === BF Secret File Downloader ===
 Contributors: breadfish
-Tags: download, private files, file manager, security
+Tags: download, file manager, security
 Requires at least: 6.8
 Tested up to: 6.8
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Donate Link: https://square.link/u/Kl16kA0b
 
 Manage and provide download functionality for files in secure, auto-generated directories.
 
@@ -21,7 +22,6 @@ BF Secret File Downloader is a WordPress plugin that automatically creates secur
 * **Download Control**: Secure download functionality with access control
 * **Access Control**: Multiple authentication methods including WordPress login and simple password
 * **Directory Management**: Organize files in automatically created protected directories
-* **Directory Recreation**: Ability to recreate secure directories when needed
 * **i18n Ready**: Translation ready with Japanese and English support
 
 = Authentication Methods =
@@ -39,8 +39,9 @@ BF Secret File Downloader is a WordPress plugin that automatically creates secur
 
 1. Activate the plugin through the 'Plugins' screen in WordPress.
 2. The plugin automatically creates a secure directory on activation.
-3. Use the Settings->BF Secret File Downloader screen to configure authentication methods.
+3. Use the BF Secret File Downloader->Settings screen to configure authentication methods.
 4. Access the File List page to start uploading and managing files in the secure directory.
+5. Share the generated download URL with users who need access to the files.
 
 == Frequently Asked Questions ==
 
@@ -58,7 +59,7 @@ The plugin automatically creates secure directories with unique names when activ
 
 = Is it compatible with multisite? =
 
-Currently, the plugin is designed for single-site installations. Multisite support is planned for future versions.
+Currently, the plugin is designed for single-site installations.
 
 == Screenshots ==
 
@@ -74,7 +75,6 @@ Currently, the plugin is designed for single-site installations. Multisite suppo
 * File management functionality in protected directories
 * Upload and download control with authentication
 * Multiple authentication methods (WordPress login, simple password)
-* Directory recreation functionality
 * i18n support for Japanese and English
 
 == Upgrade Notice ==
@@ -100,3 +100,9 @@ This plugin implements several security measures:
 == Support ==
 
 For support and feature requests, please visit the plugin's support forum.
+
+== Donate ==
+
+If you find this plugin useful, please consider making a donation to support its development.
+
+[Donate via Square](https://square.link/u/Kl16kA0b)
