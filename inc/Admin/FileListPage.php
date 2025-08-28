@@ -738,7 +738,7 @@ class FileListPage {
     public function render() {
         // 権限チェック
         if ( ! $this->can_access_files() ) {
-            wp_die( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ), 403 );
+            wp_die( esc_html( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // ビューで使用するデータを準備
@@ -746,23 +746,6 @@ class FileListPage {
 
         // ViewRendererを使用してビューをレンダリング
         \Breadfish\SecretFileDownloader\ViewRenderer::admin( 'file-list.php', $import );
-    }
-
-
-    /**
-     * フルパスから相対パスを取得します
-     *
-     * @param string $full_path フルパス
-     * @param string $base_directory ベースディレクトリ
-     * @return string 相対パス
-     */
-    private function get_relative_path( $full_path, $base_directory ) {
-        $base_directory = rtrim( $base_directory, DIRECTORY_SEPARATOR );
-        if ( strpos( $full_path, $base_directory ) === 0 ) {
-            $relative_path = substr( $full_path, strlen( $base_directory ) );
-            return trim( $relative_path, DIRECTORY_SEPARATOR );
-        }
-        return '';
     }
 
     /**
@@ -1463,26 +1446,6 @@ class FileListPage {
     }
 
     /**
-     * ディレクトリにパスワードを設定します
-     *
-     * @param string $relative_path 相対パス
-     * @param string $password パスワード
-     */
-    private function set_directory_password( $relative_path, $password ) {
-        $directory_passwords = get_option( 'bf_sfd_directory_passwords', array() );
-
-        // パスワードを暗号化して保存（管理者確認用）
-        $encrypted_password = $this->encrypt_password( $password );
-
-        $directory_passwords[ $relative_path ] = array(
-            'hash' => wp_hash_password( $password ), // 認証用ハッシュ
-            'encrypted' => $encrypted_password       // 管理者確認用暗号化パスワード
-        );
-
-        update_option( 'bf_sfd_directory_passwords', $directory_passwords );
-    }
-
-    /**
      * ディレクトリの認証設定を削除します
      *
      * @param string $relative_path 相対パス
@@ -1493,20 +1456,6 @@ class FileListPage {
         if ( isset( $directory_auths[ $relative_path ] ) ) {
             unset( $directory_auths[ $relative_path ] );
             update_option( 'bf_sfd_directory_auths', $directory_auths );
-        }
-    }
-
-    /**
-     * ディレクトリのパスワードを削除します
-     *
-     * @param string $relative_path 相対パス
-     */
-    private function remove_directory_password( $relative_path ) {
-        $directory_passwords = get_option( 'bf_sfd_directory_passwords', array() );
-
-        if ( isset( $directory_passwords[ $relative_path ] ) ) {
-            unset( $directory_passwords[ $relative_path ] );
-            update_option( 'bf_sfd_directory_passwords', $directory_passwords );
         }
     }
 

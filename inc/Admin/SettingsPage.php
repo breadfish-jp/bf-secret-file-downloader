@@ -96,7 +96,6 @@ class SettingsPage {
         ) );
     }
 
-
     /**
      * 設定をリセットします
      */
@@ -152,8 +151,6 @@ class SettingsPage {
         // ViewRendererを使用してビューをレンダリング
         \Breadfish\SecretFileDownloader\ViewRenderer::admin( 'settings.php', $import );
     }
-
-
 
     /**
      * ビューで使用するデータを準備します
@@ -277,9 +274,6 @@ class SettingsPage {
         return (int) get_option( 'bf_sfd_auth_timeout', 30 );
     }
 
-
-
-
     /**
      * サニタイズ: ブール値
      *
@@ -309,7 +303,7 @@ class SettingsPage {
     }
 
     /**
-     * サニタイズ: パスワード
+     * サニタイズ: 簡易認証パスワード
      *
      * @param string $value パスワード
      * @return string サニタイズされたパスワード
@@ -317,9 +311,9 @@ class SettingsPage {
     public function sanitize_password( $value ) {
         $sanitized_value = sanitize_text_field( $value );
 
-        // 簡易認証が有効かチェック
-        $auth_methods = array_map( 'sanitize_text_field', wp_unslash( $_POST['bf_sfd_auth_methods'] ?? array() ) );
-        if ( is_array( $auth_methods ) && in_array( 'simple_auth', $auth_methods ) ) {
+        // 簡易認証が有効かチェック（現在の設定から取得）
+        $current_auth_methods = get_option( 'bf_sfd_auth_methods', array() );
+        if ( is_array( $current_auth_methods ) && in_array( 'simple_auth', $current_auth_methods ) ) {
             // 簡易認証が有効でパスワードが空の場合
             if ( empty( $sanitized_value ) ) {
                 add_settings_error(

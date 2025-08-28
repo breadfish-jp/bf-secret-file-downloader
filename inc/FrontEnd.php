@@ -606,12 +606,13 @@ class FrontEnd {
 
         // 設定変更時刻をチェック（管理者が設定を変更した場合の強制再認証）
         $settings_changed_time = get_option( 'bf_sfd_auth_settings_changed', 0 );
-        if ( $settings_changed_time > 0 && $settings_changed_time > $_SESSION['bf_auth_timestamp'] ) {
+        $auth_timestamp = intval( $_SESSION['bf_auth_timestamp'] );
+        if ( $settings_changed_time > 0 && $settings_changed_time > $auth_timestamp ) {
              return true; // 設定変更後の認証は無効
         }
 
         // 現在時刻と認証時刻の差分を計算
-        $elapsed_time = time() - $_SESSION['bf_auth_timestamp'];
+        $elapsed_time = time() - $auth_timestamp;
 
         return $elapsed_time > $timeout_seconds;
     }
