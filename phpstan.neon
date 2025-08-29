@@ -1,0 +1,18 @@
+parameters:
+    level: 3
+    paths:
+        - inc/
+        - bf-secret-file-downloader.php
+    parallel:
+        maximumNumberOfProcesses: 1
+    memory_limit: 512M
+    bootstrapFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    ignoreErrors:
+        # WordPress特有の関数呼び出しを許可
+        - '#Call to undefined function (add_action|remove_action|add_filter|remove_filter)#'
+        - '#Call to undefined function (wp_die|wp_send_json_success|wp_send_json_error)#'
+        - '#Call to undefined function (current_user_can|check_admin_referer|check_ajax_referer)#'
+        - '#Call to undefined function (sanitize_text_field|esc_html__|get_option|update_option)#'
+        - '#Call to undefined function (wp_create_nonce|wp_mkdir_p|register_setting)#'
+        - '#Undefined constant (ABSPATH|WP_CONTENT_DIR|DIRECTORY_SEPARATOR)#'

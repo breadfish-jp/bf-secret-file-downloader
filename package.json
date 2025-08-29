@@ -1,0 +1,32 @@
+{
+  "name": "bf-secret-file-downloader",
+  "version": "1.0.0",
+  "description": "BASIC認証もしくは非公開エリアに置かれたディレクトリに配置されたファイルを管理するWordPressプラグイン",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:md:docs": "wp-scripts lint-md-docs",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "packages-update": "wp-scripts packages-update",
+    "plugin-zip": "wp-scripts plugin-zip",
+    "test:e2e": "wp-scripts test-e2e",
+    "test:unit": "wp-scripts test-unit-js",
+    "phpunit": "composer test",
+    "phpunit:env": "wp-env run tests-cli --env-cwd=wp-content/plugins/bf-secret-file-downloader ./vendor/bin/phpunit",
+    "phpunit:watch": "wp-env run tests-cli --env-cwd=wp-content/plugins/bf-secret-file-downloader ./vendor/bin/phpunit --watch",
+    "release": "node scripts/create-release.js",
+    "makepot": "php -d memory_limit=512M /usr/local/bin/wp i18n make-pot . languages/bf-secret-file-downloader.pot --domain=bf-secret-file-downloader",
+    "update-po": "msgmerge --update --no-fuzzy-matching --backup=off languages/bf-secret-file-downloader-ja.po languages/bf-secret-file-downloader.pot",
+    "compile-mo": "msgfmt languages/bf-secret-file-downloader-ja.po -o languages/bf-secret-file-downloader-ja.mo",
+    "i18n:prepare": "npm run makepot && npm run update-po",
+    "i18n:compile": "npm run compile-mo",
+    "i18n:check": "msgfmt --check --statistics --verbose languages/bf-secret-file-downloader-ja.po -o /tmp/check.mo && rm -f /tmp/check.mo"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.0.0",
+    "archiver": "^7.0.1"
+  }
+}

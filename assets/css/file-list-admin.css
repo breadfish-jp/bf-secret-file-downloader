@@ -1,0 +1,903 @@
+/**
+ * BF Secret File Downloader - Admin File List Styles
+ * 
+ * @package BfSecretFileDownloader
+ * @author Breadfish
+ * @version 1.0.0
+ */
+
+/* Path Display Area */
+.bf-secret-file-downloader-path {
+    background: #f1f1f1;
+    padding: 10px;
+    margin: 10px 0;
+    border-left: 4px solid #0073aa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bf-path-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.bf-path-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.bf-path-actions .button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.bf-path-actions .dashicons {
+    font-size: 16px;
+}
+
+/* Sorting Functionality */
+.sortable {
+    cursor: pointer;
+}
+
+.sortable a.sort-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.sortable a.sort-link:hover {
+    color: #0073aa;
+}
+
+.sorting-indicator {
+    font-size: 10px;
+    opacity: 0.5;
+    line-height: 1;
+    margin-left: 6px;
+}
+
+.sorting-indicator:before {
+    content: "▲▼";
+    font-size: 8px;
+}
+
+.sortable.sorted.asc .sorting-indicator:before {
+    content: "▲";
+    opacity: 1;
+    font-size: 10px;
+}
+
+.sortable.sorted.desc .sorting-indicator:before {
+    content: "▼";
+    opacity: 1;
+    font-size: 10px;
+}
+
+/* Statistics and Actions */
+.bf-secret-file-downloader-stats {
+    margin: 15px 0;
+}
+
+.bf-secret-file-downloader-actions {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+/* Row Actions - WordPress Style */
+.has-row-actions .row-actions {
+    visibility: hidden;
+    color: #ddd;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.has-row-actions:hover .row-actions {
+    visibility: visible;
+    color: #000;
+}
+
+.row-actions a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.row-actions a:hover {
+    color: #005177;
+}
+
+.row-actions .delete a {
+    color: #d63638;
+}
+
+.row-actions .delete a:hover {
+    color: #a00;
+}
+
+.row-actions .copy-url a {
+    color: #0073aa;
+}
+
+.row-actions .copy-url a:hover {
+    color: #005177;
+}
+
+.row-title {
+    font-weight: 600;
+}
+
+/* Directory and File Styling */
+.clickable-directory,
+.clickable-directory:hover,
+.clickable-directory td,
+.clickable-directory td:hover {
+    cursor: default !important;
+}
+
+.check-column {
+    cursor: default !important;
+}
+
+.check-column input[type="checkbox"] {
+    cursor: pointer !important;
+}
+
+.check-column label {
+    cursor: pointer !important;
+}
+
+.clickable-directory .column-name,
+.clickable-directory .column-type,
+.clickable-directory .column-size,
+.clickable-directory .column-modified {
+    cursor: default !important;
+}
+
+/* Action Header */
+.bf-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.bf-actions-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.bf-action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.bf-action-buttons .button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Create Directory Form */
+.bf-create-directory-form {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.bf-create-directory-form .form-group {
+    margin-bottom: 10px;
+}
+
+.bf-create-directory-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.bf-create-directory-form .form-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.bf-create-directory-form .description {
+    margin: 10px 0 0 0;
+    font-style: italic;
+    color: #666;
+}
+
+/* Drag & Drop Zone */
+.bf-secret-file-downloader-drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 20px 0;
+    background: #fafafa;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.bf-secret-file-downloader-drop-zone:hover {
+    border-color: #0073aa;
+    background: #f0f8ff;
+}
+
+.bf-secret-file-downloader-drop-zone.dragover {
+    border-color: #0073aa;
+    background: #e6f3ff;
+    transform: scale(1.02);
+}
+
+.bf-secret-file-downloader-drop-zone .dashicons-upload {
+    font-size: 48px !important;
+    color: #0073aa !important;
+    display: block !important;
+    margin: 0 auto 20px !important;
+    text-align: center !important;
+    width: 100% !important;
+    line-height: 1 !important;
+    font-family: dashicons !important;
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.drop-zone-content p {
+    margin: 10px 0;
+    color: #666;
+    text-align: center;
+}
+
+.drop-zone-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 115, 170, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Icons */
+.bf-secret-file-downloader-file-table .dashicons {
+    margin-right: 8px !important;
+    vertical-align: middle !important;
+    font-size: 18px !important;
+    font-family: dashicons !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    speak: none !important;
+    font-weight: normal !important;
+    font-variant: normal !important;
+    text-transform: none !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Directory Icons */
+.bf-directory-icon {
+    font-size: 20px !important;
+}
+
+.bf-directory-icon:before {
+    content: "\f318" !important;
+}
+
+.bf-directory-name {
+    font-weight: bold !important;
+}
+
+.bf-directory-name-disabled {
+    color: #999 !important;
+}
+
+.bf-access-denied {
+    color: #999 !important;
+    font-style: italic !important;
+}
+
+/* File Icons */
+.bf-file-icon {
+    font-size: 16px !important;
+}
+
+.bf-file-icon:before {
+    content: "\f123" !important;
+}
+
+/* Pagination */
+.tablenav-pages {
+    float: right;
+}
+
+.tablenav-pages .pagination-links {
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.tablenav-pages a,
+.tablenav-pages span.current {
+    display: inline-block;
+    padding: 3px 5px;
+    margin-right: 5px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    background: #f7f7f7;
+}
+
+.tablenav-pages a:hover {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+.tablenav-pages span.current {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+    font-weight: bold;
+}
+
+/* Password Indicator */
+.bf-password-indicator {
+    margin-left: 10px;
+    color: #0073aa;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: rgba(0, 115, 170, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 115, 170, 0.3);
+}
+
+.bf-password-indicator .dashicons {
+    font-size: 16px;
+}
+
+.bf-password-status-text {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Modals */
+.bf-modal {
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+}
+
+.bf-modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: bf-modal-appear 0.3s;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+@keyframes bf-modal-appear {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.bf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 8px 8px 0 0;
+}
+
+.bf-modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.bf-modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.bf-modal-close:hover,
+.bf-modal-close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+.bf-modal-body {
+    padding: 20px;
+}
+
+.bf-modal-footer {
+    padding: 20px;
+    border-top: 1px solid #ddd;
+    text-align: right;
+    background-color: #f9f9f9;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bf-action-buttons-left {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+}
+
+.bf-action-buttons-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+.bf-danger-button {
+    color: #d63638 !important;
+    border-color: #d63638 !important;
+    background-color: #dc3232 !important;
+    color: #fff !important;
+}
+
+.bf-danger-button:hover {
+    background-color: #c92626 !important;
+    border-color: #c92626 !important;
+}
+
+/* Status Boxes */
+.bf-status-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.bf-status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bf-status-icon {
+    flex-shrink: 0;
+}
+
+.bf-status-icon .dashicons {
+    font-size: 24px;
+    color: #0073aa;
+}
+
+.bf-status-text {
+    flex: 1;
+}
+
+.bf-status-text strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.bf-status-text p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Password Forms */
+.bf-password-form {
+    margin: 20px 0;
+}
+
+.bf-password-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.bf-password-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.bf-password-input-group input {
+    flex: 1;
+}
+
+.bf-password-input-group button {
+    flex-shrink: 0;
+}
+
+#bf-show-current-password {
+    background-color: #f0f8ff;
+    border-color: #0073aa;
+    color: #0073aa;
+}
+
+#bf-show-current-password:hover {
+    background-color: #0073aa;
+    color: #fff;
+}
+
+/* URL Copy Modal */
+.bf-url-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+.bf-url-info h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.bf-url-options {
+    margin-bottom: 20px;
+}
+
+.bf-url-options h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.bf-url-option-group {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.bf-url-option {
+    flex: 1;
+    min-width: 200px;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.bf-url-option:hover {
+    border-color: #0073aa;
+    background-color: #f0f8ff;
+}
+
+.bf-url-option input[type="radio"] {
+    display: none;
+}
+
+.bf-url-option input[type="radio"]:checked + .bf-option-content {
+    color: #0073aa;
+}
+
+.bf-url-option input[type="radio"]:checked + .bf-option-content .bf-option-icon {
+    color: #0073aa;
+}
+
+.bf-option-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bf-option-icon {
+    font-size: 24px;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.bf-option-text {
+    flex: 1;
+}
+
+.bf-option-text strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.bf-option-text span {
+    font-size: 14px;
+    color: #666;
+}
+
+.bf-url-display {
+    margin-bottom: 20px;
+}
+
+.bf-url-display label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.bf-url-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.bf-url-input-group input {
+    flex: 1;
+    font-family: monospace;
+    font-size: 14px;
+    background-color: #f9f9f9;
+}
+
+.bf-url-input-group button {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    line-height: 1;
+}
+
+.bf-url-input-group button .dashicons {
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.bf-url-preview {
+    margin-top: 20px;
+}
+
+.bf-url-preview h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.bf-preview-frame {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+/* Authentication Details */
+.bf-auth-details {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.bf-auth-details .auth-details-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.bf-auth-details #remove-auth-btn {
+    margin-top: 10px;
+}
+
+.bf-auth-details .auth-details-list {
+    margin-top: 10px;
+}
+
+.bf-auth-details .auth-detail-item {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.bf-auth-details .auth-detail-item:last-child {
+    border-bottom: none;
+}
+
+/* Authentication Sections */
+.bf-auth-section {
+    margin-bottom: 25px;
+}
+
+.bf-auth-section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #23282d;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.bf-auth-section fieldset {
+    margin: 0;
+    padding: 0;
+}
+
+.bf-auth-section fieldset legend {
+    margin-bottom: 10px;
+}
+
+.bf-auth-section label {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.bf-auth-section .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.bf-role-selection-controls {
+    margin: 10px 0;
+}
+
+.bf-role-selection-controls + fieldset label {
+    margin-bottom: 2px;
+}
+
+.bf-role-selection-controls .button {
+    margin-right: 5px;
+}
+
+.bf-role-selection-controls .button:last-child {
+    margin-right: 0;
+}
+
+/* Authentication Indicators */
+.bf-auth-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+.bf-auth-indicator .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.bf-auth-status-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.bf-auth-status-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+/* Authentication Details List */
+.auth-details-list {
+    margin: 10px 0;
+}
+
+.auth-detail-item {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.auth-detail-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.auth-details-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #23282d;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .bf-secret-file-downloader-path {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bf-path-info {
+        min-width: auto;
+        margin-bottom: 10px;
+    }
+
+    .bf-path-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .bf-url-option-group {
+        flex-direction: column;
+    }
+
+    .bf-url-option {
+        min-width: auto;
+    }
+
+    .bf-url-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bf-url-input-group button {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        line-height: 1;
+    }
+
+    .bf-url-input-group button .dashicons {
+        vertical-align: middle;
+        line-height: 1;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .bf-modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+
+    .bf-modal-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bf-action-buttons-left,
+    .bf-action-buttons-right {
+        width: 100%;
+        justify-content: center;
+    }
+}
