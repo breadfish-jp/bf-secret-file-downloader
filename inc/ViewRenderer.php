@@ -33,7 +33,7 @@ class ViewRenderer {
             wp_die(
                 sprintf(
                     /* translators: %s: ビューファイルのパス */
-                    esc_html__( 'ビューファイルが見つかりません: %s', 'bf-secret-file-downloader' ),
+                    esc_html__('View file not found: %s', 'bf-secret-file-downloader' ),
                     esc_html( $view_type . '/' . $view_file )
                 )
             );

@@ -41,17 +41,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
     <div class="bf-secret-file-downloader-settings">
         <div class="bf-secret-file-downloader-header">
-            <p><?php esc_html_e( 'BF Secret File Downloaderの設定を管理します。ファイルアクセスには認証が必要で、ログインユーザーまたは簡易認証パスワードでの認証が可能です。', 'bf-secret-file-downloader' ); ?></p>
+            <p><?php esc_html_e('Manage BF Secret File Downloader settings. Authentication is required for file access, and authentication is possible with logged-in users or simple authentication passwords.', 'bf-secret-file-downloader' ); ?></p>
             <div class="notice notice-info">
                 <p>
-                    <strong><?php esc_html_e( '認証設定について:', 'bf-secret-file-downloader' ); ?></strong>
-                    <?php esc_html_e( 'このページで設定する認証は共通設定として適用されます。各ディレクトリには個別の認証設定も可能で、ディレクトリ毎設定がある場合は共通設定を上書きします。', 'bf-secret-file-downloader' ); ?>
+                    <strong><?php esc_html_e('About authentication settings:', 'bf-secret-file-downloader' ); ?></strong>
+                    <?php esc_html_e('The authentication settings set on this page will be applied as common settings. Each directory can also have individual authentication settings, and if there are directory-specific settings, they will override the common settings.', 'bf-secret-file-downloader' ); ?>
                 </p>
             </div>
         </div>
 
         <div class="bf-secret-file-downloader-content">
-            <h2><?php esc_html_e( '基本設定', 'bf-secret-file-downloader' ); ?></h2>
+            <h2><?php esc_html_e('Basic settings', 'bf-secret-file-downloader' ); ?></h2>
 
 
 
@@ -69,7 +69,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <div class="bf-directory-item">
                                     <code><?php echo esc_html( $target_directory ?: 'ディレクトリが設定されていません' ); ?></code>
                                 </div>
-                                <p class="description"><?php esc_html_e( 'プラグイン有効化時に自動作成されたセキュアなディレクトリです。外部からのアクセスは.htaccessにより完全に遮断されています。', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e('A secure directory created automatically when the plugin is activated. All access from outside is completely blocked by .htaccess.', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                     </table>
@@ -77,35 +77,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
                     <!-- Authentication settings -->
-                    <h3><?php esc_html_e( '認証設定', 'bf-secret-file-downloader' ); ?></h3>
+                    <h3><?php esc_html_e('Authentication settings', 'bf-secret-file-downloader' ); ?></h3>
                     <table class="form-table">
                         <tr>
-                            <th scope="row"><?php esc_html_e( '認証方法', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e('Authentication method', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <fieldset>
-                                    <legend class="screen-reader-text"><?php esc_html_e( '認証方法', 'bf-secret-file-downloader' ); ?></legend>
+                                    <legend class="screen-reader-text"><?php esc_html_e('Authentication method', 'bf-secret-file-downloader' ); ?></legend>
                                     <label>
                                         <input type="checkbox" name="bf_sfd_auth_methods[]" value="logged_in"
                                                <?php echo in_array( 'logged_in', $auth_methods ?? array() ) ? 'checked' : ''; ?> />
-                                        <?php esc_html_e( 'ログインしているユーザー', 'bf-secret-file-downloader' ); ?>
+                                        <?php esc_html_e('Logged in users', 'bf-secret-file-downloader' ); ?>
                                     </label>
                                     <div id="allowed_roles_section" style="margin-top: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #0073aa; <?php echo in_array( 'logged_in', $auth_methods ?? array() ) ? '' : 'display: none;'; ?>">
                                         <label for="bf_sfd_allowed_roles">
-                                            <strong><?php esc_html_e( '許可するユーザーロール', 'bf-secret-file-downloader' ); ?></strong>
+                                            <strong><?php esc_html_e('Allowed user roles', 'bf-secret-file-downloader' ); ?></strong>
                                         </label>
                                         <div class="bf-role-selection-controls" style="margin: 10px 0;">
-                                            <button type="button" id="bf-select-all-roles" class="button button-small"><?php esc_html_e( 'すべて選択', 'bf-secret-file-downloader' ); ?></button>
-                                            <button type="button" id="bf-deselect-all-roles" class="button button-small"><?php esc_html_e( 'すべて解除', 'bf-secret-file-downloader' ); ?></button>
+                                            <button type="button" id="bf-select-all-roles" class="button button-small"><?php esc_html_e('Select all', 'bf-secret-file-downloader' ); ?></button>
+                                            <button type="button" id="bf-deselect-all-roles" class="button button-small"><?php esc_html_e('Clear all', 'bf-secret-file-downloader' ); ?></button>
                                         </div>
                                         <fieldset>
-                                            <legend class="screen-reader-text"><?php esc_html_e( '許可するユーザーロール', 'bf-secret-file-downloader' ); ?></legend>
+                                            <legend class="screen-reader-text"><?php esc_html_e('Allowed user roles', 'bf-secret-file-downloader' ); ?></legend>
                                             <?php
                                             $roles = array(
-                                                'administrator' => __( '管理者', 'bf-secret-file-downloader' ),
-                                                'editor' => __( '編集者', 'bf-secret-file-downloader' ),
-                                                'author' => __( '投稿者', 'bf-secret-file-downloader' ),
-                                                'contributor' => __( '寄稿者', 'bf-secret-file-downloader' ),
-                                                'subscriber' => __( '購読者', 'bf-secret-file-downloader' )
+                                                'administrator' => __('Administrator', 'bf-secret-file-downloader' ),
+                                                'editor' => __('Editor', 'bf-secret-file-downloader' ),
+                                                'author' => __('Author', 'bf-secret-file-downloader' ),
+                                                'contributor' => __('Contributor', 'bf-secret-file-downloader' ),
+                                                'subscriber' => __('Subscriber', 'bf-secret-file-downloader' )
                                             );
                                             foreach ( $roles as $role => $label ) :
                                             ?>
@@ -117,70 +117,70 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <br>
                                             <?php endforeach; ?>
                                         </fieldset>
-                                        <p class="description" style="margin-top: 10px;"><?php esc_html_e( 'ファイルアクセスを許可するユーザーロールを選択してください。複数選択可能です。', 'bf-secret-file-downloader' ); ?></p>
+                                        <p class="description" style="margin-top: 10px;"><?php esc_html_e('Please select user roles that are allowed to access files. Multiple selections are possible.', 'bf-secret-file-downloader' ); ?></p>
                                     </div>
                                     <br>
                                     <label>
                                         <input type="checkbox" name="bf_sfd_auth_methods[]" value="simple_auth" id="simple_auth_checkbox"
                                                <?php echo in_array( 'simple_auth', $auth_methods ?? array() ) ? 'checked' : ''; ?> />
-                                        <?php esc_html_e( '簡易認証を通過したユーザー', 'bf-secret-file-downloader' ); ?>
+                                        <?php esc_html_e('Users who passed simple authentication', 'bf-secret-file-downloader' ); ?>
                                     </label>
                                     <div id="simple_auth_password_section" style="margin-top: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #0073aa; <?php echo in_array( 'simple_auth', $auth_methods ?? array() ) ? '' : 'display: none;'; ?>">
                                         <label for="bf_sfd_simple_auth_password">
-                                            <strong><?php esc_html_e( '簡易認証パスワード', 'bf-secret-file-downloader' ); ?></strong>
+                                            <strong><?php esc_html_e('Simple authentication password', 'bf-secret-file-downloader' ); ?></strong>
                                         </label>
                                         <br>
                                         <input type="password" name="bf_sfd_simple_auth_password" id="bf_sfd_simple_auth_password"
                                                value="<?php echo esc_attr( $simple_auth_password ?? '' ); ?>"
                                                class="regular-text" style="margin-top: 5px;" />
-                                        <p class="description" style="margin-top: 5px;"><?php esc_html_e( '簡易認証で使用するパスワードを設定してください。', 'bf-secret-file-downloader' ); ?></p>
+                                        <p class="description" style="margin-top: 5px;"><?php esc_html_e('Please enter password.', 'bf-secret-file-downloader' ); ?></p>
                                     </div>
                                 </fieldset>
-                                <p class="description"><?php esc_html_e( 'ファイルアクセスを許可する認証方法を選択してください。複数選択可能です。', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e('Please select authentication methods that are allowed to access files. Multiple selections are possible.', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><?php esc_html_e( '認証タイムアウト', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e('Authentication timeout', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <input type="number" name="bf_sfd_auth_timeout" id="bf_sfd_auth_timeout"
                                        value="<?php echo isset( $auth_timeout ) ? esc_attr( $auth_timeout ) : '30'; ?>"
                                        min="1" max="1440" class="small-text" />
-                                <span><?php esc_html_e( '分', 'bf-secret-file-downloader' ); ?></span>
-                                <p class="description"><?php esc_html_e( '認証後の有効時間を設定します。この時間が経過すると再認証が必要になります。（1分〜24時間）', 'bf-secret-file-downloader' ); ?></p>
+                                <span><?php esc_html_e('minutes', 'bf-secret-file-downloader' ); ?></span>
+                                <p class="description"><?php esc_html_e('Set the time after which re-authentication is required. After this time, re-authentication is required. (1 minute to 24 hours)', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                     </table>
 
                     <!-- Other settings -->
-                    <h3><?php esc_html_e( 'その他の設定', 'bf-secret-file-downloader' ); ?></h3>
+                    <h3><?php esc_html_e('Other settings', 'bf-secret-file-downloader' ); ?></h3>
                     <table class="form-table">
                         <tr>
-                            <th scope="row"><?php esc_html_e( 'メニュータイトル', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e('Menu title', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <input type="text" name="bf_sfd_menu_title" id="bf_sfd_menu_title"
-                                       value="<?php echo isset( $menu_title ) ? esc_attr( $menu_title ) : esc_attr__( 'BF Secret File Downloader', 'bf-secret-file-downloader' ); ?>"
+                                       value="<?php echo isset( $menu_title ) ? esc_attr( $menu_title ) : esc_attr__('BF Secret File Downloader', 'bf-secret-file-downloader' ); ?>"
                                        class="regular-text" maxlength="50" />
-                                <p class="description"><?php esc_html_e( '管理画面のメニューに表示されるタイトルです。空の場合はデフォルト名が使用されます。', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e('The title displayed in the admin menu. If left blank, the default name is used.', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><?php esc_html_e( '編集者管理権限', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e('Editor management permissions', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <label>
                                     <input type="checkbox" name="bf_sfd_allow_editor_admin" value="1"
                                            <?php echo isset( $allow_editor_admin ) && $allow_editor_admin ? 'checked' : ''; ?> />
-                                    <?php esc_html_e( '編集者に管理権限を与える', 'bf-secret-file-downloader' ); ?>
+                                    <?php esc_html_e('Give editor management permissions', 'bf-secret-file-downloader' ); ?>
                                 </label>
-                                <p class="description"><?php esc_html_e( 'チェックを入れると編集者もファイル管理機能にアクセスでき、ファイルのダウンロードができるようになります。ファイルアップロード、ファイル・ディレクトリの削除はできません。チェックを外すと編集者にはメニューが表示されず、ファイル閲覧もできません。', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e('If checked, editors can access the file management function and download files. File upload and file/directory deletion are not allowed. If unchecked, editors will not see the menu and will not be able to view files.', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><?php esc_html_e( 'アップロード制限', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e('Upload limit', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <input type="number" name="bf_sfd_max_file_size"
                                        value="<?php echo isset( $max_file_size ) ? esc_html( $max_file_size ) : '10'; ?>"
                                        min="1" max="100" />
-                                <span><?php esc_html_e( 'MB', 'bf-secret-file-downloader' ); ?></span>
+                                <span><?php esc_html_e('MB', 'bf-secret-file-downloader' ); ?></span>
                             </td>
                         </tr>
                     </table>
@@ -190,24 +190,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <!-- Reset settings section -->
                 <div class="bf-reset-settings-section" style="margin-top: 30px; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
-                    <h3 style="margin-top: 0; color: #856404;"><?php esc_html_e( '設定のリセット', 'bf-secret-file-downloader' ); ?></h3>
+                    <h3 style="margin-top: 0; color: #856404;"><?php esc_html_e('Reset settings', 'bf-secret-file-downloader' ); ?></h3>
                     <p style="margin-bottom: 15px; color: #856404;">
-                        <?php esc_html_e( 'このボタンをクリックすると、すべての設定が初期状態にリセットされます。この操作は取り消すことができません。', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Clicking this button will reset all settings to their initial state. This action cannot be undone.', 'bf-secret-file-downloader' ); ?>
                     </p>
 
                     <!-- File deletion option -->
                     <div style="margin-bottom: 15px;">
                         <label style="display: inline-flex; align-items: center; color: #856404;">
                             <input type="checkbox" id="bf-delete-files-on-reset" style="margin-right: 8px;">
-                            <?php esc_html_e( '対象ディレクトリ内のファイルも削除する', 'bf-secret-file-downloader' ); ?>
+                            <?php esc_html_e('Delete files in the target directory', 'bf-secret-file-downloader' ); ?>
                         </label>
                         <p class="description" style="margin-top: 5px; margin-left: 24px; color: #6c757d; font-size: 13px;">
-                            <?php esc_html_e( 'チェックすると、セキュアディレクトリ内のすべてのファイルが削除されます。デフォルトでは設定のみリセットしてファイルは保持されます。', 'bf-secret-file-downloader' ); ?>
+                            <?php esc_html_e('If checked, all files in the secure directory will be deleted. By default, only settings are reset and files are kept.', 'bf-secret-file-downloader' ); ?>
                         </p>
                     </div>
 
                     <button type="button" id="bf-reset-settings" class="button button-secondary" style="background-color: #dc3545; border-color: #dc3545; color: white;">
-                        <?php esc_html_e( '設定をリセット', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Reset settings', 'bf-secret-file-downloader' ); ?>
                     </button>
                 </div>
             </div>
@@ -254,14 +254,14 @@ jQuery(document).ready(function($) {
     $('#bf-reset-settings').on('click', function() {
         var deleteFiles = $('#bf-delete-files-on-reset').is(':checked');
         var confirmMessage = deleteFiles
-            ? '<?php esc_html_e( "本当にすべての設定をリセットし、ファイルを削除しますか？この操作は取り消すことができません。", "bf-secret-file-downloader" ); ?>'
-            : '<?php esc_html_e( "本当にすべての設定をリセットしますか？この操作は取り消すことができません。", "bf-secret-file-downloader" ); ?>';
+            ? '<?php esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>'
+            : '<?php esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>';
 
         if (confirm(confirmMessage)) {
             // Disable the button and set it to loading state
             var $button = $(this);
             var originalText = $button.text();
-            $button.prop('disabled', true).text('<?php esc_html_e( "リセット中...", "bf-secret-file-downloader" ); ?>');
+            $button.prop('disabled', true).text('<?php esc_html_e("Resetting...", "bf-secret-file-downloader" ); ?>');
 
             $.ajax({
                 url: ajaxurl,
@@ -277,13 +277,13 @@ jQuery(document).ready(function($) {
                         // Reload the page to reflect the settings
                         location.reload();
                     } else {
-                        alert('<?php esc_html_e( "設定のリセットに失敗しました。", "bf-secret-file-downloader" ); ?>');
+                        alert('<?php esc_html_e("Download failed.", "bf-secret-file-downloader" ); ?>');
                         $button.prop('disabled', false).text(originalText);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.log('Reset settings AJAX error:', xhr, status, error);
-                    alert('<?php esc_html_e( "エラーが発生しました。", "bf-secret-file-downloader" ); ?>' + ': ' + error);
+                    alert('<?php esc_html_e("An error occurred.", "bf-secret-file-downloader" ); ?>' + ': ' + error);
                     $button.prop('disabled', false).text(originalText);
                 }
             });

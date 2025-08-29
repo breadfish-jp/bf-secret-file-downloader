@@ -105,22 +105,22 @@ class FileListPage {
             'ajaxUrl' => admin_url( 'admin-ajax.php' ),
             'nonce' => $initial_data['nonce'],
             'strings' => array(
-                'loading' => __( '読み込み中...', 'bf-secret-file-downloader' ),
-                'currentDirectory' => __( '現在のディレクトリ:', 'bf-secret-file-downloader' ),
-                'rootDirectory' => __( 'ルートディレクトリ', 'bf-secret-file-downloader' ),
-                'goUp' => __( '上の階層へ', 'bf-secret-file-downloader' ),
-                'authSettings' => __( '認証設定', 'bf-secret-file-downloader' ),
-                'open' => __( '開く', 'bf-secret-file-downloader' ),
-                'download' => __( 'ダウンロード', 'bf-secret-file-downloader' ),
-                'copyUrl' => __( 'URLをコピー', 'bf-secret-file-downloader' ),
-                'delete' => __( '削除', 'bf-secret-file-downloader' ),
-                'directory' => __( 'ディレクトリ', 'bf-secret-file-downloader' ),
-                'file' => __( 'ファイル', 'bf-secret-file-downloader' ),
-                'accessDenied' => __( 'アクセス不可', 'bf-secret-file-downloader' ),
-                'noFilesFound' => __( 'ファイルまたはディレクトリが見つかりませんでした。', 'bf-secret-file-downloader' ),
+                'loading' => __('Loading...', 'bf-secret-file-downloader' ),
+                'currentDirectory' => __('Current directory:', 'bf-secret-file-downloader' ),
+                'rootDirectory' => __('Root directory', 'bf-secret-file-downloader' ),
+                'goUp' => __('Go to parent directory', 'bf-secret-file-downloader' ),
+                'authSettings' => __('Authentication settings', 'bf-secret-file-downloader' ),
+                'open' => __('Open', 'bf-secret-file-downloader' ),
+                'download' => __('Download', 'bf-secret-file-downloader' ),
+                'copyUrl' => __('Copy URL', 'bf-secret-file-downloader' ),
+                'delete' => __('Delete', 'bf-secret-file-downloader' ),
+                'directory' => __('Directory', 'bf-secret-file-downloader' ),
+                'file' => __('File', 'bf-secret-file-downloader' ),
+                'accessDenied' => __('Access denied', 'bf-secret-file-downloader' ),
+                'noFilesFound' => __('No files or directories found.', 'bf-secret-file-downloader' ),
                 /* translators: %d: number of items found */
-                'itemsFound' => __( '%d個のアイテムが見つかりました。', 'bf-secret-file-downloader' ),
-                'noItemsFound' => __( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' ),
+                'itemsFound' => __('%d items found.', 'bf-secret-file-downloader' ),
+                'noItemsFound' => __('No items found.', 'bf-secret-file-downloader' ),
             ),
         ));
     }
@@ -145,7 +145,7 @@ class FileListPage {
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -153,19 +153,19 @@ class FileListPage {
 
         // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
-            wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Access to this directory is not allowed.', 'bf-secret-file-downloader' ) );
         }
 
         // Check if directory exists
         if ( ! is_dir( $full_path ) || ! is_readable( $full_path ) ) {
-            wp_send_json_error( __( 'ディレクトリにアクセスできません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Cannot access directory.', 'bf-secret-file-downloader' ) );
         }
 
         try {
             $files_data = $this->get_directory_contents( $full_path, $relative_path, $page, $sort_by, $sort_order );
             wp_send_json_success( $files_data );
         } catch ( \Exception $e ) {
-            wp_send_json_error( __( 'ファイルリストの取得に失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Failed to retrieve file list.', 'bf-secret-file-downloader' ) );
         }
     }
 
@@ -185,7 +185,7 @@ class FileListPage {
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -198,12 +198,12 @@ class FileListPage {
         }
 
         if ( ! is_dir( $target_path ) || ! $wp_filesystem->is_writable( $target_path ) ) {
-            wp_send_json_error( __( 'アップロード先ディレクトリに書き込み権限がありません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('No write permission for upload destination directory.', 'bf-secret-file-downloader' ) );
         }
 
         // Check if file is uploaded
         if ( ! isset( $_FILES['file'] ) || ! isset( $_FILES['file']['error'] ) || $_FILES['file']['error'] !== UPLOAD_ERR_OK ) {
-            wp_send_json_error( __( 'ファイルのアップロードに失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('File upload failed.', 'bf-secret-file-downloader' ) );
         }
 
         $uploaded_file = array_map( 'sanitize_text_field', $_FILES['file'] );
@@ -211,7 +211,7 @@ class FileListPage {
         // Sanitize file name
         $filename = sanitize_file_name( $uploaded_file['name'] );
         if ( empty( $filename ) ) {
-            wp_send_json_error( __( '無効なファイル名です。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Invalid filename.', 'bf-secret-file-downloader' ) );
         }
 
         // Security check
@@ -222,7 +222,7 @@ class FileListPage {
 
         // Prevent uploading program code files
         if ( SecurityHelper::is_program_code_file( $filename ) ) {
-            wp_send_json_error( __( 'セキュリティ上の理由により、プログラムコードファイルはアップロードできません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Cannot upload for security reasons', 'bf-secret-file-downloader' ) );
         }
 
         // Check file size
@@ -230,7 +230,7 @@ class FileListPage {
         if ( $uploaded_file['size'] > $max_size ) {
             wp_send_json_error( sprintf(
                 /* translators: %s: maximum file size in MB */
-                __( 'ファイルサイズが制限を超えています。（最大: %sMB）', 'bf-secret-file-downloader' ),
+                __('File size exceeds limit. (Maximum: %sMB)', 'bf-secret-file-downloader' ),
                 get_option( 'bf_sfd_max_file_size', 10 )
             ));
         }
@@ -259,12 +259,12 @@ class FileListPage {
             // Upload success
             wp_send_json_success( array(
                 /* translators: %s: uploaded filename */
-                'message' => sprintf( __( '%s をアップロードしました。', 'bf-secret-file-downloader' ), $filename ),
+                'message' => sprintf( __('Uploaded %s.', 'bf-secret-file-downloader' ), $filename ),
                 'filename' => $filename,
                 'relative_path' => $relative_path
             ));
         } else {
-            wp_send_json_error( __( 'ファイルの保存に失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Failed to save file.', 'bf-secret-file-downloader' ) );
         }
     }
 
@@ -291,13 +291,13 @@ class FileListPage {
 
         // Check input values
         if ( empty( $directory_name ) ) {
-            wp_send_json_error( __( 'ディレクトリ名が指定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Directory name is not specified.', 'bf-secret-file-downloader' ) );
         }
 
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -311,12 +311,12 @@ class FileListPage {
 
         // Prevent creating directories starting with a dot
         if ( strpos( $directory_name, '.' ) === 0 ) {
-            wp_send_json_error( __( 'ドットで始まるディレクトリ名は作成できません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Cannot create directory names starting with a dot.', 'bf-secret-file-downloader' ) );
         }
 
         // Check write permission
         if ( ! $wp_filesystem->is_writable( $parent_path ) ) {
-            wp_send_json_error( __( '親ディレクトリに書き込み権限がありません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('No write permission for parent directory.', 'bf-secret-file-downloader' ) );
         }
 
         // New directory path
@@ -326,12 +326,12 @@ class FileListPage {
         if ( wp_mkdir_p( $new_directory_path ) ) {
             wp_send_json_success( array(
                 /* translators: %s: directory name */
-                'message' => sprintf( __( 'ディレクトリ「%s」を作成しました。', 'bf-secret-file-downloader' ), $directory_name ),
+                'message' => sprintf( __('Created directory \'%s\'.', 'bf-secret-file-downloader' ), $directory_name ),
                 'new_directory' => $new_directory_path,
                 'parent_path' => $parent_path
             ));
         } else {
-            wp_send_json_error( __( 'ディレクトリの作成に失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Failed to create directory.', 'bf-secret-file-downloader' ) );
         }
     }
 
@@ -350,13 +350,13 @@ class FileListPage {
 
         // Check input values
         if ( empty( $relative_path ) ) {
-            wp_send_json_error( __( 'ファイルパスが指定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('File path is not specified.', 'bf-secret-file-downloader' ) );
         }
 
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -364,12 +364,12 @@ class FileListPage {
 
         // Security check: only allowed directories
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
-            wp_send_json_error( __( 'このファイルの削除は許可されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Deletion of this file is not allowed.', 'bf-secret-file-downloader' ) );
         }
 
         // Check if file exists
         if ( ! file_exists( $full_path ) ) {
-            wp_send_json_error( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('The specified file was not found.', 'bf-secret-file-downloader' ) );
         }
 
         // Initialize WordPress Filesystem API
@@ -382,7 +382,7 @@ class FileListPage {
         // Check delete permission
         $parent_dir = dirname( $full_path );
         if ( ! $wp_filesystem->is_writable( $parent_dir ) ) {
-            wp_send_json_error( __( 'このファイルを削除する権限がありません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('You do not have permission to delete this file.', 'bf-secret-file-downloader' ) );
         }
 
         $filename = basename( $full_path );
@@ -400,13 +400,13 @@ class FileListPage {
 
                 wp_send_json_success( array(
                     /* translators: %s: directory name */
-                    'message' => sprintf( __( 'ディレクトリ「%s」を削除しました。', 'bf-secret-file-downloader' ), $filename ),
+                    'message' => sprintf( __('Deleted directory \'%s\'.', 'bf-secret-file-downloader' ), $filename ),
                     'deleted_path' => $relative_path,
                     'parent_path' => $parent_relative_path,
                     'type' => 'directory'
                 ));
             } else {
-                wp_send_json_error( __( 'ディレクトリの削除に失敗しました。', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( __('Failed to delete directory.', 'bf-secret-file-downloader' ) );
             }
         } else {
             // Delete file
@@ -419,13 +419,13 @@ class FileListPage {
 
                 wp_send_json_success( array(
                     /* translators: %s: filename */
-                    'message' => sprintf( __( 'ファイル「%s」を削除しました。', 'bf-secret-file-downloader' ), $filename ),
+                    'message' => sprintf( __('Deleted file \'%s\'.', 'bf-secret-file-downloader' ), $filename ),
                     'deleted_path' => $relative_path,
                     'parent_path' => $parent_relative_path,
                     'type' => 'file'
                 ));
             } else {
-                wp_send_json_error( __( 'ファイルの削除に失敗しました。', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( __('Failed to delete file.', 'bf-secret-file-downloader' ) );
             }
         }
     }
@@ -445,13 +445,13 @@ class FileListPage {
 
         // Check input values
         if ( empty( $file_paths ) || ! is_array( $file_paths ) ) {
-            wp_send_json_error( __( '削除するファイルが選択されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('No files selected for deletion.', 'bf-secret-file-downloader' ) );
         }
 
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Initialize WordPress Filesystem API
@@ -480,7 +480,7 @@ class FileListPage {
             if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
                 $failed_files[] = array(
                     'path' => $relative_path,
-                    'error' => __( 'このファイルの削除は許可されていません。', 'bf-secret-file-downloader' )
+                    'error' => __('Deletion of this file is not allowed.', 'bf-secret-file-downloader' )
                 );
                 continue;
             }
@@ -489,7 +489,7 @@ class FileListPage {
             if ( ! file_exists( $full_path ) ) {
                 $failed_files[] = array(
                     'path' => $relative_path,
-                    'error' => __( 'ファイルが見つかりません。', 'bf-secret-file-downloader' )
+                    'error' => __('File not found.', 'bf-secret-file-downloader' )
                 );
                 continue;
             }
@@ -499,7 +499,7 @@ class FileListPage {
             if ( ! $wp_filesystem->is_writable( $parent_dir ) ) {
                 $failed_files[] = array(
                     'path' => $relative_path,
-                    'error' => __( 'このファイルを削除する権限がありません。', 'bf-secret-file-downloader' )
+                    'error' => __('You do not have permission to delete this file.', 'bf-secret-file-downloader' )
                 );
                 continue;
             }
@@ -539,7 +539,7 @@ class FileListPage {
             } else {
                 $failed_files[] = array(
                     'path' => $relative_path,
-                    'error' => $is_directory ? __( 'ディレクトリの削除に失敗しました。', 'bf-secret-file-downloader' ) : __( 'ファイルの削除に失敗しました。', 'bf-secret-file-downloader' )
+                    'error' => $is_directory ? __('Failed to delete directory.', 'bf-secret-file-downloader' ) : __('Failed to delete file.', 'bf-secret-file-downloader' )
                 );
             }
         }
@@ -558,8 +558,7 @@ class FileListPage {
             // All successful
             $message = sprintf(
                 /* translators: %d: number of deleted items */
-                _n(
-                    '%d個のアイテムを削除しました。',
+                _n('Deleted %d item.', 'Deleted %d items.',
                     '%d個のアイテムを削除しました。',
                     count( $deleted_files ),
                     'bf-secret-file-downloader'
@@ -572,7 +571,7 @@ class FileListPage {
             // Some successful
             $message = sprintf(
                 /* translators: 1: number of deleted items, 2: number of failed items */
-                __( '%1$d個のアイテムを削除しました。%2$d個のアイテムで失敗しました。', 'bf-secret-file-downloader' ),
+                __('Deleted %d items. Failed to delete %d items.', 'bf-secret-file-downloader' ),
                 count( $deleted_files ),
                 count( $failed_files )
             );
@@ -580,7 +579,7 @@ class FileListPage {
             wp_send_json_success( $response_data );
         } else {
             // All failed
-            wp_send_json_error( __( '選択されたアイテムの削除に失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Failed to delete selected items.', 'bf-secret-file-downloader' ) );
         }
     }
 
@@ -599,13 +598,13 @@ class FileListPage {
 
         // Check input values
         if ( empty( $relative_path ) ) {
-            wp_send_json_error( __( 'ファイルパスが指定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('File path is not specified.', 'bf-secret-file-downloader' ) );
         }
 
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -613,17 +612,17 @@ class FileListPage {
 
         // Security check: only allowed directories
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
-            wp_send_json_error( __( 'このファイルのダウンロードは許可されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Download of this file is not allowed.', 'bf-secret-file-downloader' ) );
         }
 
         // Check if file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
-            wp_send_json_error( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('The specified file was not found.', 'bf-secret-file-downloader' ) );
         }
 
         // Check read permission
         if ( ! is_readable( $full_path ) ) {
-            wp_send_json_error( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('You do not have permission to read this file.', 'bf-secret-file-downloader' ) );
         }
 
         // Generate temporary token for download
@@ -657,14 +656,14 @@ class FileListPage {
 
         if ( empty( $download_token ) ) {
             /* translators: Error message for invalid download token */
-            wp_die( esc_html( __( '無効なダウンロードトークンです。', 'bf-secret-file-downloader' ) ), 400 );
+            wp_die( esc_html( __('Invalid download token.', 'bf-secret-file-downloader' ) ), 400 );
         }
 
         // Check token
         $token_data = get_transient( 'bf_sfd_download_' . $download_token );
         if ( $token_data === false ) {
             /* translators: Error message for invalid or expired download token */
-            wp_die( esc_html( __( 'ダウンロードトークンが無効または期限切れです。', 'bf-secret-file-downloader' ) ), 400 );
+            wp_die( esc_html( __('Download token is invalid or expired.', 'bf-secret-file-downloader' ) ), 400 );
         }
 
         // Delete token (one-time use)
@@ -673,20 +672,20 @@ class FileListPage {
         // Check token expiration
         if ( time() > $token_data['expires'] ) {
             /* translators: Error message for expired download token */
-            wp_die( esc_html( __( 'ダウンロードトークンの有効期限が切れています。', 'bf-secret-file-downloader' ) ), 400 );
+            wp_die( esc_html( __('Download token has expired.', 'bf-secret-file-downloader' ) ), 400 );
         }
 
         // Check user permissions
         if ( ! current_user_can( 'read' ) ) {
             /* translators: Error message for insufficient download permissions */
-            wp_die( esc_html( __( 'ファイルをダウンロードする権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('You do not have permission to download the file.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
             /* translators: Error message for missing target directory */
-            wp_die( esc_html( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) ), 500 );
+            wp_die( esc_html( __('Target directory is not configured.', 'bf-secret-file-downloader' ) ), 500 );
         }
 
         // Build full path
@@ -696,17 +695,17 @@ class FileListPage {
         // Check security
         if ( ! SecurityHelper::is_allowed_directory( dirname( $full_path ) ) ) {
             /* translators: Error message for unauthorized file download */
-            wp_die( esc_html( __( 'このファイルのダウンロードは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('Download of this file is not allowed.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Check if file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
-            wp_die( esc_html( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) ), 404 );
+            wp_die( esc_html( __('The specified file was not found.', 'bf-secret-file-downloader' ) ), 404 );
         }
 
         // Check read permission
         if ( ! is_readable( $full_path ) ) {
-            wp_die( esc_html( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('You do not have permission to read this file.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Get file information
@@ -742,7 +741,7 @@ class FileListPage {
     public function render() {
         // Check permissions
         if ( ! $this->can_access_files() ) {
-            wp_die( esc_html( __( 'このページにアクセスする権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('You do not have permission to delete this file.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Prepare data for view
@@ -914,7 +913,7 @@ class FileListPage {
             'current_user_can_create_dir' => current_user_can( 'manage_options' ),
             'current_user_can_manage_auth' => current_user_can( 'manage_options' ),
             'current_path' => $relative_path,
-            'current_path_display' => empty( $relative_path ) ? __( 'ルートディレクトリ', 'bf-secret-file-downloader' ) : $relative_path,
+            'current_path_display' => empty( $relative_path ) ? __('Root directory', 'bf-secret-file-downloader' ) : $relative_path,
             'page' => $page,
             'total_pages' => $total_pages,
             'files_per_page' => self::FILES_PER_PAGE,
@@ -1083,7 +1082,7 @@ class FileListPage {
      * @return string Page title
      */
     public function get_page_title() {
-        return __( 'ファイルリスト', 'bf-secret-file-downloader' );
+        return __('File list', 'bf-secret-file-downloader' );
     }
 
     /**
@@ -1112,7 +1111,7 @@ class FileListPage {
                 'sort_by' => $sort_by,
                 'sort_order' => $sort_order
             ), admin_url( 'admin.php' ) );
-            $html .= '<a href="' . esc_url( $prev_url ) . '">&laquo; ' . __( '前', 'bf-secret-file-downloader' ) . '</a>';
+            $html .= '<a href="' . esc_url( $prev_url ) . '">&laquo; ' . __('Previous', 'bf-secret-file-downloader' ) . '</a>';
         }
 
         // Page number
@@ -1143,7 +1142,7 @@ class FileListPage {
                 'sort_by' => $sort_by,
                 'sort_order' => $sort_order
             ), admin_url( 'admin.php' ) );
-            $html .= '<a href="' . esc_url( $next_url ) . '">' . __( '次', 'bf-secret-file-downloader' ) . ' &raquo;</a>';
+            $html .= '<a href="' . esc_url( $next_url ) . '">' . __('Next', 'bf-secret-file-downloader' ) . ' &raquo;</a>';
         }
 
         $html .= '</span>';
@@ -1174,7 +1173,7 @@ class FileListPage {
      * @return string Menu title
      */
     public function get_menu_title() {
-        return __( 'ファイルリスト', 'bf-secret-file-downloader' );
+        return __('File list', 'bf-secret-file-downloader' );
     }
 
     /**
@@ -1344,7 +1343,7 @@ class FileListPage {
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -1352,35 +1351,35 @@ class FileListPage {
 
         // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
-            wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Access to this directory is not allowed.', 'bf-secret-file-downloader' ) );
         }
 
         // Check if directory exists
         if ( ! is_dir( $full_path ) ) {
-            wp_send_json_error( __( 'ディレクトリが存在しません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Directory does not exist.', 'bf-secret-file-downloader' ) );
         }
 
         if ( $action_type === 'remove' ) {
             // Delete authentication settings
             $this->remove_directory_auth( $relative_path );
             wp_send_json_success( array(
-                'message' => __( 'ディレクトリの認証設定を削除しました。', 'bf-secret-file-downloader' ),
+                'message' => __('Directory authentication settings have been deleted.', 'bf-secret-file-downloader' ),
                 'has_auth' => false
             ));
         } else {
             // Save authentication settings
             if ( empty( $auth_methods ) || ! is_array( $auth_methods ) ) {
-                wp_send_json_error( __( '認証方法を選択してください。', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( __('Please select an authentication method.', 'bf-secret-file-downloader' ) );
             }
 
             // If simple authentication is selected, a password is required
             if ( in_array( 'simple_auth', $auth_methods ) && empty( $simple_auth_password ) ) {
-                wp_send_json_error( __( '簡易認証を選択した場合は、パスワードを設定してください。', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( __('If you select simple authentication, please set a password.', 'bf-secret-file-downloader' ) );
             }
 
             $this->set_directory_auth( $relative_path, $auth_methods, $allowed_roles, $simple_auth_password );
             wp_send_json_success( array(
-                'message' => __( 'ディレクトリの認証設定を保存しました。', 'bf-secret-file-downloader' ),
+                'message' => __('Directory authentication settings have been saved.', 'bf-secret-file-downloader' ),
                 'has_auth' => true
             ));
         }
@@ -1402,7 +1401,7 @@ class FileListPage {
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
         }
 
         // Build full path
@@ -1410,7 +1409,7 @@ class FileListPage {
 
         // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
-            wp_send_json_error( __( 'このディレクトリへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Access to this directory is not allowed.', 'bf-secret-file-downloader' ) );
         }
 
         // Get authentication settings
@@ -1419,7 +1418,7 @@ class FileListPage {
         if ( $auth_settings !== false ) {
             wp_send_json_success( $auth_settings );
         } else {
-            wp_send_json_error( __( '認証設定を取得できませんでした。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Could not retrieve authentication settings.', 'bf-secret-file-downloader' ) );
         }
     }
 
@@ -1635,11 +1634,11 @@ class FileListPage {
         if ( $result ) {
             $new_directory = DirectoryManager::get_secure_directory();
             wp_send_json_success( array(
-                'message' => __( '新しいセキュアディレクトリが作成されました。', 'bf-secret-file-downloader' ),
+                'message' => __('New secure directory has been created.', 'bf-secret-file-downloader' ),
                 'directory' => $new_directory
             ));
         } else {
-            wp_send_json_error( __( 'セキュアディレクトリの作成に失敗しました。', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( __('Failed to create directory.', 'bf-secret-file-downloader' ) );
         }
     }
 

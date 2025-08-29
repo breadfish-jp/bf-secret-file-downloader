@@ -60,7 +60,7 @@ class FrontEnd {
         // Get the base directory
         $base_directory = \Breadfish\SecretFileDownloader\DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_die( esc_html( __( '対象ディレクトリが設定されていません。', 'bf-secret-file-downloader' ) ), 500 );
+            wp_die( esc_html( __('Target directory is not configured.', 'bf-secret-file-downloader' ) ), 500 );
         }
 
         // Build the full path
@@ -74,23 +74,23 @@ class FrontEnd {
 
 
         if ( ! $directory_check ) {
-            wp_die( esc_html( __( 'このファイルへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('Access to this file is not allowed.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Check if the file exists
         if ( ! file_exists( $full_path ) || ! is_file( $full_path ) ) {
-            wp_die( esc_html( __( '指定されたファイルが見つかりません。', 'bf-secret-file-downloader' ) ), 404 );
+            wp_die( esc_html( __('The specified file was not found.', 'bf-secret-file-downloader' ) ), 404 );
         }
 
         // Check for access to dangerous files
         $filename = basename( $full_path );
         if ( SecurityHelper::is_program_code_file( $filename ) ) {
-            wp_die( esc_html( __( 'このファイルタイプへのアクセスは許可されていません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('Access to this file is not allowed.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Check for read permission
         if ( ! is_readable( $full_path ) ) {
-            wp_die( esc_html( __( 'このファイルを読み取る権限がありません。', 'bf-secret-file-downloader' ) ), 403 );
+            wp_die( esc_html( __('You do not have permission to read this file.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
         // Check authentication

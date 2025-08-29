@@ -65,7 +65,7 @@ class Admin {
         }
 
         // Get menu title from settings
-        $menu_title = get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
+        $menu_title = get_option( 'bf_sfd_menu_title', __('BF Secret File Downloader', 'bf-secret-file-downloader' ) );
 
         // Determine file list capability
         $file_capability = $this->get_file_access_capability();

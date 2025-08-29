@@ -49,18 +49,18 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 
     <div class="bf-secret-file-downloader-file-list">
         <div class="bf-secret-file-downloader-header">
-                            <p><?php esc_html_e( '非公開ディレクトリにあるファイルを管理します。', 'bf-secret-file-downloader' ); ?></p>
+                            <p><?php esc_html_e('Manage files in a hidden directory.', 'bf-secret-file-downloader' ); ?></p>
         </div>
 
         <?php if ( ! $target_directory_set || ! $secure_directory_exists ) : ?>
             <div class="notice notice-error">
                 <p>
-                    <strong><?php esc_html_e( 'セキュアディレクトリが存在しません', 'bf-secret-file-downloader' ); ?></strong>
+                    <strong><?php esc_html_e('Directory does not exist: ', 'bf-secret-file-downloader' ); ?></strong>
                 </p>
 
                 <?php if ( ! empty( $secure_directory_path ) ) : ?>
                 <p>
-                    <strong><?php esc_html_e( 'パス:', 'bf-secret-file-downloader' ); ?></strong>
+                    <strong><?php esc_html_e('Pass:', 'bf-secret-file-downloader' ); ?></strong>
                     <code style="background-color: #fff; padding: 3px 5px; margin-left: 5px; word-break: break-all;">
                         <?php echo esc_html( $secure_directory_path ); ?>
                     </code>
@@ -69,12 +69,12 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 
                 <p>
                     <button type="button" id="bf-recreate-secure-directory" class="button button-primary">
-                        <?php esc_html_e( 'ディレクトリを作成', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Create directory', 'bf-secret-file-downloader' ); ?>
                     </button>
 
                     <?php if ( ! empty( $secure_directory_path ) ) : ?>
                     <button type="button" onclick="location.reload();" class="button button-secondary" style="margin-left: 10px;">
-                        <?php esc_html_e( 'リロード', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Reload', 'bf-secret-file-downloader' ); ?>
                     </button>
                     <?php endif; ?>
 
@@ -88,28 +88,28 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                 <!-- Current path display -->
                 <div class="bf-secret-file-downloader-path">
                     <div class="bf-path-info">
-                        <strong><?php esc_html_e( '現在のディレクトリ:', 'bf-secret-file-downloader' ); ?></strong>
+                        <strong><?php esc_html_e('Current directory:', 'bf-secret-file-downloader' ); ?></strong>
                         <code id="current-path-display"><?php echo esc_html( $current_path_display ); ?></code>
                         <input type="hidden" id="current-path" value="<?php echo esc_attr( $current_path ); ?>">
                         <?php if ( isset( $current_directory_has_auth ) && $current_directory_has_auth ) : ?>
                             <span class="bf-auth-indicator">
                                 <span class="dashicons dashicons-lock"></span>
-                                <span class="bf-auth-status-text"><?php esc_html_e( 'ディレクトリ毎認証設定あり', 'bf-secret-file-downloader' ); ?></span>
+                                <span class="bf-auth-status-text"><?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?></span>
                             </span>
                             <div class="bf-auth-details">
-                                <div class="auth-details-title"><?php esc_html_e( 'ディレクトリ毎認証設定詳細:', 'bf-secret-file-downloader' ); ?></div>
+                                <div class="auth-details-title"><?php esc_html_e('Directory-specific authentication settings:', 'bf-secret-file-downloader' ); ?></div>
                                 <div id="auth-details-content">
                                     <!-- Display settings content dynamically with JavaScript -->
                                 </div>
                                 <button type="button" id="remove-auth-btn" class="button button-small">
                                     <span class="dashicons dashicons-trash"></span>
-                                    <?php esc_html_e( 'ディレクトリ毎設定削除', 'bf-secret-file-downloader' ); ?>
+                                    <?php esc_html_e('Delete directory-specific settings', 'bf-secret-file-downloader' ); ?>
                                 </button>
                             </div>
                         <?php else : ?>
                             <span class="bf-auth-indicator" style="color: #666;">
                                 <span class="dashicons dashicons-admin-users"></span>
-                                <span class="bf-auth-status-text"><?php esc_html_e( '共通認証設定適用中', 'bf-secret-file-downloader' ); ?></span>
+                                <span class="bf-auth-status-text"><?php esc_html_e('Common authentication settings applied', 'bf-secret-file-downloader' ); ?></span>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -117,14 +117,14 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <?php if ( ! empty( $current_path ) ) : ?>
                             <button type="button" id="go-up-btn" class="button button-small">
                                 <span class="dashicons dashicons-arrow-up-alt2"></span>
-                                <?php esc_html_e( '上の階層へ', 'bf-secret-file-downloader' ); ?>
+                                <?php esc_html_e('Go to parent directory', 'bf-secret-file-downloader' ); ?>
                             </button>
                         <?php endif; ?>
                         <!-- Directory-specific authentication button (displayed for non-root directories) -->
                         <?php if ( ! empty( $current_path ) ) : ?>
                             <button type="button" id="directory-auth-btn" class="button button-small">
                                 <span class="dashicons dashicons-admin-users"></span>
-                                <?php esc_html_e( '認証設定', 'bf-secret-file-downloader' ); ?>
+                                <?php esc_html_e('Authentication settings', 'bf-secret-file-downloader' ); ?>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -135,15 +135,15 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     <!-- Directory creation and file upload -->
                     <div class="bf-secret-file-downloader-actions">
                         <div class="bf-actions-header">
-                            <h3><?php esc_html_e( 'ファイル操作', 'bf-secret-file-downloader' ); ?></h3>
+                            <h3><?php esc_html_e('File operations', 'bf-secret-file-downloader' ); ?></h3>
                             <div class="bf-action-buttons">
                                 <button type="button" id="create-directory-btn" class="button">
                                     <span class="dashicons dashicons-plus-alt2"></span>
-                                    <?php esc_html_e( 'ディレクトリ作成', 'bf-secret-file-downloader' ); ?>
+                                    <?php esc_html_e('Create directory', 'bf-secret-file-downloader' ); ?>
                                 </button>
                                 <button type="button" id="select-files-btn" class="button">
                                     <span class="dashicons dashicons-upload"></span>
-                                    <?php esc_html_e( 'ファイル選択', 'bf-secret-file-downloader' ); ?>
+                                    <?php esc_html_e('Select files', 'bf-secret-file-downloader' ); ?>
                                 </button>
 
                             </div>
@@ -152,15 +152,15 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <!-- Directory creation form -->
                         <div id="create-directory-form" class="bf-create-directory-form" style="display: none;">
                             <div class="form-group">
-                                <label for="directory-name-input"><?php esc_html_e( 'ディレクトリ名:', 'bf-secret-file-downloader' ); ?></label>
-                                <input type="text" id="directory-name-input" class="regular-text" placeholder="<?php esc_attr_e( 'ディレクトリ名を入力', 'bf-secret-file-downloader' ); ?>">
+                                <label for="directory-name-input"><?php esc_html_e('Directory name:', 'bf-secret-file-downloader' ); ?></label>
+                                <input type="text" id="directory-name-input" class="regular-text" placeholder="<?php esc_attr_e('Enter directory name', 'bf-secret-file-downloader' ); ?>">
                                 <div class="form-actions">
-                                    <button type="button" id="create-directory-submit" class="button button-primary"><?php esc_html_e( '作成', 'bf-secret-file-downloader' ); ?></button>
-                                    <button type="button" id="create-directory-cancel" class="button"><?php esc_html_e( 'キャンセル', 'bf-secret-file-downloader' ); ?></button>
+                                    <button type="button" id="create-directory-submit" class="button button-primary"><?php esc_html_e('Create', 'bf-secret-file-downloader' ); ?></button>
+                                    <button type="button" id="create-directory-cancel" class="button"><?php esc_html_e('Cancel', 'bf-secret-file-downloader' ); ?></button>
                                 </div>
                             </div>
                             <p class="description">
-                                <?php esc_html_e( '英数字、アンダーバー（_）、ハイフン（-）、ドット（.）が使用できます。', 'bf-secret-file-downloader' ); ?>
+                                <?php esc_html_e('Alphanumeric characters, underscores (_), hyphens (-), and dots (.) can be used.', 'bf-secret-file-downloader' ); ?>
                             </p>
                         </div>
 
@@ -168,15 +168,15 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <div id="drop-zone" class="bf-secret-file-downloader-drop-zone">
                             <div class="drop-zone-content">
                                 <span class="dashicons dashicons-upload"></span>
-                                <p><strong><?php esc_html_e( 'ファイルをここにドラッグ＆ドロップ', 'bf-secret-file-downloader' ); ?></strong></p>
+                                <p><strong><?php esc_html_e('Drag and drop files here', 'bf-secret-file-downloader' ); ?></strong></p>
                                 <p><?php
                                     /* translators: %s: maximum file size in MB */
-                                    echo esc_html( sprintf( __( '（最大: %sMB）', 'bf-secret-file-downloader' ), $max_file_size_mb ) );
+                                    echo esc_html( sprintf( __('(Maximum: %sMB)', 'bf-secret-file-downloader' ), $max_file_size_mb ) );
                                 ?></p>
                                 <input type="file" id="file-input" multiple style="display: none;">
                             </div>
                             <div class="drop-zone-overlay" style="display: none;">
-                                <p><?php esc_html_e( 'ファイルをドロップしてください', 'bf-secret-file-downloader' ); ?></p>
+                                <p><?php esc_html_e('Please drop files here', 'bf-secret-file-downloader' ); ?></p>
                             </div>
                         </div>
 
@@ -196,9 +196,9 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <?php
                         if ( $total_files > 0 ) {
                             /* translators: %d: number of items found */
-                            echo esc_html( sprintf( __( '%d個のアイテムが見つかりました。', 'bf-secret-file-downloader' ), (int) $total_files ) );
+                            echo esc_html( sprintf( __('%d items found.', 'bf-secret-file-downloader' ), (int) $total_files ) );
                         } else {
-                            esc_html_e( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' );
+                            esc_html_e('No items found.', 'bf-secret-file-downloader' );
                         }
                         ?>
                     </p>
@@ -207,14 +207,14 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                 <!-- Bulk operations and pagination (top) -->
                 <div class="tablenav top">
                     <div class="alignleft actions bulkactions">
-                        <label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e( '一括操作を選択', 'bf-secret-file-downloader' ); ?></label>
+                        <label for="bulk-action-selector-top" class="screen-reader-text"><?php esc_html_e('Select bulk action', 'bf-secret-file-downloader' ); ?></label>
                         <select name="action" id="bulk-action-selector-top">
-                            <option value="-1"><?php esc_html_e( '一括操作', 'bf-secret-file-downloader' ); ?></option>
+                            <option value="-1"><?php esc_html_e('Bulk actions', 'bf-secret-file-downloader' ); ?></option>
                             <?php if ( $current_user_can_delete ) : ?>
-                                <option value="delete"><?php esc_html_e( '削除', 'bf-secret-file-downloader' ); ?></option>
+                                <option value="delete"><?php esc_html_e('Delete', 'bf-secret-file-downloader' ); ?></option>
                             <?php endif; ?>
                         </select>
-                        <input type="submit" id="doaction" class="button action" value="<?php esc_attr_e( '適用', 'bf-secret-file-downloader' ); ?>">
+                        <input type="submit" id="doaction" class="button action" value="<?php esc_attr_e('Apply', 'bf-secret-file-downloader' ); ?>">
                     </div>
                     <?php if ( $total_pages > 1 ) : ?>
                         <div class="tablenav-pages">
@@ -229,27 +229,27 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <thead>
                             <tr>
                                 <td class="manage-column column-cb check-column" style="width: 40px;">
-                                    <label class="screen-reader-text" for="cb-select-all-1"><?php esc_html_e( 'すべて選択', 'bf-secret-file-downloader' ); ?></label>
+                                    <label class="screen-reader-text" for="cb-select-all-1"><?php esc_html_e('Select all', 'bf-secret-file-downloader' ); ?></label>
                                     <input id="cb-select-all-1" type="checkbox">
                                 </td>
                                 <th class="manage-column column-name sortable <?php echo $sort_by === 'name' ? 'sorted ' . esc_attr( $sort_order ) : ''; ?>" style="width: 45%;">
                                     <a href="#" class="sort-link" data-sort="name">
-                                        <span><?php esc_html_e( 'ファイル名', 'bf-secret-file-downloader' ); ?></span>
+                                        <span><?php esc_html_e('Filename', 'bf-secret-file-downloader' ); ?></span>
                                         <span class="sorting-indicator"></span>
                                     </a>
                                 </th>
                                 <th class="manage-column column-type" style="width: 15%;">
-                                    <?php esc_html_e( 'タイプ', 'bf-secret-file-downloader' ); ?>
+                                    <?php esc_html_e('Type', 'bf-secret-file-downloader' ); ?>
                                 </th>
                                 <th class="manage-column column-size sortable <?php echo $sort_by === 'size' ? 'sorted ' . esc_attr( $sort_order ) : ''; ?>" style="width: 15%;">
                                     <a href="#" class="sort-link" data-sort="size">
-                                        <span><?php esc_html_e( 'サイズ', 'bf-secret-file-downloader' ); ?></span>
+                                        <span><?php esc_html_e('Size', 'bf-secret-file-downloader' ); ?></span>
                                         <span class="sorting-indicator"></span>
                                     </a>
                                 </th>
                                 <th class="manage-column column-modified sortable <?php echo $sort_by === 'modified' ? 'sorted ' . esc_attr( $sort_order ) : ''; ?>" style="width: 20%;">
                                     <a href="#" class="sort-link" data-sort="modified">
-                                        <span><?php esc_html_e( '更新日', 'bf-secret-file-downloader' ); ?></span>
+                                        <span><?php esc_html_e('Modified', 'bf-secret-file-downloader' ); ?></span>
                                         <span class="sorting-indicator"></span>
                                     </a>
                                 </th>
@@ -276,7 +276,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
     <!-- Loading display -->
     <div id="bf-secret-file-downloader-loading" style="display: none; text-align: center; margin: 20px;">
         <span class="spinner is-active"></span>
-        <span><?php esc_html_e( '読み込み中...', 'bf-secret-file-downloader' ); ?></span>
+        <span><?php esc_html_e('Loading...', 'bf-secret-file-downloader' ); ?></span>
     </div>
 
 </div>
@@ -285,7 +285,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 <div id="bf-directory-auth-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 70%; max-width: 700px;">
         <div class="bf-modal-header">
-            <h3 id="bf-auth-modal-title"><?php esc_html_e( 'ディレクトリ認証設定', 'bf-secret-file-downloader' ); ?></h3>
+            <h3 id="bf-auth-modal-title"><?php esc_html_e('Directory authentication settings', 'bf-secret-file-downloader' ); ?></h3>
             <span class="bf-modal-close">&times;</span>
         </div>
         <div class="bf-modal-body">
@@ -296,42 +296,42 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <span class="dashicons dashicons-lock"></span>
                     </span>
                     <div class="bf-status-text">
-                        <strong id="bf-auth-status-title"><?php esc_html_e( '現在の状態', 'bf-secret-file-downloader' ); ?></strong>
-                        <p id="bf-auth-status-description"><?php esc_html_e( 'このディレクトリは認証保護されていません。', 'bf-secret-file-downloader' ); ?></p>
+                        <strong id="bf-auth-status-title"><?php esc_html_e('Current status', 'bf-secret-file-downloader' ); ?></strong>
+                        <p id="bf-auth-status-description"><?php esc_html_e('This directory is not password protected.', 'bf-secret-file-downloader' ); ?></p>
                     </div>
                 </div>
             </div>
 
             <p id="bf-auth-modal-description">
-                <?php esc_html_e( 'このディレクトリ内のファイルをダウンロードする際に要求する認証設定を行ってください。', 'bf-secret-file-downloader' ); ?>
+                <?php esc_html_e('Please set a password that will be required when downloading files in this directory.', 'bf-secret-file-downloader' ); ?>
             </p>
 
             <!-- Authentication settings -->
             <div class="bf-auth-section">
-                <h4><?php esc_html_e( '認証方法', 'bf-secret-file-downloader' ); ?></h4>
+                <h4><?php esc_html_e('Authentication method', 'bf-secret-file-downloader' ); ?></h4>
                 <fieldset>
-                    <legend class="screen-reader-text"><?php esc_html_e( '認証方法', 'bf-secret-file-downloader' ); ?></legend>
+                    <legend class="screen-reader-text"><?php esc_html_e('Authentication method', 'bf-secret-file-downloader' ); ?></legend>
                     <label>
                         <input type="checkbox" name="bf_auth_methods[]" value="logged_in" id="bf-auth-methods-logged-in" />
-                        <?php esc_html_e( 'ログインしているユーザー', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Logged in users', 'bf-secret-file-downloader' ); ?>
                     </label>
                     <div id="bf-allowed-roles-section" style="margin-top: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #0073aa; display: none;">
                         <label for="bf-allowed-roles">
-                            <strong><?php esc_html_e( '許可するユーザーロール', 'bf-secret-file-downloader' ); ?></strong>
+                            <strong><?php esc_html_e('Allowed user roles', 'bf-secret-file-downloader' ); ?></strong>
                         </label>
                         <div class="bf-role-selection-controls" style="margin: 10px 0;">
-                            <button type="button" id="bf-select-all-roles" class="button button-small"><?php esc_html_e( 'すべて選択', 'bf-secret-file-downloader' ); ?></button>
-                            <button type="button" id="bf-deselect-all-roles" class="button button-small"><?php esc_html_e( 'すべて解除', 'bf-secret-file-downloader' ); ?></button>
+                            <button type="button" id="bf-select-all-roles" class="button button-small"><?php esc_html_e('Select all', 'bf-secret-file-downloader' ); ?></button>
+                            <button type="button" id="bf-deselect-all-roles" class="button button-small"><?php esc_html_e('Clear all', 'bf-secret-file-downloader' ); ?></button>
                         </div>
                         <fieldset>
-                            <legend class="screen-reader-text"><?php esc_html_e( '許可するユーザーロール', 'bf-secret-file-downloader' ); ?></legend>
+                            <legend class="screen-reader-text"><?php esc_html_e('Allowed user roles', 'bf-secret-file-downloader' ); ?></legend>
                             <?php
                             $roles = array(
-                                'administrator' => __( '管理者', 'bf-secret-file-downloader' ),
-                                'editor' => __( '編集者', 'bf-secret-file-downloader' ),
-                                'author' => __( '投稿者', 'bf-secret-file-downloader' ),
-                                'contributor' => __( '寄稿者', 'bf-secret-file-downloader' ),
-                                'subscriber' => __( '購読者', 'bf-secret-file-downloader' )
+                                'administrator' => __('Administrator', 'bf-secret-file-downloader' ),
+                                'editor' => __('Editor', 'bf-secret-file-downloader' ),
+                                'author' => __('Author', 'bf-secret-file-downloader' ),
+                                'contributor' => __('Contributor', 'bf-secret-file-downloader' ),
+                                'subscriber' => __('Subscriber', 'bf-secret-file-downloader' )
                             );
                             foreach ( $roles as $role => $label ) :
                             ?>
@@ -342,40 +342,40 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                             </label>
                             <?php endforeach; ?>
                         </fieldset>
-                        <p class="description" style="margin-top: 10px;"><?php esc_html_e( 'ファイルアクセスを許可するユーザーロールを選択してください。複数選択可能です。', 'bf-secret-file-downloader' ); ?></p>
+                        <p class="description" style="margin-top: 10px;"><?php esc_html_e('Please select user roles that are allowed to access files. Multiple selections are possible.', 'bf-secret-file-downloader' ); ?></p>
                     </div>
                     <br>
                     <label>
                         <input type="checkbox" name="bf_auth_methods[]" value="simple_auth" id="bf-auth-methods-simple-auth" />
-                        <?php esc_html_e( '簡易認証を通過したユーザー', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Users who passed simple authentication', 'bf-secret-file-downloader' ); ?>
                     </label>
                     <div id="bf-simple-auth-password-section" style="margin-top: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #0073aa; display: none;">
                         <label for="bf-simple-auth-password">
-                            <strong><?php esc_html_e( '簡易認証パスワード', 'bf-secret-file-downloader' ); ?></strong>
+                            <strong><?php esc_html_e('Simple authentication password', 'bf-secret-file-downloader' ); ?></strong>
                         </label>
                         <br>
                         <input type="password" name="bf_simple_auth_password" id="bf-simple-auth-password"
                                class="regular-text" style="margin-top: 5px;" />
-                        <p class="description" style="margin-top: 5px;"><?php esc_html_e( '簡易認証で使用するパスワードを設定してください。', 'bf-secret-file-downloader' ); ?></p>
+                        <p class="description" style="margin-top: 5px;"><?php esc_html_e('Please enter password.', 'bf-secret-file-downloader' ); ?></p>
                     </div>
                 </fieldset>
-                <p class="description"><?php esc_html_e( 'ファイルアクセスを許可する認証方法を選択してください。複数選択可能です。', 'bf-secret-file-downloader' ); ?></p>
+                <p class="description"><?php esc_html_e('Please select authentication methods that are allowed to access files. Multiple selections are possible.', 'bf-secret-file-downloader' ); ?></p>
             </div>
         </div>
         <div class="bf-modal-footer">
             <div class="bf-action-buttons-left">
                 <button type="button" id="bf-remove-auth" class="button button-secondary bf-danger-button" style="display: none;">
                     <span class="dashicons dashicons-trash"></span>
-                    <?php esc_html_e( '認証設定を削除', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Delete authentication settings', 'bf-secret-file-downloader' ); ?>
                 </button>
             </div>
             <div class="bf-action-buttons-right">
                 <button type="button" id="bf-save-auth" class="button button-primary">
                     <span class="dashicons dashicons-yes"></span>
-                    <?php esc_html_e( '保存', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Save', 'bf-secret-file-downloader' ); ?>
                 </button>
                 <button type="button" id="bf-cancel-auth" class="button">
-                    <?php esc_html_e( 'キャンセル', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Cancel', 'bf-secret-file-downloader' ); ?>
                 </button>
             </div>
         </div>
@@ -386,7 +386,7 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 <div id="bf-directory-password-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 60%; max-width: 600px;">
         <div class="bf-modal-header">
-            <h3 id="bf-password-modal-title"><?php esc_html_e( 'ディレクトリパスワード設定', 'bf-secret-file-downloader' ); ?></h3>
+            <h3 id="bf-password-modal-title"><?php esc_html_e('Directory password settings', 'bf-secret-file-downloader' ); ?></h3>
             <span class="bf-modal-close">&times;</span>
         </div>
         <div class="bf-modal-body">
@@ -397,30 +397,30 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <span class="dashicons dashicons-lock"></span>
                     </span>
                     <div class="bf-status-text">
-                        <strong id="bf-status-title"><?php esc_html_e( '現在の状態', 'bf-secret-file-downloader' ); ?></strong>
-                        <p id="bf-status-description"><?php esc_html_e( 'このディレクトリはパスワード保護されていません。', 'bf-secret-file-downloader' ); ?></p>
+                        <strong id="bf-status-title"><?php esc_html_e('Current status', 'bf-secret-file-downloader' ); ?></strong>
+                        <p id="bf-status-description"><?php esc_html_e('This directory is not password protected.', 'bf-secret-file-downloader' ); ?></p>
                     </div>
                 </div>
             </div>
 
             <p id="bf-password-modal-description">
-                <?php esc_html_e( 'このディレクトリ内のファイルをダウンロードする際に要求するパスワードを設定してください。', 'bf-secret-file-downloader' ); ?>
+                <?php esc_html_e('Please set a password that will be required when downloading files in this directory.', 'bf-secret-file-downloader' ); ?>
             </p>
 
             <div class="bf-password-form">
-                <label for="bf-directory-password-input"><?php esc_html_e( 'パスワード:', 'bf-secret-file-downloader' ); ?></label>
+                <label for="bf-directory-password-input"><?php esc_html_e('Password:', 'bf-secret-file-downloader' ); ?></label>
                 <div class="bf-password-input-group">
                     <input type="password" id="bf-directory-password-input" class="regular-text"
-                           placeholder="<?php esc_attr_e( 'パスワードを入力', 'bf-secret-file-downloader' ); ?>" />
+                           placeholder="<?php esc_attr_e('Enter password', 'bf-secret-file-downloader' ); ?>" />
                     <button type="button" id="bf-password-toggle" class="button">
-                        <?php esc_html_e( '表示', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Show', 'bf-secret-file-downloader' ); ?>
                     </button>
                     <button type="button" id="bf-show-current-password" class="button" style="display: none;">
-                        <?php esc_html_e( '現在のパスワード', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Current password', 'bf-secret-file-downloader' ); ?>
                     </button>
                 </div>
                 <p class="description">
-                    <?php esc_html_e( '安全性のため、8文字以上の複雑なパスワードを設定することをお勧めします。', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('For security, we recommend setting a complex password of 8 characters or more.', 'bf-secret-file-downloader' ); ?>
                 </p>
             </div>
         </div>
@@ -428,16 +428,16 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
             <div class="bf-action-buttons-left">
                 <button type="button" id="bf-remove-password" class="button button-secondary bf-danger-button" style="display: none;">
                     <span class="dashicons dashicons-trash"></span>
-                    <?php esc_html_e( 'パスワード保護を解除', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Remove password protection', 'bf-secret-file-downloader' ); ?>
                 </button>
             </div>
             <div class="bf-action-buttons-right">
                 <button type="button" id="bf-save-password" class="button button-primary">
                     <span class="dashicons dashicons-yes"></span>
-                    <?php esc_html_e( '保存', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Save', 'bf-secret-file-downloader' ); ?>
                 </button>
                 <button type="button" id="bf-cancel-password" class="button">
-                    <?php esc_html_e( 'キャンセル', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Cancel', 'bf-secret-file-downloader' ); ?>
                 </button>
             </div>
         </div>
@@ -448,25 +448,25 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 <div id="bf-url-copy-modal" class="bf-modal" style="display: none;">
     <div class="bf-modal-content" style="width: 70%; max-width: 700px;">
         <div class="bf-modal-header">
-            <h3><?php esc_html_e( 'ファイルアクセスURL', 'bf-secret-file-downloader' ); ?></h3>
+            <h3><?php esc_html_e('File access URL', 'bf-secret-file-downloader' ); ?></h3>
             <span class="bf-modal-close">&times;</span>
         </div>
         <div class="bf-modal-body">
             <div class="bf-url-info">
-                <h4 id="bf-url-file-name"><?php esc_html_e( 'ファイル名', 'bf-secret-file-downloader' ); ?></h4>
-                <p class="description"><?php esc_html_e( '以下のURLを使用してファイルにアクセスできます。', 'bf-secret-file-downloader' ); ?></p>
+                <h4 id="bf-url-file-name"><?php esc_html_e('Filename', 'bf-secret-file-downloader' ); ?></h4>
+                <p class="description"><?php esc_html_e('You can access files using the following URL.', 'bf-secret-file-downloader' ); ?></p>
             </div>
 
             <div class="bf-url-options">
-                <h4><?php esc_html_e( 'アクセス方法を選択', 'bf-secret-file-downloader' ); ?></h4>
+                <h4><?php esc_html_e('Select access method', 'bf-secret-file-downloader' ); ?></h4>
                 <div class="bf-url-option-group">
                     <label class="bf-url-option">
                         <input type="radio" name="url_type" value="download" checked>
                         <span class="bf-option-content">
                             <span class="bf-option-icon dashicons dashicons-download"></span>
                             <div class="bf-option-text">
-                                <strong><?php esc_html_e( 'ダウンロード', 'bf-secret-file-downloader' ); ?></strong>
-                                <span><?php esc_html_e( 'ファイルを直接ダウンロードします', 'bf-secret-file-downloader' ); ?></span>
+                                <strong><?php esc_html_e('Download', 'bf-secret-file-downloader' ); ?></strong>
+                                <span><?php esc_html_e('Download file directly', 'bf-secret-file-downloader' ); ?></span>
                             </div>
                         </span>
                     </label>
@@ -475,8 +475,8 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <span class="bf-option-content">
                             <span class="bf-option-icon dashicons dashicons-visibility"></span>
                             <div class="bf-option-text">
-                                <strong><?php esc_html_e( 'その場で表示', 'bf-secret-file-downloader' ); ?></strong>
-                                <span><?php esc_html_e( 'ブラウザでファイルを表示します', 'bf-secret-file-downloader' ); ?></span>
+                                <strong><?php esc_html_e('View inline', 'bf-secret-file-downloader' ); ?></strong>
+                                <span><?php esc_html_e('View the file in the browser', 'bf-secret-file-downloader' ); ?></span>
                             </div>
                         </span>
                     </label>
@@ -484,18 +484,18 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
             </div>
 
             <div class="bf-url-display">
-                <label for="bf-url-input"><?php esc_html_e( 'URL:', 'bf-secret-file-downloader' ); ?></label>
+                <label for="bf-url-input"><?php esc_html_e('URL:', 'bf-secret-file-downloader' ); ?></label>
                 <div class="bf-url-input-group">
                     <input type="text" id="bf-url-input" class="regular-text" readonly>
                     <button type="button" id="bf-copy-url-btn" class="button">
                         <span class="dashicons dashicons-clipboard"></span>
-                        <?php esc_html_e( 'コピー', 'bf-secret-file-downloader' ); ?>
+                        <?php esc_html_e('Copy', 'bf-secret-file-downloader' ); ?>
                     </button>
                 </div>
             </div>
 
             <div class="bf-url-preview">
-                <h4><?php esc_html_e( 'プレビュー', 'bf-secret-file-downloader' ); ?></h4>
+                <h4><?php esc_html_e('Preview', 'bf-secret-file-downloader' ); ?></h4>
                 <div class="bf-preview-frame">
                     <iframe id="bf-url-preview-frame" style="width: 100%; height: 300px; border: 1px solid #ddd; border-radius: 4px;"></iframe>
                 </div>
@@ -505,10 +505,10 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
             <div class="bf-action-buttons-right">
                 <button type="button" id="bf-open-url-btn" class="button button-primary">
                     <span class="dashicons dashicons-external"></span>
-                    <?php esc_html_e( '新しいタブで開く', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Open in new tab', 'bf-secret-file-downloader' ); ?>
                 </button>
                 <button type="button" id="bf-close-url-modal" class="button">
-                    <?php esc_html_e( '閉じる', 'bf-secret-file-downloader' ); ?>
+                    <?php esc_html_e('Close', 'bf-secret-file-downloader' ); ?>
                 </button>
             </div>
         </div>
@@ -530,10 +530,10 @@ jQuery(document).ready(function($) {
     // Authentication details template function
     function getAuthDetailsTemplate() {
         return '<div class="bf-auth-details">' +
-               '<div class="auth-details-title"><?php esc_html_e( 'ディレクトリ毎認証設定詳細:', 'bf-secret-file-downloader' ); ?></div>' +
+               '<div class="auth-details-title"><?php esc_html_e('Directory-specific authentication settings:', 'bf-secret-file-downloader' ); ?></div>' +
                '<div id="auth-details-content"></div>' +
                '<button type="button" id="remove-auth-btn" class="button button-small">' +
-               '<span class="dashicons dashicons-trash"></span><?php esc_html_e( 'ディレクトリ毎設定削除', 'bf-secret-file-downloader' ); ?>' +
+               '<span class="dashicons dashicons-trash"></span><?php esc_html_e('Delete directory-specific settings', 'bf-secret-file-downloader' ); ?>' +
                '</button>' +
                '</div>';
     }
@@ -638,10 +638,10 @@ jQuery(document).ready(function($) {
 
         if (passwordField.attr('type') === 'password') {
             passwordField.attr('type', 'text');
-            button.text('<?php esc_html_e( '非表示', 'bf-secret-file-downloader' ); ?>');
+            button.text('<?php esc_html_e('Hide', 'bf-secret-file-downloader' ); ?>');
         } else {
             passwordField.attr('type', 'password');
-            button.text('<?php esc_html_e( '表示', 'bf-secret-file-downloader' ); ?>');
+            button.text('<?php esc_html_e('Show', 'bf-secret-file-downloader' ); ?>');
         }
     });
 
@@ -812,13 +812,13 @@ jQuery(document).ready(function($) {
 
         var action = $('#bulk-action-selector-top').val();
         if (action === '-1') {
-            alert('<?php echo esc_js( __( '操作を選択してください。', 'bf-secret-file-downloader' ) ); ?>');
+            alert('<?php echo esc_js( __('Please select an action.', 'bf-secret-file-downloader' ) ); ?>');
             return;
         }
 
         var checkedFiles = $('input[name="file_paths[]"]:checked');
         if (checkedFiles.length === 0) {
-            alert('<?php echo esc_js( __( '削除するアイテムを選択してください。', 'bf-secret-file-downloader' ) ); ?>');
+            alert('<?php echo esc_js( __('Please select items to delete.', 'bf-secret-file-downloader' ) ); ?>');
             return;
         }
 
@@ -985,9 +985,9 @@ jQuery(document).ready(function($) {
                     window.history.pushState({path: path, page: page, sortBy: sortBy, sortOrder: sortOrder}, '', newUrl);
                 } else {
                     // If the directory cannot be accessed, try to move to the parent directory
-                    var errorMessage = response.data || '<?php echo esc_js( __( 'エラーが発生しました', 'bf-secret-file-downloader' ) ); ?>';
+                    var errorMessage = response.data || '<?php echo esc_js( __('An error occurred', 'bf-secret-file-downloader' ) ); ?>';
 
-                    if (errorMessage.indexOf('<?php echo esc_js( __( 'ディレクトリにアクセスできません', 'bf-secret-file-downloader' ) ); ?>') !== -1 ||
+                    if (errorMessage.indexOf('<?php echo esc_js( __('Cannot access directory', 'bf-secret-file-downloader' ) ); ?>') !== -1 ||
                         errorMessage.indexOf('アクセスできません') !== -1) {
                         // If the directory access error occurs, try to move to the parent directory
                         var parentPath = getParentPath(path);
@@ -1002,7 +1002,7 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 $('#bf-secret-file-downloader-loading').hide();
@@ -1039,11 +1039,11 @@ jQuery(document).ready(function($) {
                     newUrl.searchParams.set('paged', page);
                     window.history.pushState({path: path, page: page}, '', newUrl);
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'エラーが発生しました', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('An error occurred', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 $('#bf-secret-file-downloader-loading').hide();
@@ -1096,7 +1096,7 @@ jQuery(document).ready(function($) {
 
         if (file.type === 'directory') {
             if (file.readable) {
-                rowActions += '<span class="open"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + (strings.open || '<?php esc_html_e( '開く', 'bf-secret-file-downloader' ); ?>') + '</a>';
+                rowActions += '<span class="open"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + (strings.open || '<?php esc_html_e('Open', 'bf-secret-file-downloader' ); ?>') + '</a>';
 
                 if (file.can_delete) {
                     rowActions += ' | ';
@@ -1106,10 +1106,10 @@ jQuery(document).ready(function($) {
         } else {
             rowActions += '<span class="download"><a href="#" class="download-file-link" ' +
                 'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
-                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.download || '<?php esc_html_e( 'ダウンロード', 'bf-secret-file-downloader' ); ?>') + '</a> | </span>';
+                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.download || '<?php esc_html_e('Download', 'bf-secret-file-downloader' ); ?>') + '</a> | </span>';
             rowActions += '<span class="copy-url"><a href="#" class="copy-url-link" ' +
                 'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
-                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.copyUrl || '<?php esc_html_e( 'URLをコピー', 'bf-secret-file-downloader' ); ?>') + '</a>';
+                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.copyUrl || '<?php esc_html_e('Copy URL', 'bf-secret-file-downloader' ); ?>') + '</a>';
 
             if (file.can_delete) {
                 rowActions += ' | ';
@@ -1121,7 +1121,7 @@ jQuery(document).ready(function($) {
             rowActions += '<span class="delete"><a href="#" class="delete-file-link" ' +
                 'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
                 'data-file-name="' + $('<div>').text(file.name).html() + '" ' +
-                'data-file-type="' + $('<div>').text(file.type).html() + '">' + (strings.delete || '<?php esc_html_e( '削除', 'bf-secret-file-downloader' ); ?>') + '</a></span>';
+                'data-file-type="' + $('<div>').text(file.type).html() + '">' + (strings.delete || '<?php esc_html_e('Delete', 'bf-secret-file-downloader' ); ?>') + '</a></span>';
         }
 
         rowActions += '</div>';
@@ -1139,7 +1139,7 @@ jQuery(document).ready(function($) {
                 nameCell.html(iconWrapper + '<strong class="bf-directory-name row-title"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + $('<div>').text(file.name).html() + '</a></strong>');
             } else {
                 nameCell.html(iconWrapper + '<span class="bf-directory-name-disabled row-title">' + $('<div>').text(file.name).html() + '</span>' +
-                             '<small class="bf-access-denied">(' + (strings.accessDenied || '<?php esc_html_e( 'アクセス不可', 'bf-secret-file-downloader' ); ?>') + ')</small>');
+                             '<small class="bf-access-denied">(' + (strings.accessDenied || '<?php esc_html_e('Access denied', 'bf-secret-file-downloader' ); ?>') + ')</small>');
             }
         } else {
             nameCell.html(iconWrapper + '<span class="bf-file-name row-title"><a href="#" class="download-file-link" data-file-path="' + $('<div>').text(file.path).html() + '" data-file-name="' + $('<div>').text(file.name).html() + '">' + $('<div>').text(file.name).html() + '</a></span>');
@@ -1171,8 +1171,8 @@ jQuery(document).ready(function($) {
         var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
         var typeCell = $('<td class="column-type"></td>').text(
             file.type === 'directory'
-                ? (strings.directory || '<?php esc_html_e( 'ディレクトリ', 'bf-secret-file-downloader' ); ?>')
-                : (strings.file || '<?php esc_html_e( 'ファイル', 'bf-secret-file-downloader' ); ?>')
+                ? (strings.directory || '<?php esc_html_e('Directory', 'bf-secret-file-downloader' ); ?>')
+                : (strings.file || '<?php esc_html_e('File', 'bf-secret-file-downloader' ); ?>')
         );
 
         var sizeCell = $('<td class="column-size"></td>').text(
@@ -1190,8 +1190,8 @@ jQuery(document).ready(function($) {
     function createPathDisplayTemplate(data) {
         var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
         var pathHtml = '<div class="bf-path-info">' +
-            '<strong>' + (strings.currentDirectory || '<?php esc_html_e( '現在のディレクトリ:', 'bf-secret-file-downloader' ); ?>') + '</strong>' +
-            '<code id="current-path-display">' + (data.current_path || (strings.rootDirectory || '<?php esc_html_e( "ルートディレクトリ", "bf-secret-file-downloader" ); ?>')) + '</code>' +
+            '<strong>' + (strings.currentDirectory || '<?php esc_html_e('Current directory:', 'bf-secret-file-downloader' ); ?>') + '</strong>' +
+            '<code id="current-path-display">' + (data.current_path || (strings.rootDirectory || '<?php esc_html_e("Root directory", "bf-secret-file-downloader" ); ?>')) + '</code>' +
             '<input type="hidden" id="current-path" value="' + (data.current_path || '') + '">' +
             '</div>' +
             '<div class="bf-path-actions">';
@@ -1200,7 +1200,7 @@ jQuery(document).ready(function($) {
         if (data.current_path && data.current_path !== '') {
             pathHtml += '<button type="button" id="go-up-btn" class="button button-small">' +
                 '<span class="dashicons dashicons-arrow-up-alt2"></span>' +
-                (strings.goUp || '<?php esc_html_e( '上の階層へ', 'bf-secret-file-downloader' ); ?>') +
+                (strings.goUp || '<?php esc_html_e('Go to parent directory', 'bf-secret-file-downloader' ); ?>') +
                 '</button>';
         }
 
@@ -1209,7 +1209,7 @@ jQuery(document).ready(function($) {
         if (data.current_path && data.current_path !== '') {
             pathHtml += '<button type="button" id="directory-auth-btn" class="button button-small">' +
                 '<span class="dashicons dashicons-admin-users"></span>' +
-                (strings.authSettings || '<?php esc_html_e( '認証設定', 'bf-secret-file-downloader' ); ?>') +
+                (strings.authSettings || '<?php esc_html_e('Authentication settings', 'bf-secret-file-downloader' ); ?>') +
                 '</button>';
         }
         <?php endif; ?>
@@ -1221,7 +1221,7 @@ jQuery(document).ready(function($) {
     function updateFileList(data) {
         // Update current path
         $('#current-path').val(data.current_path);
-        $('#current-path-display').text(data.current_path || '<?php esc_html_e( "ルートディレクトリ", "bf-secret-file-downloader" ); ?>');
+        $('#current-path-display').text(data.current_path || '<?php esc_html_e("Root directory", "bf-secret-file-downloader" ); ?>');
 
         // Rebuild the entire path display area
         $('.bf-secret-file-downloader-path').html(createPathDisplayTemplate(data));
@@ -1251,9 +1251,9 @@ jQuery(document).ready(function($) {
             data.total_items > 0
                 ? (strings.itemsFound || '<?php
                     /* translators: %d: number of items found */
-                    echo esc_js( __( '%d個のアイテムが見つかりました。', 'bf-secret-file-downloader' ) );
+                    echo esc_js( __('%d items found.', 'bf-secret-file-downloader' ) );
                 ?>').replace('%d', data.total_items)
-                : (strings.noItemsFound || '<?php echo esc_js( __( 'アイテムが見つかりませんでした。', 'bf-secret-file-downloader' ) ); ?>')
+                : (strings.noItemsFound || '<?php echo esc_js( __('No items found.', 'bf-secret-file-downloader' ) ); ?>')
         );
 
         // Update file list
@@ -1278,7 +1278,7 @@ jQuery(document).ready(function($) {
             var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
             tbody.append(
                 '<tr><td colspan="5" style="text-align: center; padding: 40px;">' +
-                (strings.noFilesFound || '<?php esc_html_e( 'ファイルまたはディレクトリが見つかりませんでした。', 'bf-secret-file-downloader' ); ?>') +
+                (strings.noFilesFound || '<?php esc_html_e('No files or directories found.', 'bf-secret-file-downloader' ); ?>') +
                 '</td></tr>'
             );
         }
@@ -1294,16 +1294,16 @@ jQuery(document).ready(function($) {
         // Top tablenav including bulk action menu
         var topTablenav = '<div class="tablenav top">' +
             '<div class="alignleft actions bulkactions">' +
-            '<label for="bulk-action-selector-top" class="screen-reader-text">' + '<?php echo esc_js( __( '一括操作を選択', 'bf-secret-file-downloader' ) ); ?>' + '</label>' +
+            '<label for="bulk-action-selector-top" class="screen-reader-text">' + '<?php echo esc_js( __('Select bulk action', 'bf-secret-file-downloader' ) ); ?>' + '</label>' +
             '<select name="action" id="bulk-action-selector-top">' +
-            '<option value="-1">' + '<?php echo esc_js( __( '一括操作', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
+            '<option value="-1">' + '<?php echo esc_js( __('Bulk actions', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
 
         if (data.current_user_can_delete) {
-            topTablenav += '<option value="delete">' + '<?php echo esc_js( __( '削除', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
+            topTablenav += '<option value="delete">' + '<?php echo esc_js( __('Delete', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
         }
 
         topTablenav += '</select>' +
-            '<input type="submit" id="doaction" class="button action" value="' + '<?php echo esc_js( __( '適用', 'bf-secret-file-downloader' ) ); ?>' + '">' +
+            '<input type="submit" id="doaction" class="button action" value="' + '<?php echo esc_js( __('Apply', 'bf-secret-file-downloader' ) ); ?>' + '">' +
             '</div>';
 
         if (data.total_pages > 1) {
@@ -1328,7 +1328,7 @@ jQuery(document).ready(function($) {
 
         // Previous page
         if (currentPage > 1) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + '<?php echo esc_js( __( '前', 'bf-secret-file-downloader' ) ); ?>' + '</a>';
+            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + '<?php echo esc_js( __('Previous', 'bf-secret-file-downloader' ) ); ?>' + '</a>';
         }
 
         // Page number
@@ -1345,7 +1345,7 @@ jQuery(document).ready(function($) {
 
         // Next page
         if (currentPage < totalPages) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + '<?php echo esc_js( __( '次', 'bf-secret-file-downloader' ) ); ?>' + ' &raquo;</a>';
+            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + '<?php echo esc_js( __('Next', 'bf-secret-file-downloader' ) ); ?>' + ' &raquo;</a>';
         }
 
         html += '</span>';
@@ -1456,7 +1456,7 @@ jQuery(document).ready(function($) {
         var errors = [];
 
         $('#upload-progress').show();
-        updateUploadProgress(0, '<?php esc_html_e( 'アップロードを開始しています...', 'bf-secret-file-downloader' ); ?>');
+        updateUploadProgress(0, '<?php esc_html_e('Starting upload...', 'bf-secret-file-downloader' ); ?>');
 
         // Upload each file in order
         function uploadNextFile(index) {
@@ -1465,10 +1465,10 @@ jQuery(document).ready(function($) {
                 $('#upload-progress').hide();
 
                 if (errors.length > 0) {
-                    alert('<?php esc_html_e( '一部のファイルでエラーが発生しました:', 'bf-secret-file-downloader' ); ?>\n' + errors.join('\n'));
+                    alert('<?php esc_html_e('Errors occurred with some files:', 'bf-secret-file-downloader' ); ?>\n' + errors.join('\n'));
                 } else {
                     // Show success message
-                    showSuccessMessage(uploadedCount + '<?php esc_html_e( '個のファイルをアップロードしました。', 'bf-secret-file-downloader' ); ?>');
+                    showSuccessMessage(uploadedCount + '<?php esc_html_e('files uploaded.', 'bf-secret-file-downloader' ); ?>');
                 }
 
                 // Update file list
@@ -1481,14 +1481,14 @@ jQuery(document).ready(function($) {
 
             // File size check
             if (file.size > maxFileSize) {
-                errors.push(fileName + ': <?php esc_html_e( 'ファイルサイズが制限を超えています', 'bf-secret-file-downloader' ); ?>');
+                errors.push(fileName + ': <?php esc_html_e('File size exceeds limit', 'bf-secret-file-downloader' ); ?>');
                 uploadNextFile(index + 1);
                 return;
             }
 
             // Program code file check
             if (isProgramCodeFile(fileName)) {
-                errors.push(fileName + ': <?php esc_html_e( 'セキュリティ上の理由により、プログラムコードファイルはアップロードできません', 'bf-secret-file-downloader' ); ?>');
+                errors.push(fileName + ': <?php esc_html_e('Cannot upload for security reasons', 'bf-secret-file-downloader' ); ?>');
                 uploadNextFile(index + 1);
                 return;
             }
@@ -1502,7 +1502,7 @@ jQuery(document).ready(function($) {
 
             // Update upload progress
             var progress = Math.round(((index + 1) / totalFiles) * 100);
-            updateUploadProgress(progress, '<?php esc_html_e( 'アップロード中:', 'bf-secret-file-downloader' ); ?> ' + fileName);
+            updateUploadProgress(progress, '<?php esc_html_e('Uploading:', 'bf-secret-file-downloader' ); ?> ' + fileName);
 
             // Send AJAX
             $.ajax({
@@ -1515,12 +1515,12 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         uploadedCount++;
                     } else {
-                        errors.push(fileName + ': ' + (response.data || '<?php esc_html_e( 'アップロードに失敗しました', 'bf-secret-file-downloader' ); ?>'));
+                        errors.push(fileName + ': ' + (response.data || '<?php esc_html_e('Upload failed', 'bf-secret-file-downloader' ); ?>'));
                     }
                     uploadNextFile(index + 1);
                 },
                 error: function() {
-                    errors.push(fileName + ': <?php esc_html_e( '通信エラーが発生しました', 'bf-secret-file-downloader' ); ?>');
+                    errors.push(fileName + ': <?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
                     uploadNextFile(index + 1);
                 }
             });
@@ -1549,7 +1549,7 @@ jQuery(document).ready(function($) {
 
         // Relative path is OK even if it is empty (root directory)
         if (!directoryName) {
-            alert('<?php esc_html_e( 'ディレクトリ名を入力してください。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Please enter directory name.', 'bf-secret-file-downloader' ); ?>');
             $('#directory-name-input').focus();
             return;
         }
@@ -1557,20 +1557,20 @@ jQuery(document).ready(function($) {
         // Directory name validation
         var validPattern = /^[a-zA-Z0-9_\-\.]+$/;
         if (!validPattern.test(directoryName)) {
-            alert('<?php esc_html_e( 'ディレクトリ名に使用できない文字が含まれています。英数字、アンダーバー、ハイフン、ドットのみ使用できます。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Directory name contains invalid characters. Only alphanumeric characters, underscores, hyphens, and dots are allowed.', 'bf-secret-file-downloader' ); ?>');
             $('#directory-name-input').focus();
             return;
         }
 
         // Check if the directory name starts with a dot
         if (directoryName.charAt(0) === '.') {
-            alert('<?php esc_html_e( 'ドットで始まるディレクトリ名は作成できません。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Cannot create directory names starting with a dot.', 'bf-secret-file-downloader' ); ?>');
             $('#directory-name-input').focus();
             return;
         }
 
         // Disable button
-        $('#create-directory-submit').prop('disabled', true).text('<?php esc_html_e( '作成中...', 'bf-secret-file-downloader' ); ?>');
+        $('#create-directory-submit').prop('disabled', true).text('<?php esc_html_e('Creating...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1590,27 +1590,27 @@ jQuery(document).ready(function($) {
                     // Update file list
                     navigateToDirectory(currentPath, 1);
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'ディレクトリの作成に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to create directory.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 // Enable button
-                $('#create-directory-submit').prop('disabled', false).text('<?php esc_html_e( '作成', 'bf-secret-file-downloader' ); ?>');
+                $('#create-directory-submit').prop('disabled', false).text('<?php esc_html_e('Create', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
     function downloadFile(filePath, fileName) {
         if (!filePath) {
-            alert('<?php esc_html_e( 'ファイルパスが無効です。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Invalid file path.', 'bf-secret-file-downloader' ); ?>');
             return;
         }
 
         // Message for starting download process
-        showSuccessMessage('<?php esc_html_e( 'ダウンロードを準備しています...', 'bf-secret-file-downloader' ); ?>');
+        showSuccessMessage('<?php esc_html_e('Preparing download...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1631,13 +1631,13 @@ jQuery(document).ready(function($) {
                     link.click();
                     document.body.removeChild(link);
 
-                    showSuccessMessage('<?php esc_html_e( 'ダウンロードを開始しました。', 'bf-secret-file-downloader' ); ?>');
+                    showSuccessMessage('<?php esc_html_e('Download started.', 'bf-secret-file-downloader' ); ?>');
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'ダウンロードに失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Download failed.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
@@ -1646,10 +1646,10 @@ jQuery(document).ready(function($) {
         var confirmMessage = fileType === 'directory'
             ? '<?php
                 /* translators: %s: directory name */
-                echo esc_js( __( 'ディレクトリ「%s」とその中身すべてを削除しますか？この操作は取り消せません。', 'bf-secret-file-downloader' ) ); ?>'
+                echo esc_js( __('Delete directory \'%s\' and all its contents? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>'
             : '<?php
                 /* translators: %s: filename */
-                echo esc_js( __( 'ファイル「%s」を削除しますか？この操作は取り消せません。', 'bf-secret-file-downloader' ) ); ?>';
+                echo esc_js( __('Delete file \'%s\'? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>';
 
         if (!confirm(confirmMessage.replace('%s', fileName))) {
             return;
@@ -1658,7 +1658,7 @@ jQuery(document).ready(function($) {
         // Update the display during the deletion process
         var deleteLink = $('a[data-file-path="' + filePath + '"].delete-file-link');
         var originalText = deleteLink.text();
-        deleteLink.text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>').prop('disabled', true).css('color', '#999');
+        deleteLink.text('<?php esc_html_e('Deleting...', 'bf-secret-file-downloader' ); ?>').prop('disabled', true).css('color', '#999');
 
         $.ajax({
             url: ajaxurl,
@@ -1692,7 +1692,7 @@ jQuery(document).ready(function($) {
                     // Update file list
                     navigateToDirectory(targetPath, 1);
                 } else {
-                    var errorMsg = response.data || '<?php esc_html_e( 'ファイルの削除に失敗しました。', 'bf-secret-file-downloader' ); ?>';
+                    var errorMsg = response.data || '<?php esc_html_e('Failed to delete file.', 'bf-secret-file-downloader' ); ?>';
                     console.log('削除処理がサーバー側で失敗:', errorMsg);
                     alert(errorMsg);
 
@@ -1702,7 +1702,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 console.log('削除処理で通信エラーが発生:', {xhr: xhr, status: status, error: error});
-                alert('<?php esc_html_e( '削除処理で通信エラーが発生しました。再度お試しください。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred during deletion. Please try again.', 'bf-secret-file-downloader' ); ?>');
 
                 // Restore the deleted button when an error occurs
                 deleteLink.text(originalText).prop('disabled', false).css('color', '');
@@ -1729,11 +1729,11 @@ jQuery(document).ready(function($) {
         if (hasDirectories) {
             confirmMessage = '<?php
                 /* translators: %d: number of selected items */
-                echo esc_js( __( '選択された%d個のアイテム（ディレクトリを含む）とその中身すべてを削除しますか？この操作は取り消せません。', 'bf-secret-file-downloader' ) ); ?>';
+                echo esc_js( __('Delete %d selected items (including directories) and all their contents? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>';
         } else {
             confirmMessage = '<?php
                 /* translators: %d: number of selected items */
-                echo esc_js( __( '選択された%d個のアイテムを削除しますか？この操作は取り消せません。', 'bf-secret-file-downloader' ) ); ?>';
+                echo esc_js( __('Delete %d selected items? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>';
         }
 
         if (!confirm(confirmMessage.replace('%d', filePaths.length))) {
@@ -1741,7 +1741,7 @@ jQuery(document).ready(function($) {
         }
 
         // Disable the bulk delete button
-        $('#doaction').prop('disabled', true).val('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
+        $('#doaction').prop('disabled', true).val('<?php esc_html_e('Deleting...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1771,18 +1771,18 @@ jQuery(document).ready(function($) {
                     // Update file list
                     navigateToDirectory(targetPath, 1);
                 } else {
-                    var errorMsg = response.data || '<?php esc_html_e( '一括削除処理に失敗しました。', 'bf-secret-file-downloader' ); ?>';
+                    var errorMsg = response.data || '<?php esc_html_e('Bulk delete failed.', 'bf-secret-file-downloader' ); ?>';
                     console.log('一括削除処理がサーバー側で失敗:', errorMsg);
                     alert(errorMsg);
                 }
             },
             error: function(xhr, status, error) {
                 console.log('一括削除処理で通信エラーが発生:', {xhr: xhr, status: status, error: error});
-                alert('<?php esc_html_e( '一括削除処理で通信エラーが発生しました。再度お試しください。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred during bulk deletion. Please try again.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 // Enable button
-                $('#doaction').prop('disabled', false).val('<?php esc_attr_e( '適用', 'bf-secret-file-downloader' ); ?>');
+                $('#doaction').prop('disabled', false).val('<?php esc_attr_e('Apply', 'bf-secret-file-downloader' ); ?>');
 
                 // Clear checkboxes
                 $('input[name="file_paths[]"]').prop('checked', false);
@@ -1799,9 +1799,9 @@ jQuery(document).ready(function($) {
 
         // Update the modal title
         if (hasPassword) {
-            $('#bf-password-modal-title').text('<?php esc_html_e( 'ディレクトリパスワード管理', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-password-modal-title').text('<?php esc_html_e('Directory password management', 'bf-secret-file-downloader' ); ?>');
         } else {
-            $('#bf-password-modal-title').text('<?php esc_html_e( 'ディレクトリパスワード設定', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-password-modal-title').text('<?php esc_html_e('Directory password settings', 'bf-secret-file-downloader' ); ?>');
         }
 
         // Update the current status display
@@ -1811,22 +1811,22 @@ jQuery(document).ready(function($) {
         if (hasPassword) {
             statusIcon.removeClass('dashicons-unlock').addClass('dashicons-lock');
             statusIcon.css('color', '#d63638');
-            statusDescription.html('<?php esc_html_e( 'このディレクトリ（', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e( '）は現在パスワード保護されています。', 'bf-secret-file-downloader' ); ?>');
-            $('#bf-password-modal-description').text('<?php esc_html_e( '新しいパスワードを入力して変更するか、下の「パスワード保護を解除」ボタンで保護を解除できます。', 'bf-secret-file-downloader' ); ?>');
+            statusDescription.html('<?php esc_html_e('This directory (', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e(') is currently password protected.', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-password-modal-description').text('<?php esc_html_e('Enter a new password to change it, or remove protection using the \'Remove password protection\' button below.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-remove-password').show();
             $('#bf-show-current-password').show();
         } else {
             statusIcon.removeClass('dashicons-lock').addClass('dashicons-unlock');
             statusIcon.css('color', '#46b450');
-            statusDescription.html('<?php esc_html_e( 'このディレクトリ（', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e( '）はパスワード保護されていません。', 'bf-secret-file-downloader' ); ?>');
-            $('#bf-password-modal-description').text('<?php esc_html_e( 'このディレクトリ内のファイルをダウンロードする際に要求するパスワードを設定してください。', 'bf-secret-file-downloader' ); ?>');
+            statusDescription.html('<?php esc_html_e('This directory (', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e(') is not password protected.', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-password-modal-description').text('<?php esc_html_e('Please set a password that will be required when downloading files in this directory.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-remove-password').hide();
             $('#bf-show-current-password').hide();
         }
 
         // Clear the password field
         $('#bf-directory-password-input').val('').attr('type', 'password');
-        $('#bf-password-toggle').text('<?php esc_html_e( '表示', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-password-toggle').text('<?php esc_html_e('Show', 'bf-secret-file-downloader' ); ?>');
 
         // Show the modal
         $('#bf-directory-password-modal').fadeIn(300);
@@ -1849,19 +1849,19 @@ jQuery(document).ready(function($) {
         var password = $('#bf-directory-password-input').val().trim();
 
         if (!password) {
-            alert('<?php esc_html_e( 'パスワードを入力してください。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Please enter password.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-directory-password-input').focus();
             return;
         }
 
         if (password.length < 4) {
-            alert('<?php esc_html_e( 'パスワードは4文字以上で入力してください。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Password must be at least 4 characters.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-directory-password-input').focus();
             return;
         }
 
         // Disable button
-        $('#bf-save-password').prop('disabled', true).text('<?php esc_html_e( '保存中...', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-save-password').prop('disabled', true).text('<?php esc_html_e('Saving...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1879,29 +1879,29 @@ jQuery(document).ready(function($) {
                     closeDirectoryPasswordModal();
                     updatePasswordIndicator(response.data.has_password);
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'パスワードの設定に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to set password.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 // Enable button
-                $('#bf-save-password').prop('disabled', false).text('<?php esc_html_e( '保存', 'bf-secret-file-downloader' ); ?>');
+                $('#bf-save-password').prop('disabled', false).text('<?php esc_html_e('Save', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
     // Remove the directory password
     function removeDirectoryPassword() {
-        if (!confirm('<?php esc_html_e( 'このディレクトリのパスワード保護を解除しますか？', 'bf-secret-file-downloader' ); ?>')) {
+        if (!confirm('<?php esc_html_e('Remove password protection for this directory?', 'bf-secret-file-downloader' ); ?>')) {
             return;
         }
 
         var currentPath = $('#current-path').val();
 
         // Disable button
-        $('#bf-remove-password').prop('disabled', true).text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-remove-password').prop('disabled', true).text('<?php esc_html_e('Deleting...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1918,15 +1918,15 @@ jQuery(document).ready(function($) {
                     closeDirectoryPasswordModal();
                     updatePasswordIndicator(response.data.has_password);
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'パスワードの削除に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to remove password.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 // Enable button
-                $('#bf-remove-password').prop('disabled', false).text('<?php esc_html_e( 'パスワードを削除', 'bf-secret-file-downloader' ); ?>');
+                $('#bf-remove-password').prop('disabled', false).text('<?php esc_html_e('Remove password', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
@@ -1942,13 +1942,13 @@ jQuery(document).ready(function($) {
                 if (passwordIndicator.length === 0) {
                     $('#current-path').after('<span class="bf-password-indicator">' +
                         '<span class="dashicons dashicons-lock"></span>' +
-                        '<span class="bf-password-status-text"><?php esc_html_e( 'パスワード保護中', 'bf-secret-file-downloader' ); ?></span>' +
+                        '<span class="bf-password-status-text"><?php esc_html_e('Password protected', 'bf-secret-file-downloader' ); ?></span>' +
                         '</span>');
                 }
-                passwordButton.html('<span class="dashicons dashicons-admin-network"></span><?php esc_html_e( 'パスワード管理', 'bf-secret-file-downloader' ); ?>');
+                passwordButton.html('<span class="dashicons dashicons-admin-network"></span><?php esc_html_e('Password management', 'bf-secret-file-downloader' ); ?>');
             } else {
                 passwordIndicator.remove();
-                passwordButton.html('<span class="dashicons dashicons-admin-network"></span><?php esc_html_e( 'パスワード設定', 'bf-secret-file-downloader' ); ?>');
+                passwordButton.html('<span class="dashicons dashicons-admin-network"></span><?php esc_html_e('Password settings', 'bf-secret-file-downloader' ); ?>');
             }
         }
     }
@@ -1958,7 +1958,7 @@ jQuery(document).ready(function($) {
         var currentPath = $('#current-path').val();
 
         // Disable button
-        $('#bf-show-current-password').prop('disabled', true).text('<?php esc_html_e( '取得中...', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-show-current-password').prop('disabled', true).text('<?php esc_html_e('Retrieving...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -1970,17 +1970,17 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('<?php esc_html_e( '現在のパスワード: ', 'bf-secret-file-downloader' ); ?>' + response.data.password);
+                    alert('<?php esc_html_e('Current password: ', 'bf-secret-file-downloader' ); ?>' + response.data.password);
                 } else {
-                    alert(response.data || '<?php esc_html_e( 'パスワードの取得に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to retrieve password.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
                 // Enable button
-                $('#bf-show-current-password').prop('disabled', false).text('<?php esc_html_e( '現在のパスワード', 'bf-secret-file-downloader' ); ?>');
+                $('#bf-show-current-password').prop('disabled', false).text('<?php esc_html_e('Current password', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
@@ -2047,9 +2047,9 @@ jQuery(document).ready(function($) {
         // Use the modern browser Clipboard API
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(url).then(function() {
-                showSuccessMessage('<?php esc_html_e( 'URLをクリップボードにコピーしました:', 'bf-secret-file-downloader' ); ?> ' + url);
+                showSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
             }).catch(function(err) {
-                console.error('<?php esc_html_e( 'クリップボードへのコピーに失敗しました:', 'bf-secret-file-downloader' ); ?>', err);
+                console.error('<?php esc_html_e('Failed to copy to clipboard:', 'bf-secret-file-downloader' ); ?>', err);
                 copyUrlFallback(url);
             });
         } else {
@@ -2085,12 +2085,12 @@ jQuery(document).ready(function($) {
         try {
             var successful = document.execCommand('copy');
             if (successful) {
-                showSuccessMessage('<?php esc_html_e( 'ダウンロードURLをクリップボードにコピーしました:', 'bf-secret-file-downloader' ); ?> ' + url);
+                showSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
             } else {
                 showUrlPrompt(url);
             }
         } catch (err) {
-            console.error('<?php esc_html_e( 'クリップボードへのコピーに失敗しました:', 'bf-secret-file-downloader' ); ?>', err);
+            console.error('<?php esc_html_e('Failed to copy to clipboard:', 'bf-secret-file-downloader' ); ?>', err);
             showUrlPrompt(url);
         }
 
@@ -2099,7 +2099,7 @@ jQuery(document).ready(function($) {
 
     // Display URL for manual copy
     function showUrlPrompt(url) {
-        prompt('<?php esc_html_e( '以下のURLをコピーしてください:', 'bf-secret-file-downloader' ); ?>', url);
+        prompt('<?php esc_html_e('Please copy the following download URL:', 'bf-secret-file-downloader' ); ?>', url);
     }
 
     // Open the directory authentication modal
@@ -2110,9 +2110,9 @@ jQuery(document).ready(function($) {
 
         // Update the modal title
         if (hasAuth) {
-            $('#bf-auth-modal-title').text('<?php esc_html_e( 'ディレクトリ認証設定管理', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-auth-modal-title').text('<?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?>');
         } else {
-            $('#bf-auth-modal-title').text('<?php esc_html_e( 'ディレクトリ認証設定', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-auth-modal-title').text('<?php esc_html_e('Directory authentication settings', 'bf-secret-file-downloader' ); ?>');
         }
 
         // Update the current status display
@@ -2122,15 +2122,15 @@ jQuery(document).ready(function($) {
         if (hasAuth) {
             statusIcon.removeClass('dashicons-unlock').addClass('dashicons-lock');
             statusIcon.css('color', '#0073aa');
-            statusDescription.html('<?php esc_html_e( 'このディレクトリ（', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e( '）にはディレクトリ毎の認証設定があります。', 'bf-secret-file-downloader' ); ?>');
-            $('#bf-auth-modal-description').text('<?php esc_html_e( 'ディレクトリ毎設定を変更するか、下の「ディレクトリ毎設定削除」ボタンで共通設定に戻すことができます。', 'bf-secret-file-downloader' ); ?>');
+            statusDescription.html('<?php esc_html_e('This directory (', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e('Target directory is not configured.', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-auth-modal-description').text('<?php esc_html_e('Change directory-specific settings or return to common settings using the \'Delete directory-specific settings\' button below.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-remove-auth').show();
             $('#bf-show-current-auth').show();
         } else {
             statusIcon.removeClass('dashicons-lock').addClass('dashicons-admin-users');
             statusIcon.css('color', '#666');
-            statusDescription.html('<?php esc_html_e( 'このディレクトリ（', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e( '）にはディレクトリ毎の認証設定がありません。', 'bf-secret-file-downloader' ); ?>');
-            $('#bf-auth-modal-description').text('<?php esc_html_e( '共通設定が適用されています。ディレクトリ毎の認証設定を追加する場合は、下の設定を行ってください。', 'bf-secret-file-downloader' ); ?>');
+            statusDescription.html('<?php esc_html_e('This directory (', 'bf-secret-file-downloader' ); ?><code>' + currentPathDisplay + '</code><?php esc_html_e('Target directory is not configured.', 'bf-secret-file-downloader' ); ?>');
+            $('#bf-auth-modal-description').text('<?php esc_html_e('Common settings are applied. To add directory-specific authentication settings, configure them below.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-remove-auth').hide();
             $('#bf-show-current-auth').hide();
         }
@@ -2221,7 +2221,7 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '認証設定の取得に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Failed to retrieve authentication settings.', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
@@ -2244,19 +2244,19 @@ jQuery(document).ready(function($) {
         });
 
         if (authMethods.length === 0) {
-            alert('<?php esc_html_e( '認証方法を選択してください。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('Please select an authentication method.', 'bf-secret-file-downloader' ); ?>');
             return;
         }
 
         // If simple authentication is selected, a password is required
         if (authMethods.includes('simple_auth') && !simpleAuthPassword) {
-            alert('<?php esc_html_e( '簡易認証を選択した場合は、パスワードを設定してください。', 'bf-secret-file-downloader' ); ?>');
+            alert('<?php esc_html_e('If you select simple authentication, please set a password.', 'bf-secret-file-downloader' ); ?>');
             $('#bf-simple-auth-password').focus();
             return;
         }
 
         // Disable button
-        $('#bf-save-auth').prop('disabled', true).text('<?php esc_html_e( '保存中...', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-save-auth').prop('disabled', true).text('<?php esc_html_e('Saving...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -2281,28 +2281,28 @@ jQuery(document).ready(function($) {
                         loadDirectoryAuthSettings(currentPath);
                     }
                 } else {
-                    alert(response.data || '<?php esc_html_e( '認証設定の保存に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to save authentication settings.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                $('#bf-save-auth').prop('disabled', false).text('<?php esc_html_e( '保存', 'bf-secret-file-downloader' ); ?>');
+                $('#bf-save-auth').prop('disabled', false).text('<?php esc_html_e('Save', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
 
     // Remove the directory authentication settings
     function removeDirectoryAuth() {
-        if (!confirm('<?php esc_html_e( 'このディレクトリの認証設定を削除しますか？共通設定に戻ります。', 'bf-secret-file-downloader' ); ?>')) {
+        if (!confirm('<?php esc_html_e('Remove authentication settings for this directory?', 'bf-secret-file-downloader' ); ?>')) {
             return;
         }
 
         var currentPath = $('#current-path').val();
 
         // Disable button
-        $('#bf-remove-auth').prop('disabled', true).text('<?php esc_html_e( '削除中...', 'bf-secret-file-downloader' ); ?>');
+        $('#bf-remove-auth').prop('disabled', true).text('<?php esc_html_e('Deleting...', 'bf-secret-file-downloader' ); ?>');
 
         $.ajax({
             url: ajaxurl,
@@ -2319,14 +2319,14 @@ jQuery(document).ready(function($) {
                     closeDirectoryAuthModal();
                     updateAuthIndicator(response.data.has_auth);
                 } else {
-                    alert(response.data || '<?php esc_html_e( '認証設定の削除に失敗しました。', 'bf-secret-file-downloader' ); ?>');
+                    alert(response.data || '<?php esc_html_e('Failed to delete authentication settings.', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function() {
-                alert('<?php esc_html_e( '通信エラーが発生しました。', 'bf-secret-file-downloader' ); ?>');
+                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
             },
             complete: function() {
-                $('#bf-remove-auth').prop('disabled', false).text('<?php esc_html_e( '認証設定を削除', 'bf-secret-file-downloader' ); ?>');
+                $('#bf-remove-auth').prop('disabled', false).text('<?php esc_html_e('Delete authentication settings', 'bf-secret-file-downloader' ); ?>');
             }
         });
     }
@@ -2338,25 +2338,25 @@ jQuery(document).ready(function($) {
         var detailsHtml = '<div class="auth-details-list">';
 
         // Display authentication method
-        detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '認証方法:', 'bf-secret-file-downloader' ); ?></strong> ';
+        detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Authentication method:', 'bf-secret-file-downloader' ); ?></strong> ';
         var authMethods = [];
         if (authSettings.auth_methods.includes('logged_in')) {
-            authMethods.push('<?php esc_html_e( 'ログインユーザー', 'bf-secret-file-downloader' ); ?>');
+            authMethods.push('<?php esc_html_e('Login user', 'bf-secret-file-downloader' ); ?>');
         }
         if (authSettings.auth_methods.includes('simple_auth')) {
-            authMethods.push('<?php esc_html_e( '簡易認証', 'bf-secret-file-downloader' ); ?>');
+            authMethods.push('<?php esc_html_e('Simple authentication', 'bf-secret-file-downloader' ); ?>');
         }
         detailsHtml += authMethods.join(', ') + '</div>';
 
         // Display allowed roles
         if (authSettings.allowed_roles && authSettings.allowed_roles.length > 0) {
-            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '許可ロール:', 'bf-secret-file-downloader' ); ?></strong> ';
+            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Allowed roles:', 'bf-secret-file-downloader' ); ?></strong> ';
             var roleLabels = {
-                'administrator': '<?php esc_html_e( '管理者', 'bf-secret-file-downloader' ); ?>',
-                'editor': '<?php esc_html_e( '編集者', 'bf-secret-file-downloader' ); ?>',
-                'author': '<?php esc_html_e( '投稿者', 'bf-secret-file-downloader' ); ?>',
-                'contributor': '<?php esc_html_e( '寄稿者', 'bf-secret-file-downloader' ); ?>',
-                'subscriber': '<?php esc_html_e( '購読者', 'bf-secret-file-downloader' ); ?>'
+                'administrator': '<?php esc_html_e('Administrator', 'bf-secret-file-downloader' ); ?>',
+                'editor': '<?php esc_html_e('Editor', 'bf-secret-file-downloader' ); ?>',
+                'author': '<?php esc_html_e('Author', 'bf-secret-file-downloader' ); ?>',
+                'contributor': '<?php esc_html_e('Contributor', 'bf-secret-file-downloader' ); ?>',
+                'subscriber': '<?php esc_html_e('Subscriber', 'bf-secret-file-downloader' ); ?>'
             };
             var roles = authSettings.allowed_roles.map(function(role) {
                 return roleLabels[role] || role;
@@ -2366,7 +2366,7 @@ jQuery(document).ready(function($) {
 
         // Display simple authentication password
         if (authSettings.auth_methods.includes('simple_auth') && authSettings.simple_auth_password) {
-            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e( '簡易認証パスワード:', 'bf-secret-file-downloader' ); ?></strong> ';
+            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Simple authentication password:', 'bf-secret-file-downloader' ); ?></strong> ';
             detailsHtml += '••••••••</div>';
         }
 
@@ -2384,10 +2384,10 @@ jQuery(document).ready(function($) {
 
         if (hasAuth) {
             if (indicator.length === 0) {
-                $('.bf-path-info').append('<span class="bf-auth-indicator"><span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e( 'ディレクトリ毎認証設定あり', 'bf-secret-file-downloader' ); ?></span></span>');
+                $('.bf-path-info').append('<span class="bf-auth-indicator"><span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?></span></span>');
             } else {
                 // Update the existing indicator
-                indicator.html('<span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e( 'ディレクトリ毎認証設定あり', 'bf-secret-file-downloader' ); ?></span>');
+                indicator.html('<span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?></span>');
                 indicator.css('color', '');
             }
 
@@ -2401,9 +2401,9 @@ jQuery(document).ready(function($) {
         } else {
             // If there are no directory-specific settings, display "Common authentication settings applied"
             if (indicator.length === 0) {
-                $('.bf-path-info').append('<span class="bf-auth-indicator" style="color: #666;"><span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e( '共通認証設定適用中', 'bf-secret-file-downloader' ); ?></span></span>');
+                $('.bf-path-info').append('<span class="bf-auth-indicator" style="color: #666;"><span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e('Common authentication settings applied', 'bf-secret-file-downloader' ); ?></span></span>');
             } else {
-                indicator.html('<span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e( '共通認証設定適用中', 'bf-secret-file-downloader' ); ?></span>');
+                indicator.html('<span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e('Common authentication settings applied', 'bf-secret-file-downloader' ); ?></span>');
                 indicator.css('color', '#666');
             }
             authDetails.remove();
@@ -2452,8 +2452,8 @@ jQuery(document).ready(function($) {
         var $status = $('#bf-recreate-status');
 
         // Disable button
-        $button.prop('disabled', true).text('<?php esc_html_e( '作成中...', 'bf-secret-file-downloader' ); ?>');
-        $status.html('<span style="color: #0073aa;"><?php esc_html_e( '処理中...', 'bf-secret-file-downloader' ); ?></span>');
+        $button.prop('disabled', true).text('<?php esc_html_e('Creating...', 'bf-secret-file-downloader' ); ?>');
+        $status.html('<span style="color: #0073aa;"><?php esc_html_e('Processing...', 'bf-secret-file-downloader' ); ?></span>');
 
         $.ajax({
             url: ajaxurl,
@@ -2472,12 +2472,12 @@ jQuery(document).ready(function($) {
                     }, 3000);
                 } else {
                     $status.html('<span style="color: #dc3232;">' + response.data + '</span>');
-                    $button.prop('disabled', false).text('<?php esc_html_e( 'ディレクトリを作成', 'bf-secret-file-downloader' ); ?>');
+                    $button.prop('disabled', false).text('<?php esc_html_e('Create directory', 'bf-secret-file-downloader' ); ?>');
                 }
             },
             error: function(xhr, status, error) {
-                $status.html('<span style="color: #dc3232;"><?php esc_html_e( 'エラーが発生しました', 'bf-secret-file-downloader' ); ?>: ' + error + '</span>');
-                $button.prop('disabled', false).text('<?php esc_html_e( 'セキュアディレクトリを自動作成', 'bf-secret-file-downloader' ); ?>');
+                $status.html('<span style="color: #dc3232;"><?php esc_html_e('An error occurred', 'bf-secret-file-downloader' ); ?>: ' + error + '</span>');
+                $button.prop('disabled', false).text('<?php esc_html_e('Create directory', 'bf-secret-file-downloader' ); ?>');
             }
         });
     });

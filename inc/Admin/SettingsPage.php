@@ -84,7 +84,7 @@ class SettingsPage {
         // Menu title settings
         register_setting( 'bf_sfd_settings', 'bf_sfd_menu_title', array(
             'type' => 'string',
-            'default' => __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ),
+            'default' => __('BF Secret File Downloader', 'bf-secret-file-downloader' ),
             'sanitize_callback' => array( $this, 'sanitize_menu_title' )
         ) );
 
@@ -253,7 +253,7 @@ class SettingsPage {
      * @return string Plugin menu title
      */
     private function get_plugin_menu_title() {
-        return get_option( 'bf_sfd_menu_title', __( 'BF Secret File Downloader', 'bf-secret-file-downloader' ) );
+        return get_option( 'bf_sfd_menu_title', __('BF Secret File Downloader', 'bf-secret-file-downloader' ) );
     }
 
     /**
@@ -295,7 +295,7 @@ class SettingsPage {
 
         // 空の場合はデフォルト値を返す
         if ( empty( $sanitized ) ) {
-            return __( 'BF Secret File Downloader', 'bf-secret-file-downloader' );
+            return __('BF Secret File Downloader', 'bf-secret-file-downloader' );
         }
 
         // 最大文字数制限（50文字まで）
@@ -324,7 +324,7 @@ class SettingsPage {
                 add_settings_error(
                     'bf_sfd_simple_auth_password',
                     'password_required',
-                    __( '簡易認証を有効にする場合は、パスワードの設定が必要です。', 'bf-secret-file-downloader' ),
+                    __('A password is required when enabling simple authentication.', 'bf-secret-file-downloader' ),
                     'error'
                 );
                 // Keep current password (do not empty)
@@ -459,7 +459,7 @@ class SettingsPage {
      * @return string Page title
      */
     public function get_page_title() {
-        return __( '設定', 'bf-secret-file-downloader' );
+        return __('Settings', 'bf-secret-file-downloader' );
     }
 
     /**
@@ -468,7 +468,7 @@ class SettingsPage {
      * @return string Menu title
      */
     public function get_menu_title() {
-        return __( '設定', 'bf-secret-file-downloader' );
+        return __('Settings', 'bf-secret-file-downloader' );
     }
 
     /**

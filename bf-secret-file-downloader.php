@@ -61,19 +61,10 @@ spl_autoload_register( 'bf_secret_file_downloader_autoloader' );
  * Load the text domain
  */
 function bf_secret_file_downloader_load_textdomain() {
-    // Get the site locale
-    $locale = determine_locale();
-    // Specify the path to the translation file
-    $path = plugin_dir_path( __FILE__ ) . 'languages';
-
-
-    // Load the translation file only for English settings
-    if ( strpos( $locale, 'en' ) === 0 ) {
-        // Load the translation file for PHP files
-        $mo_file = $path . '/bf-secret-file-downloader-en_US.mo';
-        load_textdomain( 'bf-secret-file-downloader', $mo_file );
-    }
-
+    // Use standard WordPress loading based on current locale.
+    // After source strings are switched to English, WordPress will load
+    // languages/bf-secret-file-downloader-<locale>.mo automatically when available.
+    load_plugin_textdomain( 'bf-secret-file-downloader', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 
 /**
@@ -108,4 +99,3 @@ function bf_secret_file_downloader_activate() {
 }
 
 register_activation_hook( __FILE__, 'bf_secret_file_downloader_activate' );
-
