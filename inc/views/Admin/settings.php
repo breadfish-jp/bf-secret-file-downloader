@@ -5,31 +5,30 @@
  * @package BfSecretFileDownloader
  *
  * 利用可能な変数:
- * @var bool   $enable_auth        BASIC認証有効フラグ
- * @var int    $max_file_size      最大ファイルサイズ
- * @var bool   $log_downloads      ダウンロードログ有効フラグ
- * @var string $security_level     セキュリティレベル
- * @var string $target_directory    対象ディレクトリ
- * @var array  $auth_methods       認証方法の配列
- * @var array  $allowed_roles      許可するユーザーロールの配列
- * @var string $simple_auth_password 簡易認証パスワード
- * @var string $menu_title         メニュータイトル
- * @var bool   $allow_editor_admin 編集者管理権限有効フラグ
- * @var int    $auth_timeout       認証タイムアウト時間（分）
+ * @var int    $max_file_size      max file size
+ * @var bool   $log_downloads      log downloads flag
+ * @var string $security_level     security level
+ * @var string $target_directory   target directory
+ * @var array  $auth_methods       authentication methods
+ * @var array  $allowed_roles      allowed user roles
+ * @var string $simple_auth_password simple authentication password
+ * @var string $menu_title         menu title
+ * @var bool   $allow_editor_admin allow editor admin flag
+ * @var int    $auth_timeout       authentication timeout (minutes)
  *
- * @var string $nonce              AJAXノンス
+ * @var string $nonce              AJAX nonce
  *
  * 利用可能な関数:
- * @var callable $__                    翻訳関数
- * @var callable $esc_html             HTMLエスケープ関数
- * @var callable $esc_html_e           HTMLエスケープ出力関数
- * @var callable $get_admin_page_title ページタイトル取得関数
- * @var callable $settings_fields      設定フィールド関数
- * @var callable $do_settings_sections 設定セクション関数
- * @var callable $submit_button        送信ボタン関数
+ * @var callable $__                     translation function
+ * @var callable $esc_html             HTML escape function
+ * @var callable $esc_html_e           HTML escape output function
+ * @var callable $get_admin_page_title  get page title function
+ * @var callable $settings_fields       settings field function
+ * @var callable $do_settings_sections  settings section function
+ * @var callable $submit_button         submit button function
  */
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -56,16 +55,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 
-            <!-- 設定フォーム -->
+            <!-- Settings form -->
             <div class="bf-secret-file-downloader-settings-form">
                 <form method="post" action="options.php">
                     <?php settings_fields( 'bf_sfd_settings' ); ?>
                     <?php do_settings_sections( 'bf_sfd_settings' ); ?>
 
-                    <!-- 対象ディレクトリ設定 -->
+                    <!-- Target directory setting -->
                     <table class="form-table">
                         <tr>
-                            <th scope="row"><?php esc_html_e( '対象ディレクトリ', 'bf-secret-file-downloader' ); ?></th>
+                            <th scope="row"><?php esc_html_e( 'Target directory', 'bf-secret-file-downloader' ); ?></th>
                             <td>
                                 <div class="bf-directory-item">
                                     <code><?php echo esc_html( $target_directory ?: 'ディレクトリが設定されていません' ); ?></code>
@@ -77,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 
-                    <!-- 認証設定 -->
+                    <!-- Authentication settings -->
                     <h3><?php esc_html_e( '認証設定', 'bf-secret-file-downloader' ); ?></h3>
                     <table class="form-table">
                         <tr>
@@ -152,7 +151,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </tr>
                     </table>
 
-                    <!-- その他の設定 -->
+                    <!-- Other settings -->
                     <h3><?php esc_html_e( 'その他の設定', 'bf-secret-file-downloader' ); ?></h3>
                     <table class="form-table">
                         <tr>
@@ -189,14 +188,14 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <?php submit_button(); ?>
                 </form>
 
-                <!-- 設定リセットセクション -->
+                <!-- Reset settings section -->
                 <div class="bf-reset-settings-section" style="margin-top: 30px; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
                     <h3 style="margin-top: 0; color: #856404;"><?php esc_html_e( '設定のリセット', 'bf-secret-file-downloader' ); ?></h3>
                     <p style="margin-bottom: 15px; color: #856404;">
                         <?php esc_html_e( 'このボタンをクリックすると、すべての設定が初期状態にリセットされます。この操作は取り消すことができません。', 'bf-secret-file-downloader' ); ?>
                     </p>
 
-                    <!-- ファイル削除オプション -->
+                    <!-- File deletion option -->
                     <div style="margin-bottom: 15px;">
                         <label style="display: inline-flex; align-items: center; color: #856404;">
                             <input type="checkbox" id="bf-delete-files-on-reset" style="margin-right: 8px;">
@@ -219,12 +218,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <script>
 jQuery(document).ready(function($) {
-    // フィールドフォーカス時にエラーハイライトを解除
+    // When the field is focused, the error highlight is removed
     $('input[type="text"], input[type="password"]').on('focus', function() {
         $(this).removeClass('form-field-error');
     });
 
-    // 簡易認証チェックボックスの制御
+    // Simple authentication checkbox control
     $('#simple_auth_checkbox').on('change', function() {
         if ($(this).is(':checked')) {
             $('#simple_auth_password_section').show();
@@ -233,7 +232,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ログインユーザーチェックボックスの制御
+    // Login user checkbox control
     $('input[name="bf_sfd_auth_methods[]"][value="logged_in"]').on('change', function() {
         if ($(this).is(':checked')) {
             $('#allowed_roles_section').show();
@@ -242,7 +241,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ロール選択の制御
+    // Role selection control
     $('#bf-select-all-roles').on('click', function() {
         $('.bf-role-checkbox').prop('checked', true);
     });
@@ -251,7 +250,7 @@ jQuery(document).ready(function($) {
         $('.bf-role-checkbox').prop('checked', false);
     });
 
-    // 設定リセットボタンの制御
+    // Reset settings button control
     $('#bf-reset-settings').on('click', function() {
         var deleteFiles = $('#bf-delete-files-on-reset').is(':checked');
         var confirmMessage = deleteFiles
@@ -259,7 +258,7 @@ jQuery(document).ready(function($) {
             : '<?php esc_html_e( "本当にすべての設定をリセットしますか？この操作は取り消すことができません。", "bf-secret-file-downloader" ); ?>';
 
         if (confirm(confirmMessage)) {
-            // ボタンを無効化してローディング状態に
+            // Disable the button and set it to loading state
             var $button = $(this);
             var originalText = $button.text();
             $button.prop('disabled', true).text('<?php esc_html_e( "リセット中...", "bf-secret-file-downloader" ); ?>');
@@ -275,7 +274,7 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         alert(response.data.message);
-                        // ページをリロードして設定を反映
+                        // Reload the page to reflect the settings
                         location.reload();
                     } else {
                         alert('<?php esc_html_e( "設定のリセットに失敗しました。", "bf-secret-file-downloader" ); ?>');

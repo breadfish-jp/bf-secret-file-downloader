@@ -17,24 +17,24 @@
  * @package BfSecretFileDownloader
  */
 
-// セキュリティチェック：直接アクセスを防ぐ
+// Security check: prevent direct access
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// プラグインの定数を定義
+// Define plugin constants
 define( 'BF_SECRET_FILE_DOWNLOADER_VERSION', '1.0.0' );
 define( 'BF_SECRET_FILE_DOWNLOADER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BF_SECRET_FILE_DOWNLOADER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * オートローダー関数
- * 名前空間に基づいてクラスファイルを自動読み込みします
+ * Autoloader function
+ * Loads class files based on the namespace
  *
- * @param string $class_name クラス名（完全修飾名）
+ * @param string $class_name class name (fully qualified name)
  */
 function bf_secret_file_downloader_autoloader( $class_name ) {
-    // 名前空間のプレフィックスをチェック
+    // Check the namespace prefix
     $prefix = 'Breadfish\\SecretFileDownloader\\';
     $len = strlen( $prefix );
 
@@ -42,34 +42,34 @@ function bf_secret_file_downloader_autoloader( $class_name ) {
         return;
     }
 
-    // クラス名から名前空間プレフィックスを削除
+    // Remove the namespace prefix from the class name
     $relative_class = substr( $class_name, $len );
 
-    // ファイルパスを構築
+    // Build the file path
     $file = BF_SECRET_FILE_DOWNLOADER_PLUGIN_DIR . 'inc/' . str_replace( '\\', '/', $relative_class ) . '.php';
 
-    // ファイルが存在する場合は読み込み
+    // If the file exists, load it
     if ( file_exists( $file ) ) {
         require $file;
     }
 }
 
-// オートローダーを登録
+// Register the autoloader
 spl_autoload_register( 'bf_secret_file_downloader_autoloader' );
 
 /**
- * テキストドメインを読み込みます
+ * Load the text domain
  */
 function bf_secret_file_downloader_load_textdomain() {
-    // サイトのロケールを取得
+    // Get the site locale
     $locale = determine_locale();
-    // 翻訳ファイルのパスを指定
+    // Specify the path to the translation file
     $path = plugin_dir_path( __FILE__ ) . 'languages';
 
 
-    // 英語の設定のみ翻訳ファイルを読み込み
+    // Load the translation file only for English settings
     if ( strpos( $locale, 'en' ) === 0 ) {
-        // PHPファイルの翻訳読み込み
+        // Load the translation file for PHP files
         $mo_file = $path . '/bf-secret-file-downloader-en_US.mo';
         load_textdomain( 'bf-secret-file-downloader', $mo_file );
     }
@@ -77,20 +77,20 @@ function bf_secret_file_downloader_load_textdomain() {
 }
 
 /**
- * プラグインを初期化します
+ * Initialize the plugin
  */
 function bf_secret_file_downloader_init() {
 
-    // テキストドメインを読み込み
+    // Load the text domain
     bf_secret_file_downloader_load_textdomain();
 
-    // 管理画面でのみ実行
+    // Execute only in the admin panel
     if ( is_admin() ) {
         $admin = new \Breadfish\SecretFileDownloader\Admin();
-        $admin->init(); // フックを明示的に初期化
+        $admin->init(); // Explicitly initialize the hooks
     }
 
-    // フロントエンド機能を初期化
+    // Initialize the frontend functionality
     $frontend = new \Breadfish\SecretFileDownloader\FrontEnd();
     $frontend->init();
 
@@ -99,10 +99,10 @@ function bf_secret_file_downloader_init() {
 add_action( 'init', 'bf_secret_file_downloader_init' );
 
 /**
- * プラグインアクティベーション時の処理
+ * Process when the plugin is activated
  */
 function bf_secret_file_downloader_activate() {
-    // セキュアなディレクトリを作成
+    // Create a secure directory
     \Breadfish\SecretFileDownloader\DirectoryManager::create_secure_directory();
 
 }
