@@ -254,8 +254,12 @@ jQuery(document).ready(function($) {
     $('#bf-reset-settings').on('click', function() {
         var deleteFiles = $('#bf-delete-files-on-reset').is(':checked');
         var confirmMessage = deleteFiles
-            ? '<?php esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>'
-            : '<?php esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>';
+            ? '<?php
+            /* translators: %d: number of items to be deleted */
+            esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>'
+            : '<?php
+            /* translators: %d: number of items to be deleted */
+            esc_html_e("Delete %d selected items? This action cannot be undone.", "bf-secret-file-downloader" ); ?>';
 
         if (confirm(confirmMessage)) {
             // Disable the button and set it to loading state

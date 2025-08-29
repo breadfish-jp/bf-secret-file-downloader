@@ -1,179 +1,181 @@
 # BF Secret File Downloader
 
-非公開ファイルを認証されたユーザーに安全に管理・配布するWordPressプラグインです。
+A WordPress plugin for securely managing and distributing private files to authenticated users.
 
-## 概要
+## Overview
 
-BF Secret File Downloaderは、プラグインが自動的にセキュアなディレクトリを作成し、その中に配置されたファイルを管理して認証されたユーザーに安全にダウンロード機能を提供するWordPressプラグインです。
+BF Secret File Downloader is a WordPress plugin that automatically creates a secure directory, manages files placed within it, and provides safe download functionality to authenticated users.
 
-## 主な機能
+## Key Features
 
-### セキュリティ機能
-- **自動セキュアディレクトリ作成**: プラグイン有効化時に自動的に保護されたディレクトリを作成
-- **多層セキュリティ**: パストラバーサル攻撃対策、ファイルタイプ制限、アクセス制御
-- **認証システム**: WordPressログイン認証とシンプルパスワード認証をサポート
+### Security Features
+- **Automatic Secure Directory Creation**: Automatically creates a protected directory when the plugin is activated
+- **Multi-layer Security**: Path traversal attack protection, file type restrictions, access control
+- **Authentication System**: Supports WordPress login authentication and simple password authentication
 
-### ファイル管理
-- **ファイルアップロード**: 管理画面からセキュアディレクトリへの安全なファイルアップロード
-- **ファイル一覧表示**: プラグインが作成したセキュアディレクトリ内のファイルを一覧表示
-- **ダウンロード制御**: 認証されたユーザーのみがセキュアディレクトリ内のファイルをダウンロード可能
+### File Management
+- **File Upload**: Safe file upload to secure directory from the admin interface
+- **File List Display**: Display files in the secure directory created by the plugin
+- **Download Control**: Only authenticated users can download files from the secure directory
 
-### 管理機能
-- **設定画面**: 認証方法、メニュータイトル、アクセス権限の設定
-- **権限管理**: 編集者レベルのユーザーにも管理権限を付与可能
-- **多言語対応**: 日本語・英語対応
+### Administration Features
+- **Settings Screen**: Configure authentication methods, menu titles, and access permissions
+- **Permission Management**: Grant admin permissions to editor-level users
+- **Multi-language Support**: Japanese and English support
 
-## インストール
+## Installation
 
-### 前提条件
-- WordPress 6.8以上
-- PHP 7.4以上
+### Requirements
+- WordPress 6.8 or higher
+- PHP 7.4 or higher
 
-### インストール手順
-1. プラグインをWordPressの管理画面からアップロード
-2. プラグインを有効化
-3. 自動的にセキュアディレクトリが作成されます
-4. 「BF Secret File Downloader」メニューから設定を確認
+### Installation Steps
+1. Upload the plugin through the WordPress admin interface
+2. Activate the plugin
+3. A secure directory will be created automatically
+4. Check settings from the "BF Secret File Downloader" menu
 
-## 使用方法
+## Usage
 
-### 1. 初期設定
-1. WordPress管理画面で「BF Secret File Downloader」→「設定」を開く
-2. 認証方法を選択（WordPressログイン認証またはシンプルパスワード認証）
-3. メニュータイトルやアクセス権限を設定
+### 1. Initial Setup
+1. Open "BF Secret File Downloader" → "Settings" in the WordPress admin
+2. Select authentication method (WordPress login or simple password authentication)
+3. Configure menu title and access permissions
 
-### 2. ファイル管理
-1. 「BF Secret File Downloader」→「ファイル一覧」を開く
-2. 「ファイルを選択」ボタンでセキュアディレクトリにファイルをアップロード
-3. アップロードされたファイルがセキュアディレクトリ内に保存され、一覧に表示されます
+### 2. File Management
+1. Open "BF Secret File Downloader" → "File List"
+2. Upload files to the secure directory using the "Select Files" button
+3. Uploaded files are saved in the secure directory and displayed in the list
 
-### 3. ダウンロードURLの共有
-- 生成されたダウンロードURLを認証されたユーザーに共有
-- ユーザーは認証後にファイルをダウンロード可能
+### 3. Sharing Download URLs
+- Share generated download URLs with authenticated users
+- Users can download files after authentication
 
-## 開発環境
+## Development Environment
 
-### 前提条件
-- Node.js 16以上
+### Requirements
+- Node.js 16 or higher
 - npm
 - Docker
 - Composer
 
-### セットアップ
+### Setup
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 composer install
 npm install
 
-# WordPress環境の起動
+# Start WordPress environment
 npm run env:start
 
-# テストの実行
+# Run tests
 npm run phpunit
 ```
 
-### 利用可能なコマンド
+### Available Commands
 
-#### 環境管理
+#### Environment Management
 ```bash
-npm run env:start    # 環境を起動
-npm run env:stop     # 環境を停止
-npm run env:destroy  # 環境を完全に削除
+npm run env:start    # Start environment
+npm run env:stop     # Stop environment
+npm run env:destroy  # Completely remove environment
 ```
 
-#### テスト
+#### Testing
 ```bash
-npm run phpunit      # テストを実行
-npm run phpunit:watch # ウォッチモード
+npm run phpunit      # Run tests
+npm run phpunit:watch # Watch mode
 ```
 
-#### コード品質
+#### Code Quality
 ```bash
-composer phpcs       # コードスタイルチェック
-composer phpstan     # 静的解析
-composer fix         # コードスタイル修正
+composer phpcs       # Code style check
+composer phpstan     # Static analysis
+composer fix         # Code style fix
 ```
 
-#### 国際化
+#### Internationalization
 ```bash
-npm run makepot      # 翻訳テンプレート作成
-npm run update-po    # 翻訳ファイル更新
-npm run compile-mo   # 翻訳ファイルコンパイル
-npm run i18n         # 国際化処理一括実行
+npm run makepot      # Create translation template
+npm run update-po    # Update translation files
+npm run compile-mo   # Compile translation files
+npm run i18n:prepare # Prepare i18n files
+npm run i18n:check   # Check translation files
+npm run i18n:compile # Compile MO files
 ```
 
-### 開発環境へのアクセス
-- **開発環境**: http://localhost:9999
-  - ユーザー名: `admin`
-  - パスワード: `password`
-- **テスト環境**: http://localhost:9998
-  - ユーザー名: `admin`
-  - パスワード: `password`
+### Development Environment Access
+- **Development Environment**: http://localhost:9999
+  - Username: `admin`
+  - Password: `password`
+- **Test Environment**: http://localhost:9998
+  - Username: `admin`
+  - Password: `password`
 
-## ディレクトリ構造
+## Directory Structure
 
 ```
 bf-secret-file-downloader/
-├── bf-secret-file-downloader.php  # メインプラグインファイル
-├── inc/                           # プラグインソースコード
-│   ├── Admin/                     # 管理画面クラス
-│   │   ├── FileListPage.php      # ファイル一覧ページ
-│   │   └── SettingsPage.php      # 設定ページ
-│   ├── Admin.php                  # 管理画面メインクラス
-│   ├── DirectoryManager.php       # ディレクトリ管理
-│   ├── FrontEnd.php               # フロントエンド機能
-│   ├── SecurityHelper.php         # セキュリティヘルパー
-│   ├── ViewRenderer.php           # ビューレンダラー
-│   └── views/                     # ビューファイル
-├── assets/                        # フロントエンドアセット
-├── languages/                     # 翻訳ファイル
-├── tests/                         # テストファイル
-├── dist/                          # 配布用ファイル
-└── scripts/                       # ビルドスクリプト
+├── bf-secret-file-downloader.php  # Main plugin file
+├── inc/                           # Plugin source code
+│   ├── Admin/                     # Admin screen classes
+│   │   ├── FileListPage.php      # File list page
+│   │   └── SettingsPage.php      # Settings page
+│   ├── Admin.php                  # Main admin class
+│   ├── DirectoryManager.php       # Directory management
+│   ├── FrontEnd.php               # Frontend functionality
+│   ├── SecurityHelper.php         # Security helper
+│   ├── ViewRenderer.php           # View renderer
+│   └── views/                     # View files
+├── assets/                        # Frontend assets
+├── languages/                     # Translation files
+├── tests/                         # Test files
+├── dist/                          # Distribution files
+└── scripts/                       # Build scripts
 ```
 
-## セキュリティ機能
+## Security Features
 
-### 実装されているセキュリティ対策
-- **自動セキュアディレクトリ作成**: プラグイン有効化時にユニークな名前の保護されたディレクトリを自動作成
-- **.htaccess保護**: セキュアディレクトリへの直接アクセスを防ぐための.htaccessファイル
-- **パストラバーサル攻撃対策**: 安全なパス構築とディレクトリ制限
-- **ファイルタイプ制限**: 危険なファイルタイプ（PHP、JS、Python等）のアップロードをブロック
-- **認証チェック**: セキュアディレクトリ内のファイルへのすべてのダウンロード要求に対して認証を要求
-- **nonce検証**: 管理画面のすべてのアクションでnonce検証を実装
-- **入力サニタイゼーション**: すべてのユーザー入力を適切にサニタイズ
+### Implemented Security Measures
+- **Automatic Secure Directory Creation**: Automatically creates a protected directory with a unique name when the plugin is activated
+- **.htaccess Protection**: .htaccess file to prevent direct access to the secure directory
+- **Path Traversal Attack Protection**: Safe path construction and directory restrictions
+- **File Type Restrictions**: Blocks upload of dangerous file types (PHP, JS, Python, etc.)
+- **Authentication Check**: Requires authentication for all download requests to files in the secure directory
+- **Nonce Verification**: Implements nonce verification for all admin screen actions
+- **Input Sanitization**: Properly sanitizes all user input
 
-## 多言語対応
+## Multi-language Support
 
-プラグインは以下の言語をサポートしています：
-- 日本語（ja）
-- 英語（en_US）
+The plugin supports the following languages:
+- Japanese (ja)
+- English (en_US)
 
-翻訳ファイルは `languages/` ディレクトリに配置されています。
+Translation files are located in the `languages/` directory.
 
-## ライセンス
+## License
 
-このプラグインは [GPL v2 or later](https://www.gnu.org/licenses/gpl-2.0.html) ライセンスの下で公開されています。
+This plugin is released under the [GPL v2 or later](https://www.gnu.org/licenses/gpl-2.0.html) license.
 
-## サポート
+## Support
 
-- **公式サイト**: https://sfd.breadfish.jp/
-- **開発者**: BREADFISH (https://breadfish.jp/)
-- **ライセンス**: GPL v2 or later
+- **Official Website**: https://sfd.breadfish.jp/
+- **Developer**: BREADFISH (https://breadfish.jp/)
+- **License**: GPL v2 or later
 
-## 変更履歴
+## Changelog
 
 ### 1.0.0
-- 初回リリース
-- プラグイン有効化時の自動セキュアディレクトリ作成機能
-- セキュアディレクトリ内のファイル管理機能
-- 認証付きダウンロード機能
-- 多言語対応（日本語・英語）
-- 多層セキュリティ機能
+- Initial release
+- Automatic secure directory creation on plugin activation
+- File management functionality within secure directory
+- Authenticated download functionality
+- Multi-language support (Japanese/English)
+- Multi-layer security features
 
-## 注意事項
+## Notes
 
-- 現在、マルチサイト対応はしていません
-- プログラムコードファイル（PHP、JavaScript、Python等）のアップロードはセキュリティ上の理由でブロックされます
-- プラグイン有効化時に自動的にセキュアディレクトリが作成され、その中でファイル管理が行われます
+- Currently does not support multisite
+- Upload of program code files (PHP, JavaScript, Python, etc.) is blocked for security reasons
+- A secure directory is automatically created when the plugin is activated, and file management is performed within it

@@ -59,12 +59,13 @@ spl_autoload_register( 'bf_secret_file_downloader_autoloader' );
 
 /**
  * Load the text domain
+ * Note: WordPress automatically loads translations from the languages directory
+ * when the text domain is properly set in the plugin header.
  */
 function bf_secret_file_downloader_load_textdomain() {
-    // Use standard WordPress loading based on current locale.
-    // After source strings are switched to English, WordPress will load
-    // languages/bf-secret-file-downloader-<locale>.mo automatically when available.
-    load_plugin_textdomain( 'bf-secret-file-downloader', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+    // WordPress automatically loads translations from languages/ directory
+    // when the text domain is properly configured in the plugin header.
+    // No manual loading is required for WordPress.org hosted plugins.
 }
 
 /**

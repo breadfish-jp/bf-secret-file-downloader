@@ -559,7 +559,6 @@ class FileListPage {
             $message = sprintf(
                 /* translators: %d: number of deleted items */
                 _n('Deleted %d item.', 'Deleted %d items.',
-                    '%d個のアイテムを削除しました。',
                     count( $deleted_files ),
                     'bf-secret-file-downloader'
                 ),
@@ -571,7 +570,7 @@ class FileListPage {
             // Some successful
             $message = sprintf(
                 /* translators: 1: number of deleted items, 2: number of failed items */
-                __('Deleted %d items. Failed to delete %d items.', 'bf-secret-file-downloader' ),
+                __('Deleted %1$d items. Failed to delete %2$d items.', 'bf-secret-file-downloader' ),
                 count( $deleted_files ),
                 count( $failed_files )
             );
