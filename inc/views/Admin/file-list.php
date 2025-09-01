@@ -129,6 +129,17 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                         <?php endif; ?>
                     </div>
                 </div>
+    <!-- Hidden template for directory auth details -->
+    <template id="bf-auth-details-template">
+        <div class="bf-auth-details">
+            <div class="auth-details-title"><?php esc_html_e('Directory-specific authentication settings:', 'bf-secret-file-downloader' ); ?></div>
+            <div id="auth-details-content"></div>
+            <button type="button" class="button button-small" id="remove-auth-btn">
+                <span class="dashicons dashicons-trash"></span><?php esc_html_e('Delete directory-specific settings', 'bf-secret-file-downloader' ); ?>
+            </button>
+        </div>
+    </template>
+
 
                 <!-- File operation area -->
                 <?php if ( $current_user_can_upload && $current_path_writable ) : ?>
@@ -527,16 +538,6 @@ jQuery(document).ready(function($) {
         initializeAuthDetails();
     }, 200);
 
-    // Authentication details template function
-    function getAuthDetailsTemplate() {
-        return '<div class="bf-auth-details">' +
-               '<div class="auth-details-title"><?php esc_html_e('Directory-specific authentication settings:', 'bf-secret-file-downloader' ); ?></div>' +
-               '<div id="auth-details-content"></div>' +
-               '<button type="button" id="remove-auth-btn" class="button button-small">' +
-               '<span class="dashicons dashicons-trash"></span><?php esc_html_e('Delete directory-specific settings', 'bf-secret-file-downloader' ); ?>' +
-               '</button>' +
-               '</div>';
-    }
 
     // Initialize authentication details display on page load
     function initializeAuthDetails() {
@@ -547,7 +548,7 @@ jQuery(document).ready(function($) {
             // Check if authentication details are already displayed
             var authDetails = $('.bf-auth-details');
             if (authDetails.length === 0) {
-                $('.bf-path-info').append(getAuthDetailsTemplate());
+                $('.bf-path-info').append(bfSfdGetAuthDetailsTemplate());
             }
 
             // Load and display authentication settings
@@ -2393,7 +2394,7 @@ jQuery(document).ready(function($) {
 
             // Display authentication details
             if (authDetails.length === 0) {
-                $('.bf-path-info').append(getAuthDetailsTemplate());
+                $('.bf-path-info').append(bfSfdGetAuthDetailsTemplate());
             }
 
             // Display authentication details
@@ -2489,4 +2490,3 @@ jQuery(document).ready(function($) {
 
 });
 </script>
-

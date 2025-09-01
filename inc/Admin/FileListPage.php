@@ -85,6 +85,16 @@ class FileListPage {
             );
         }
 
+        // Enqueue external JS (placeholder; logic will be added later)
+        $js_file_path = plugin_dir_path( dirname( dirname( __FILE__ ) ) ) . 'assets/js/file-list-admin.js';
+        wp_enqueue_script(
+            'bf-sfd-admin-file-list',
+            plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'assets/js/file-list-admin.js',
+            array( 'jquery' ),
+            file_exists( $js_file_path ) ? filemtime( $js_file_path ) : '1.0.0',
+            true
+        );
+
         // Pass initial data to JavaScript
         $initial_data = $this->prepare_data();
 

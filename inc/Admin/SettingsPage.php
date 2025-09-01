@@ -489,6 +489,32 @@ class SettingsPage {
             array(),
             '1.0.0'
         );
+
+        // Enqueue external JS (placeholder; logic will be added later)
+        $js_file_path = plugin_dir_path( dirname( dirname( __FILE__ ) ) ) . 'assets/js/admin-settings.js';
+        wp_enqueue_script(
+            'bf-sfd-admin-settings-js',
+            plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'assets/js/admin-settings.js',
+            array( 'jquery' ),
+            file_exists( $js_file_path ) ? filemtime( $js_file_path ) : '1.0.0',
+            true
+        );
+
+        // Localize data for JS
+        wp_localize_script(
+            'bf-sfd-admin-settings-js',
+            'bfSfdSettingsData',
+            array(
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'nonce'   => wp_create_nonce( 'bf_sfd_browse_nonce' ),
+                'i18n'    => array(
+                    'confirmReset'  => __( 'Reset all settings? This action cannot be undone.', 'bf-secret-file-downloader' ),
+                    'resetting'     => __( 'Resetting...', 'bf-secret-file-downloader' ),
+                    'downloadFailed'=> __( 'Download failed.', 'bf-secret-file-downloader' ),
+                    'errorOccurred' => __( 'An error occurred.', 'bf-secret-file-downloader' ),
+                ),
+            )
+        );
     }
 
 }
