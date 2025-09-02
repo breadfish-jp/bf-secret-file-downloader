@@ -299,9 +299,14 @@
     // Update top tablenav template with data
     var topTablenav = $('#top-tablenav-template').html();
 
+    // Determine capability flags with robust fallbacks
+    var canDelete = (typeof data.current_user_can_delete !== 'undefined')
+        ? !!data.current_user_can_delete
+        : (typeof bfFileListData !== 'undefined' && bfFileListData.initialData && !!bfFileListData.initialData.current_user_can_delete);
+
     // Replace placeholders with actual data
     topTablenav = topTablenav
-        .replace(/\{\{DELETE_OPTION\}\}/g, data.current_user_can_delete ? '<option value="delete">' + (strings.delete || 'Delete') + '</option>' : '')
+        .replace(/\{\{DELETE_OPTION\}\}/g, canDelete ? '<option value="delete">' + (strings.delete || 'Delete') + '</option>' : '')
         .replace(/\{\{PAGINATION_SECTION\}\}/g, data.total_pages > 1 ? '<div class="tablenav-pages">' + paginationHtml + '</div>' : '');
 
     // Place top tablenav before the table
@@ -334,9 +339,12 @@
             '</button>';
     }
 
-    // Generate auth settings button (based on localized permission flag)
+    // Generate auth settings button (based on permission flag, with fallback)
     var authSettingsButton = '';
-    if (data.current_user_can_manage_auth && data.current_path && data.current_path !== '') {
+    var canManageAuth = (typeof data.current_user_can_manage_auth !== 'undefined')
+        ? !!data.current_user_can_manage_auth
+        : (typeof bfFileListData !== 'undefined' && bfFileListData.initialData && !!bfFileListData.initialData.current_user_can_manage_auth);
+    if (canManageAuth && data.current_path && data.current_path !== '') {
         authSettingsButton = '<button type="button" id="directory-auth-btn" class="button button-small">' +
             '<span class="dashicons dashicons-admin-users"></span>' +
             (strings.authSettings || 'Authentication settings') +
