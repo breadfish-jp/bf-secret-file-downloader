@@ -113,6 +113,7 @@ class FileListPage {
                 'current_user_can_manage_auth' => $initial_data['current_user_can_manage_auth'] ?? false,
             ),
             'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'homeUrl' => home_url( '/' ),
             'nonce' => $initial_data['nonce'],
             'strings' => array(
                 'loading' => __('Loading...', 'bf-secret-file-downloader' ),
@@ -166,6 +167,41 @@ class FileListPage {
                 'deleting' => __('Deleting...', 'bf-secret-file-downloader' ),
                 'failedToDeleteFile' => __('Failed to delete file.', 'bf-secret-file-downloader' ),
                 'communicationErrorDuringDeletion' => __('Communication error occurred during deletion. Please try again.', 'bf-secret-file-downloader' ),
+                // Directory password modal
+                'directoryPasswordManagement' => __('Directory password management', 'bf-secret-file-downloader' ),
+                'directoryPasswordSettings' => __('Directory password settings', 'bf-secret-file-downloader' ),
+                'thisDirectoryProtected' => __('This directory (%s) is currently password protected.', 'bf-secret-file-downloader' ),
+                'thisDirectoryNotProtected' => __('This directory (%s) is not password protected.', 'bf-secret-file-downloader' ),
+                'passwordChangeHint' => __("Enter a new password to change it, or remove protection using the 'Remove password protection' button below.", 'bf-secret-file-downloader' ),
+                'pleaseSetDirectoryPassword' => __('Please set a password that will be required when downloading files in this directory.', 'bf-secret-file-downloader' ),
+                'show' => __('Show', 'bf-secret-file-downloader' ),
+                'hide' => __('Hide', 'bf-secret-file-downloader' ),
+                // Current password dialog
+                'retrieving' => __('Retrieving...', 'bf-secret-file-downloader' ),
+                'currentPassword' => __('Current password: ', 'bf-secret-file-downloader' ),
+                'failedToRetrievePassword' => __('Failed to retrieve password.', 'bf-secret-file-downloader' ),
+                // Directory auth modal
+                'directoryAuthSettings' => __('Directory authentication settings', 'bf-secret-file-downloader' ),
+                'dirHasSpecificAuth' => __('This directory (%s) has directory-specific authentication settings.', 'bf-secret-file-downloader' ),
+                'dirAppliesCommonAuth' => __('This directory (%s) applies common authentication settings.', 'bf-secret-file-downloader' ),
+                'changeDirSpecificSettings' => __("Change directory-specific settings or return to common settings using the 'Delete directory-specific settings' button below.", 'bf-secret-file-downloader' ),
+                'commonSettingsAppliedHint' => __('Common settings are applied. To add directory-specific authentication settings, configure them below.', 'bf-secret-file-downloader' ),
+                // Bulk action helpers & recreate directory
+                'pleaseSelectAction' => __('Please select an action.', 'bf-secret-file-downloader' ),
+                'pleaseSelectItemsToDelete' => __('Please select items to delete.', 'bf-secret-file-downloader' ),
+                'processing' => __('Processing...', 'bf-secret-file-downloader' ),
+                'createDirectory' => __('Create directory', 'bf-secret-file-downloader' ),
+                'anErrorOccurred' => __('An error occurred', 'bf-secret-file-downloader' ),
+                // Remove directory auth
+                'removeAuthConfirm' => __('Remove authentication settings for this directory?', 'bf-secret-file-downloader' ),
+                'failedToDeleteAuth' => __('Failed to delete authentication settings.', 'bf-secret-file-downloader' ),
+                'deleteAuthSettings' => __('Delete authentication settings', 'bf-secret-file-downloader' ),
+                // Save directory auth
+                'pleaseSelectAuthMethod' => __('Please select an authentication method.', 'bf-secret-file-downloader' ),
+                'simpleAuthPasswordRequired' => __('If you select simple authentication, please set a password.', 'bf-secret-file-downloader' ),
+                'saving' => __('Saving...', 'bf-secret-file-downloader' ),
+                'failedToSaveAuth' => __('Failed to save authentication settings.', 'bf-secret-file-downloader' ),
+                'save' => __('Save', 'bf-secret-file-downloader' ),
             ),
         ));
     }

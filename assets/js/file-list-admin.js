@@ -204,7 +204,7 @@
         }
     });
 
-    bfSfdUpdateFileList(data);
+    updateFileList(data);
   }
 
   // Check if the current directory has authentication settings
@@ -371,7 +371,7 @@
 
         // Display authentication details
         if (authDetails.length === 0) {
-            $('.bf-path-info').append(bfSfdGetAuthDetailsTemplate());
+            $('.bf-path-info').append(getAuthDetailsTemplate());
         }
 
         // Display authentication details
@@ -668,9 +668,9 @@
   }
 
   function navigateToDirectory(path, page) {
-    var currentSortBy = bfSfdGetCurrentSortBy();
-    var currentSortOrder = bfSfdGetCurrentSortOrder();
-    bfSfdNavigateToDirectoryWithSort(path, page, currentSortBy, currentSortOrder);
+    var currentSortBy = getCurrentSortBy();
+    var currentSortOrder = getCurrentSortOrder();
+    navigateToDirectoryWithSort(path, page, currentSortBy, currentSortOrder);
   }
 
 
@@ -706,7 +706,7 @@
           }
 
           // Update file list
-          bfSfdNavigateToDirectory(currentPath, 1);
+          navigateToDirectory(currentPath, 1);
           return;
       }
 
@@ -721,7 +721,7 @@
       }
 
       // Program code file check
-      if (bfSfdIsProgramCodeFile(fileName)) {
+      if (isProgramCodeFile(fileName)) {
           errors.push(fileName + ': ' + (strings.cannotUploadForSecurity || 'Cannot upload for security reasons'));
           uploadNextFile(index + 1);
           return;
@@ -786,7 +786,7 @@
     }
 
     // Message for starting download process
-    bfSfdShowSuccessMessage(strings.preparingDownload || 'Preparing download...');
+    showSuccessMessage(strings.preparingDownload || 'Preparing download...');
 
     $.ajax({
         url: ajaxurl,
@@ -807,7 +807,7 @@
                 link.click();
                 document.body.removeChild(link);
 
-                bfSfdShowSuccessMessage(strings.downloadStarted || 'Download started.');
+                showSuccessMessage(strings.downloadStarted || 'Download started.');
             } else {
                 alert(response.data || (strings.downloadFailed || 'Download failed.'));
             }
@@ -859,12 +859,12 @@
         },
         success: function(response) {
             if (response.success) {
-                bfSfdShowSuccessMessage(response.data.message);
+                showSuccessMessage(response.data.message);
                 $('#create-directory-form').slideUp();
                 $('#directory-name-input').val('');
 
                 // Update file list
-                bfSfdNavigateToDirectory(currentPath, 1);
+                navigateToDirectory(currentPath, 1);
             } else {
                 alert(response.data || (strings.failedToCreateDirectory || 'Failed to create directory.'));
             }
@@ -904,7 +904,7 @@
         },
         success: function(response) {
             if (response.success) {
-                bfSfdShowSuccessMessage(response.data.message);
+                showSuccessMessage(response.data.message);
 
                 // Move to the appropriate directory after deletion
                 var currentPath = $('#current-path').val();
@@ -923,7 +923,7 @@
                 }
 
                 // Update file list
-                bfSfdNavigateToDirectory(targetPath, 1);
+                navigateToDirectory(targetPath, 1);
             } else {
                 var errorMsg = response.data || (strings.failedToDeleteFile || 'Failed to delete file.');
                  alert(errorMsg);
@@ -941,25 +941,794 @@
     });
   }
 
-  // Expose for future use if needed
-  window.bfSfdCheckDashicons = checkDashicons;
-  window.bfSfdGetAuthDetailsTemplate = getAuthDetailsTemplate;
-  window.bfSfdInitializeAuthDetails = initializeAuthDetails;
-  window.bfSfdIsProgramCodeFile = isProgramCodeFile;
-  window.bfSfdGetCurrentSortBy = getCurrentSortBy;
-  window.bfSfdGetCurrentSortOrder = getCurrentSortOrder;
-  window.bfSfdNavigateToDirectoryWithSort = navigateToDirectoryWithSort;
-  window.bfSfdCheckCurrentDirectoryHasAuth = checkCurrentDirectoryHasAuth;
-  window.bfSfdUpdateFileList = updateFileList;
-  window.bfSfdGetParentPath = getParentPath;
-  window.bfSfdNavigateToDirectory = navigateToDirectory;
-  window.bfSfdUploadFiles = uploadFiles;
-  window.bfSfdShowSuccessMessage = showSuccessMessage;
-  window.bfSfdDownloadFile = downloadFile;
-  window.bfSfdCreateDirectory = createDirectory;
-  window.bfSfdDeleteFile = deleteFile;
+  function bulkDeleteFiles() {
+    var checkedFiles = $('input[name="file_paths[]"]:checked');
+    var filePaths = [];
+    var fileNames = [];
+    var hasDirectories = false;
+
+    checkedFiles.each(function() {
+        filePaths.push($(this).val());
+        fileNames.push($(this).data('file-name'));
+        if ($(this).data('file-type') === 'directory') {
+            hasDirectories = true;
+        }
+    });
+
+    // Confirm message
+    var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+    var confirmMessage;
+    if (hasDirectories) {
+        confirmMessage = strings.bulkDeleteConfirmWithDirs || 'Delete %d selected items (including directories) and all their contents? This action cannot be undone.';
+    } else {
+        confirmMessage = strings.bulkDeleteConfirm || 'Delete %d selected items? This action cannot be undone.';
+    }
+
+    if (!confirm(confirmMessage.replace('%d', filePaths.length))) {
+        return;
+    }
+
+    // Disable the bulk delete button
+    $('#doaction').prop('disabled', true).val(strings.deleting || 'Deleting...');
+
+    $.ajax({
+        url: ajaxurl,
+        type: 'POST',
+        data: {
+            action: 'bf_sfd_bulk_delete',
+            file_paths: filePaths,
+            current_path: $('#current-path').val(),
+            nonce: (typeof bfFileListData !== 'undefined' && bfFileListData.nonce) ? bfFileListData.nonce : ''
+        },
+        success: function(response) {
+            if (response.success) {
+                showSuccessMessage(response.data.message);
+
+                // Processing when the current path is deleted
+                var targetPath = $('#current-path').val();
+                if (response.data.current_path_deleted && response.data.redirect_path !== undefined) {
+                    targetPath = response.data.redirect_path;
+                }
+
+                // Update file list
+                navigateToDirectory(targetPath, 1);
+            } else {
+                var errorMsg = response.data || (strings.bulkDeleteFailed || 'Bulk delete failed.');
+                alert(errorMsg);
+            }
+        },
+        error: function(xhr, status, error) {
+             alert(strings.communicationErrorBulkDeletion || 'Communication error occurred during bulk deletion. Please try again.');
+        },
+        complete: function() {
+            // Enable button
+            $('#doaction').prop('disabled', false).val(strings.apply || 'Apply');
+
+            // Clear checkboxes
+            $('input[name="file_paths[]"]').prop('checked', false);
+            $('#cb-select-all-1').prop('checked', false);
+        }
+    });
+  }
+
+    // Open the directory authentication modal
+    function openDirectoryAuthModal() {
+      var currentPath = $('#current-path').val();
+      var currentPathDisplay = $('#current-path-display').text();
+      var hasAuth = checkCurrentDirectoryHasAuth();
+      var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+
+      // Update the modal title
+      if (hasAuth) {
+          $('#bf-auth-modal-title').text(strings.targetDirectorySettings || 'Target directory settings');
+      } else {
+          $('#bf-auth-modal-title').text(strings.directoryAuthSettings || 'Directory authentication settings');
+      }
+
+      // Update the current status display
+      var statusIcon = $('.bf-auth-status-icon .dashicons');
+      var statusDescription = $('#bf-auth-status-description');
+
+      if (hasAuth) {
+          statusIcon.removeClass('dashicons-unlock').addClass('dashicons-lock');
+          statusIcon.css('color', '#0073aa');
+          var hasSpecificText = (strings.dirHasSpecificAuth || 'This directory (%s) has directory-specific authentication settings.').replace('%s', currentPathDisplay);
+          statusDescription.html(hasSpecificText);
+          $('#bf-auth-modal-description').text(strings.changeDirSpecificSettings || "Change directory-specific settings or return to common settings using the 'Delete directory-specific settings' button below.");
+          $('#bf-remove-auth').show();
+          $('#bf-show-current-auth').show();
+      } else {
+          statusIcon.removeClass('dashicons-lock').addClass('dashicons-admin-users');
+          statusIcon.css('color', '#666');
+          var appliesCommonText = (strings.dirAppliesCommonAuth || 'This directory (%s) applies common authentication settings.').replace('%s', currentPathDisplay);
+          statusDescription.html(appliesCommonText);
+          $('#bf-auth-modal-description').text(strings.commonSettingsAppliedHint || 'Common settings are applied. To add directory-specific authentication settings, configure them below.');
+          $('#bf-remove-auth').hide();
+          $('#bf-show-current-auth').hide();
+      }
+
+      // Get authentication settings
+      if (hasAuth) {
+          loadDirectoryAuthSettings(currentPath);
+      } else {
+          // If no directory-specific settings, uncheck everything
+          $('#bf-auth-methods-logged-in').prop('checked', false);
+          $('#bf-auth-methods-simple-auth').prop('checked', false);
+          $('input[name="bf_allowed_roles[]"]').prop('checked', false);
+          $('#bf-simple-auth-password').val('');
+          $('#bf-simple-auth-password-section').hide();
+          $('#bf-allowed-roles-section').hide();
+      }
+
+      // Show the modal
+      $('#bf-directory-auth-modal').fadeIn(300);
+    }
+
+    // Close the directory authentication modal
+    function closeDirectoryAuthModal() {
+        $('#bf-directory-auth-modal').fadeOut(300);
+    }
+
+   // Display the current password
+   function showCurrentPassword() {
+    var currentPath = $('#current-path').val();
+    var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+    var nonce = (typeof bfFileListData !== 'undefined' && bfFileListData.nonce) ? bfFileListData.nonce : '';
+
+    // Disable button
+    $('#bf-show-current-password').prop('disabled', true).text(strings.retrieving || 'Retrieving...');
+
+    $.ajax({
+        url: ajaxurl,
+        type: 'POST',
+        data: {
+            action: 'bf_sfd_get_directory_password',
+            path: currentPath,
+            nonce: nonce
+        },
+        success: function(response) {
+            if (response.success) {
+                alert((strings.currentPassword || 'Current password: ') + response.data.password);
+            } else {
+                alert(response.data || (strings.failedToRetrievePassword || 'Failed to retrieve password.'));
+            }
+        },
+        error: function() {
+            alert(strings.communicationErrorOccurred || 'Communication error occurred.');
+        },
+        complete: function() {
+            // Enable button
+            $('#bf-show-current-password').prop('disabled', false).text(strings.currentPassword || 'Current password');
+        }
+    });
+  }
+
+
+  // Open the URL copy modal
+  function openUrlCopyModal(filePath, fileName) {
+    // Update the modal elements
+    $('#bf-url-file-name').text(fileName);
+
+    // Save the file path in the modal
+    $('#bf-url-copy-modal').data('file-path', filePath);
+
+    // Select download by default
+    $('input[name="url_type"][value="download"]').prop('checked', true);
+
+    // Update URL
+    updateUrlDisplay();
+
+    // Show the modal
+    $('#bf-url-copy-modal').fadeIn(300);
+  }
+
+  // Close the URL copy modal
+  function closeUrlCopyModal() {
+      $('#bf-url-copy-modal').fadeOut(300);
+  }
+
+  // Update URL display
+  function updateUrlDisplay() {
+    var filePath = $('#bf-url-copy-modal').data('file-path');
+    var urlType = $('input[name="url_type"]:checked').val();
+    var home = (typeof bfFileListData !== 'undefined' && bfFileListData.homeUrl) ? bfFileListData.homeUrl : (window.location.origin + '/');
+    // ensure trailing slash just once
+    if (home.slice(-1) !== '/') { home += '/'; }
+    var url = home + '?path=' + encodeURIComponent(filePath) + '&dflag=' + urlType;
+    $('#bf-url-input').val(url);
+
+    // Update the preview frame (only for image files)
+    updatePreviewFrame(url);
+}
+
+// Update the preview frame
+function updatePreviewFrame(url) {
+    var fileName = $('#bf-url-file-name').text();
+    var urlType = $('input[name="url_type"]:checked').val();
+    var previewFrame = $('#bf-url-preview-frame');
+
+    // Display preview only for image files
+    var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
+    var fileExtension = fileName.split('.').pop().toLowerCase();
+
+    if (urlType === 'display' && imageExtensions.includes(fileExtension)) {
+        previewFrame.attr('src', url);
+        $('.bf-url-preview').show();
+    } else {
+        previewFrame.attr('src', '');
+        $('.bf-url-preview').hide();
+    }
+  }
+
+
+    // Copy URL to clipboard
+    function copyUrlToClipboard() {
+      var url = $('#bf-url-input').val();
+      var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+
+      // Use the modern browser Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(url).then(function() {
+              showSuccessMessage((strings.downloadUrlCopied || 'Download URL copied to clipboard:') + ' ' + url);
+          }).catch(function(err) {
+              console.error(strings.failedToCopyClipboard || 'Failed to copy to clipboard:', err);
+              copyUrlFallback(url);
+          });
+      } else {
+          // Use a fallback (for older browsers)
+          copyUrlFallback(url);
+      }
+  }
+
+  // Open URL in a new tab
+  function openUrlInNewTab() {
+      var url = $('#bf-url-input').val();
+      window.open(url, '_blank');
+  }
+
+  // URL copy fallback (for older browsers)
+  function copyUrlFallback(url) {
+      var textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.top = '0';
+      textArea.style.left = '0';
+      textArea.style.width = '2em';
+      textArea.style.height = '2em';
+      textArea.style.padding = '0';
+      textArea.style.border = 'none';
+      textArea.style.outline = 'none';
+      textArea.style.boxShadow = 'none';
+      textArea.style.background = 'transparent';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+          var successful = document.execCommand('copy');
+          if (successful) {
+              var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+              showSuccessMessage((strings.downloadUrlCopied || 'Download URL copied to clipboard:') + ' ' + url);
+          } else {
+              showUrlPrompt(url);
+          }
+      } catch (err) {
+          var strings2 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+          console.error(strings2.failedToCopyClipboard || 'Failed to copy to clipboard:', err);
+          showUrlPrompt(url);
+      }
+
+      document.body.removeChild(textArea);
+  }
+
+  // Display URL for manual copy
+  function showUrlPrompt(url) {
+      var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+      prompt(strings.pleaseCopyDownloadUrl || 'Please copy the following download URL:', url);
+  }
+
+    // Remove the directory authentication settings
+    function removeDirectoryAuth() {
+      var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+      if (!confirm(strings.removeAuthConfirm || 'Remove authentication settings for this directory?')) {
+          return;
+      }
+
+      var currentPath = $('#current-path').val();
+
+      // Disable button
+      $('#bf-remove-auth').prop('disabled', true).text(strings.deleting || 'Deleting...');
+
+      $.ajax({
+          url: ajaxurl,
+          type: 'POST',
+          data: {
+              action: 'bf_sfd_set_directory_auth',
+              path: currentPath,
+              action_type: 'remove',
+              nonce: (typeof bfFileListData !== 'undefined' && bfFileListData.nonce) ? bfFileListData.nonce : ''
+          },
+          success: function(response) {
+              if (response.success) {
+                  showSuccessMessage(response.data.message);
+                  closeDirectoryAuthModal();
+                  updateAuthIndicator(response.data.has_auth);
+              } else {
+                  alert(response.data || (strings.failedToDeleteAuth || 'Failed to delete authentication settings.'));
+              }
+          },
+          error: function() {
+              alert(strings.communicationErrorOccurred || 'Communication error occurred.');
+          },
+          complete: function() {
+              $('#bf-remove-auth').prop('disabled', false).text(strings.deleteAuthSettings || 'Delete authentication settings');
+          }
+      });
+  }
+
+  // Save the directory authentication settings
+  function saveDirectoryAuth() {
+    var currentPath = $('#current-path').val();
+    var authMethods = [];
+    var allowedRoles = [];
+    var simpleAuthPassword = $('#bf-simple-auth-password').val().trim();
+
+    // Get authentication methods
+    $('input[name="bf_auth_methods[]"]:checked').each(function() {
+        authMethods.push($(this).val());
+    });
+
+    // Get allowed roles
+    $('input[name="bf_allowed_roles[]"]:checked').each(function() {
+        allowedRoles.push($(this).val());
+    });
+
+    if (authMethods.length === 0) {
+        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+        alert(strings.pleaseSelectAuthMethod || 'Please select an authentication method.');
+        return;
+    }
+
+    // If simple authentication is selected, a password is required
+    if (authMethods.includes('simple_auth') && !simpleAuthPassword) {
+        var strings2 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+        alert(strings2.simpleAuthPasswordRequired || 'If you select simple authentication, please set a password.');
+        $('#bf-simple-auth-password').focus();
+        return;
+    }
+
+    // Disable button
+    $('#bf-save-auth').prop('disabled', true).text((strings && strings.saving) || 'Saving...');
+
+    $.ajax({
+        url: ajaxurl,
+        type: 'POST',
+        data: {
+            action: 'bf_sfd_set_directory_auth',
+            path: currentPath,
+            auth_methods: authMethods,
+            allowed_roles: allowedRoles,
+            simple_auth_password: simpleAuthPassword,
+            action_type: 'set',
+            nonce: (typeof bfFileListData !== 'undefined' && bfFileListData.nonce) ? bfFileListData.nonce : ''
+        },
+        success: function(response) {
+            if (response.success) {
+                showSuccessMessage(response.data.message);
+                closeDirectoryAuthModal();
+                updateAuthIndicator(response.data.has_auth);
+
+                // Display authentication details
+                if (response.data.has_auth) {
+                    loadDirectoryAuthSettings(currentPath);
+                }
+            } else {
+                alert(response.data || ((strings && strings.failedToSaveAuth) || 'Failed to save authentication settings.'));
+            }
+        },
+        error: function() {
+            alert((strings && strings.communicationErrorOccurred) || 'Communication error occurred.');
+        },
+        complete: function() {
+            $('#bf-save-auth').prop('disabled', false).text((strings && strings.save) || 'Save');
+        }
+    });
+  }
 
   $(function(){
-    // Placeholder: future logic will append getAuthDetailsTemplate() where needed
+
+    // Check if Dashicons are loaded
+    checkDashicons();
+
+    // Initialize authentication details display on page load
+    setTimeout(function() {
+        initializeAuthDetails();
+    }, 200);
+
+    // Delete link event (from mouse over menu)
+    $(document).on('click', '.delete-file-link', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop event propagation
+        var $link = $(this);
+        var filePath = $link.data('file-path');
+        var fileName = $link.data('file-name');
+        var fileType = $link.data('file-type');
+
+        deleteFile(filePath, fileName, fileType);
+    });
+
+    // Remove directory click processing - only row action links are used
+
+    // Directory authentication settings button click processing
+    $('#directory-auth-btn').on('click', function(e) {
+        e.preventDefault();
+        openDirectoryAuthModal();
+    });
+
+    // Authentication settings modal related events
+    $('.bf-modal-close, #bf-cancel-auth').on('click', function() {
+        closeDirectoryAuthModal();
+    });
+
+    // Close authentication settings modal by clicking outside
+    $('#bf-directory-auth-modal').on('click', function(e) {
+        if (e.target === this) {
+            closeDirectoryAuthModal();
+        }
+    });
+
+    // Simple authentication checkbox control
+    $(document).on('change', '#bf-auth-methods-simple-auth', function() {
+        if ($(this).is(':checked')) {
+            $('#bf-simple-auth-password-section').show();
+        } else {
+            $('#bf-simple-auth-password-section').hide();
+        }
+    });
+
+    // Authentication settings save button
+    $('#bf-save-auth').on('click', function() {
+        saveDirectoryAuth();
+    });
+
+    // Authentication settings delete button
+    $('#bf-remove-auth').on('click', function() {
+        removeDirectoryAuth();
+    });
+
+    // URL copy modal related events
+    $('.bf-modal-close, #bf-close-url-modal').on('click', function() {
+        closeUrlCopyModal();
+    });
+
+    // Close URL copy modal by clicking outside
+    $('#bf-url-copy-modal').on('click', function(e) {
+        if (e.target === this) {
+            closeUrlCopyModal();
+        }
+    });
+
+    // Password display/hide toggle
+    $('#bf-password-toggle').on('click', function() {
+        var passwordField = $('#bf-directory-password-input');
+        var button = $(this);
+        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            button.text(strings.hide || 'Hide');
+        } else {
+            passwordField.attr('type', 'password');
+            button.text(strings.show || 'Show');
+        }
+    });
+
+    // Current password display button
+    $('#bf-show-current-password').on('click', function() {
+        showCurrentPassword();
+    });
+
+    // URL copy modal related events
+    $(document).on('change', 'input[name="url_type"]', function() {
+        updateUrlDisplay();
+    });
+
+    // URL copy button
+    $('#bf-copy-url-btn').on('click', function() {
+        copyUrlToClipboard();
+    });
+
+    // Open in new tab button
+    $('#bf-open-url-btn').on('click', function() {
+        openUrlInNewTab();
+    });
+
+    // Go up button click processing
+    $('#go-up-btn').on('click', function(e) {
+        e.preventDefault();
+        var currentPath = $('#current-path').val();
+        if (currentPath) {
+            var parentPath = getParentPath(currentPath);
+            navigateToDirectory(parentPath, 1);
+        }
+    });
+
+    // Sort link click processing
+    $(document).on('click', '.sort-link', function(e) {
+        e.preventDefault();
+        var sortBy = $(this).data('sort');
+        var currentPath = $('#current-path').val();
+        var currentSortBy = getCurrentSortBy();
+        var currentSortOrder = getCurrentSortOrder();
+
+        // If the same column is clicked, reverse the order
+        var newSortOrder = 'asc';
+        if (sortBy === currentSortBy && currentSortOrder === 'asc') {
+            newSortOrder = 'desc';
+        }
+
+        navigateToDirectoryWithSort(currentPath, 1, sortBy, newSortOrder);
+    });
+
+    // Paging link click processing
+    $(document).on('click', '.pagination-links a', function(e) {
+        e.preventDefault();
+        var url = new URL(this.href);
+        var page = url.searchParams.get('paged') || 1;
+        var path = url.searchParams.get('path') || $('#current-path').val();
+        navigateToDirectory(path, page);
+    });
+
+    // Directory creation button click processing
+    $('#create-directory-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#create-directory-form').slideDown();
+        $('#directory-name-input').focus();
+    });
+
+    // Directory creation form cancel
+    $('#create-directory-cancel').on('click', function(e) {
+        e.preventDefault();
+        $('#create-directory-form').slideUp();
+        $('#directory-name-input').val('');
+    });
+
+    // Execute directory creation
+    $('#create-directory-submit').on('click', function(e) {
+        e.preventDefault();
+        createDirectory();
+    });
+
+    // Enter key to create directory
+    $('#directory-name-input').on('keypress', function(e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            createDirectory();
+        }
+    });
+
+    // Download link event
+    $(document).on('click', '.download-file-link', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop event propagation
+        var $link = $(this);
+        var filePath = $link.data('file-path');
+        var fileName = $link.data('file-name');
+
+        downloadFile(filePath, fileName);
+    });
+
+    // URL copy link event
+    $(document).on('click', '.copy-url-link', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop event propagation
+        var $link = $(this);
+        var filePath = $link.data('file-path');
+        var fileName = $link.data('file-name');
+
+        openUrlCopyModal(filePath, fileName);
+    });
+
+    // Open directory link event
+    $(document).on('click', '.open-directory', function(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop event propagation
+        var $link = $(this);
+        var path = $link.data('path');
+
+        if (path) {
+            navigateToDirectory(path, 1);
+        }
+    });
+
+    // All selection checkbox event
+    $(document).on('change', '#cb-select-all-1', function() {
+        var isChecked = $(this).prop('checked');
+        $('input[name="file_paths[]"]').prop('checked', isChecked);
+    });
+
+    // Individual checkbox event
+    $(document).on('change', 'input[name="file_paths[]"]', function() {
+        var totalCheckboxes = $('input[name="file_paths[]"]').length;
+        var checkedCheckboxes = $('input[name="file_paths[]"]:checked').length;
+
+        // If all checkboxes are checked, check the all selection checkbox
+        $('#cb-select-all-1').prop('checked', totalCheckboxes === checkedCheckboxes);
+    });
+
+    // Stop event propagation when clicking checkbox
+    $(document).on('click', 'input[name="file_paths[]"]', function(e) {
+        e.stopPropagation();
+    });
+
+    // Stop event propagation when clicking checkbox label
+    $(document).on('click', '.check-column label', function(e) {
+        e.stopPropagation();
+    });
+
+    // Bulk operation button event
+    $(document).on('click', '#doaction', function(e) {
+        e.preventDefault();
+
+        var action = $('#bulk-action-selector-top').val();
+        if (action === '-1') {
+            var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+            alert(strings.pleaseSelectAction || 'Please select an action.');
+            return;
+        }
+
+        var checkedFiles = $('input[name="file_paths[]"]:checked');
+        if (checkedFiles.length === 0) {
+            var strings2 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+            alert(strings2.pleaseSelectItemsToDelete || 'Please select items to delete.');
+            return;
+        }
+
+        if (action === 'delete') {
+            bulkDeleteFiles();
+        }
+    });
+
+    // File selection button click processing
+    $('#select-files-btn').on('click', function(e) {
+        e.preventDefault();
+        $('#file-input').click();
+    });
+
+    // File selection processing
+    $('#file-input').on('change', function(e) {
+        var files = e.target.files;
+        if (files.length > 0) {
+            uploadFiles(files);
+        }
+    });
+
+    // Drag and drop processing
+    var dropZone = $('#drop-zone');
+
+    if (dropZone.length > 0) {
+        // Drag enter
+        dropZone.on('dragenter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).addClass('dragover');
+            $('.drop-zone-overlay').show();
+        });
+
+        // Drag over
+        dropZone.on('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        // Drag leave
+        dropZone.on('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var rect = this.getBoundingClientRect();
+            var x = e.originalEvent.clientX;
+            var y = e.originalEvent.clientY;
+
+            // Only process if it is outside the drop zone
+            if (x <= rect.left || x >= rect.right || y <= rect.top || y >= rect.bottom) {
+                $(this).removeClass('dragover');
+                $('.drop-zone-overlay').hide();
+            }
+        });
+
+        // Drop
+        dropZone.on('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).removeClass('dragover');
+            $('.drop-zone-overlay').hide();
+
+            var files = e.originalEvent.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFiles(files);
+            }
+        });
+
+        // Disable default drag and drop on the entire page
+        $(document).on('dragenter dragover drop', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    // Control simple authentication checkbox
+    $('#bf-auth-methods-simple-auth').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#bf-simple-auth-password-section').show();
+        } else {
+            $('#bf-simple-auth-password-section').hide();
+        }
+    });
+
+    // Control login user checkbox
+    $('#bf-auth-methods-logged-in').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#bf-allowed-roles-section').show();
+        } else {
+            $('#bf-allowed-roles-section').hide();
+        }
+    });
+
+    // Control role selection
+    $('#bf-select-all-roles').on('click', function() {
+        $('.bf-role-checkbox').prop('checked', true);
+    });
+
+    $('#bf-deselect-all-roles').on('click', function() {
+        $('.bf-role-checkbox').prop('checked', false);
+    });
+
+    // Remove authentication settings button event listener
+    $(document).on('click', '#remove-auth-btn', function() {
+        removeDirectoryAuth();
+    });
+
+    // Secure directory re-creation button processing
+    $('#bf-recreate-secure-directory').on('click', function() {
+        var $button = $(this);
+        var $status = $('#bf-recreate-status');
+
+        // Disable button
+        var strings3 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+        $button.prop('disabled', true).text(strings3.creating || 'Creating...');
+        $status.html('<span style="color: #0073aa;">' + (strings3.processing || 'Processing...') + '</span>');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'bf_sfd_recreate_secure_directory',
+                nonce: (typeof bfFileListData !== 'undefined' && bfFileListData.nonce) ? bfFileListData.nonce : ''
+            },
+            success: function(response) {
+                if (response.success) {
+                    $status.html('<span style="color: #46b450;">' + response.data.message + '</span>');
+
+                    // Reload the page after 3 seconds
+                    setTimeout(function() {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    var strings4 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+                    $status.html('<span style="color: #dc3232;">' + response.data + '</span>');
+                    $button.prop('disabled', false).text(strings4.createDirectory || 'Create directory');
+                }
+            },
+            error: function(xhr, status, error) {
+                var strings5 = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
+                $status.html('<span style="color: #dc3232;">' + (strings5.anErrorOccurred || 'An error occurred') + ': ' + error + '</span>');
+                $button.prop('disabled', false).text(strings5.createDirectory || 'Create directory');
+            }
+        });
+    });
+
+    // Display initial data (using data passed from wp_localize_script)
+    if (typeof bfFileListData !== 'undefined' && bfFileListData.initialData) {
+        updateFileList(bfFileListData.initialData);
+    }
   });
 })(jQuery);
