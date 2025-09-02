@@ -1125,6 +1125,9 @@ class FileListPage {
             'current_page' => $page,
             'has_parent' => $this->can_navigate_to_parent( $relative_path ),
             'current_directory_has_auth' => $this->has_directory_auth( $relative_path ),
+            // Include capability flags needed by the JS to rebuild controls after AJAX navigation
+            'current_user_can_delete' => current_user_can( 'manage_options' ),
+            'current_user_can_manage_auth' => current_user_can( 'manage_options' ),
         );
     }
 
