@@ -234,6 +234,51 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
                     <?php endif; ?>
                 </div>
 
+                <!-- HTML Templates for JavaScript -->
+                <script type="text/template" id="top-tablenav-template">
+                    <div class="tablenav top">
+                        <div class="alignleft actions bulkactions">
+                            <label for="bulk-action-selector-top" class="screen-reader-text"><?php echo esc_js( __('Select bulk action', 'bf-secret-file-downloader' ) ); ?></label>
+                            <select name="action" id="bulk-action-selector-top">
+                                <option value="-1"><?php echo esc_js( __('Bulk actions', 'bf-secret-file-downloader' ) ); ?></option>
+                                {{DELETE_OPTION}}
+                            </select>
+                            <input type="submit" id="doaction" class="button action" value="<?php echo esc_js( __('Apply', 'bf-secret-file-downloader' ) ); ?>">
+                        </div>
+                        {{PAGINATION_SECTION}}
+                    </div>
+                </script>
+
+                <script type="text/template" id="bottom-tablenav-template">
+                    <div class="tablenav bottom">
+                        <div class="tablenav-pages">
+                            <span class="pagination-links">
+                                {{PAGINATION_LINKS}}
+                            </span>
+                        </div>
+                    </div>
+                </script>
+
+                <script type="text/template" id="pagination-template">
+                    <span class="pagination-links">
+                        {{PREVIOUS_LINK}}
+                        {{PAGE_NUMBERS}}
+                        {{NEXT_LINK}}
+                    </span>
+                </script>
+
+                <script type="text/template" id="path-display-template">
+                    <div class="bf-path-info">
+                        <strong>{{CURRENT_DIRECTORY_LABEL}}</strong>
+                        <code id="current-path-display">{{CURRENT_PATH_DISPLAY}}</code>
+                        <input type="hidden" id="current-path" value="{{CURRENT_PATH_VALUE}}">
+                    </div>
+                    <div class="bf-path-actions">
+                        {{GO_UP_BUTTON}}
+                        {{AUTH_SETTINGS_BUTTON}}
+                    </div>
+                </script>
+
                 <!-- File list table -->
                 <div class="bf-secret-file-downloader-file-table">
                     <table class="wp-list-table widefat fixed striped">
@@ -531,30 +576,12 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
 jQuery(document).ready(function($) {
 
     // Check if Dashicons are loaded
-    checkDashicons();
+    bfSfdCheckDashicons();
 
     // Initialize authentication details display on page load
     setTimeout(function() {
-        initializeAuthDetails();
+        bfSfdInitializeAuthDetails();
     }, 200);
-
-
-    // Initialize authentication details display on page load
-    function initializeAuthDetails() {
-        var currentPath = $('#current-path').val();
-        var hasAuth = checkCurrentDirectoryHasAuth();
-
-        if (hasAuth && currentPath) {
-            // Check if authentication details are already displayed
-            var authDetails = $('.bf-auth-details');
-            if (authDetails.length === 0) {
-                $('.bf-path-info').append(bfSfdGetAuthDetailsTemplate());
-            }
-
-            // Load and display authentication settings
-            loadDirectoryAuthSettings(currentPath);
-        }
-    }
 
     // Delete link event (from mouse over menu)
     $(document).on('click', '.delete-file-link', function(e) {
@@ -565,8 +592,7 @@ jQuery(document).ready(function($) {
         var fileName = $link.data('file-name');
         var fileType = $link.data('file-type');
 
-        console.log('削除リンクがクリックされました:', filePath, fileName, fileType); // デバッグ用
-        deleteFile(filePath, fileName, fileType);
+        bfSfdDeleteFile(filePath, fileName, fileType);
     });
 
     // Remove directory click processing - only row action links are used
@@ -689,8 +715,8 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         var currentPath = $('#current-path').val();
         if (currentPath) {
-            var parentPath = getParentPath(currentPath);
-            navigateToDirectory(parentPath, 1);
+            var parentPath = bfSfdGetParentPath(currentPath);
+            bfSfdNavigateToDirectory(parentPath, 1);
         }
     });
 
@@ -699,8 +725,8 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         var sortBy = $(this).data('sort');
         var currentPath = $('#current-path').val();
-        var currentSortBy = getCurrentSortBy();
-        var currentSortOrder = getCurrentSortOrder();
+        var currentSortBy = bfSfdGetCurrentSortBy();
+        var currentSortOrder = bfSfdGetCurrentSortOrder();
 
         // If the same column is clicked, reverse the order
         var newSortOrder = 'asc';
@@ -708,7 +734,7 @@ jQuery(document).ready(function($) {
             newSortOrder = 'desc';
         }
 
-        navigateToDirectoryWithSort(currentPath, 1, sortBy, newSortOrder);
+        bfSfdNavigateToDirectoryWithSort(currentPath, 1, sortBy, newSortOrder);
     });
 
     // Paging link click processing
@@ -717,7 +743,7 @@ jQuery(document).ready(function($) {
         var url = new URL(this.href);
         var page = url.searchParams.get('paged') || 1;
         var path = url.searchParams.get('path') || $('#current-path').val();
-        navigateToDirectory(path, page);
+        bfSfdNavigateToDirectory(path, page);
     });
 
     // Directory creation button click processing
@@ -737,14 +763,14 @@ jQuery(document).ready(function($) {
     // Execute directory creation
     $('#create-directory-submit').on('click', function(e) {
         e.preventDefault();
-        createDirectory();
+        bfSfdCreateDirectory();
     });
 
     // Enter key to create directory
     $('#directory-name-input').on('keypress', function(e) {
         if (e.which == 13) {
             e.preventDefault();
-            createDirectory();
+            bfSfdCreateDirectory();
         }
     });
 
@@ -756,7 +782,7 @@ jQuery(document).ready(function($) {
         var filePath = $link.data('file-path');
         var fileName = $link.data('file-name');
 
-        downloadFile(filePath, fileName);
+        bfSfdDownloadFile(filePath, fileName);
     });
 
     // URL copy link event
@@ -778,7 +804,7 @@ jQuery(document).ready(function($) {
         var path = $link.data('path');
 
         if (path) {
-            navigateToDirectory(path, 1);
+            bfSfdNavigateToDirectory(path, 1);
         }
     });
 
@@ -838,7 +864,7 @@ jQuery(document).ready(function($) {
     $('#file-input').on('change', function(e) {
         var files = e.target.files;
         if (files.length > 0) {
-            uploadFiles(files);
+            bfSfdUploadFiles(files);
         }
     });
 
@@ -884,7 +910,7 @@ jQuery(document).ready(function($) {
 
             var files = e.originalEvent.dataTransfer.files;
             if (files.length > 0) {
-                uploadFiles(files);
+                bfSfdUploadFiles(files);
             }
         });
 
@@ -894,822 +920,7 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // Check if the file is a program code file
-    function isProgramCodeFile(filename) {
-        // Program code file extension list
-        var codeExtensions = [
-            'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phps',
-            'js', 'jsx', 'ts', 'tsx',
-            'css', 'scss', 'sass', 'less',
-            'html', 'htm', 'xhtml',
-            'xml', 'xsl', 'xslt',
-            'json', 'yaml', 'yml',
-            'py', 'pyc', 'pyo',
-            'rb', 'rbw',
-            'pl', 'pm',
-            'java', 'class', 'jar',
-            'c', 'cpp', 'cc', 'cxx', 'h', 'hpp',
-            'cs', 'vb', 'vbs',
-            'sh', 'bash', 'zsh', 'fish',
-            'sql', 'mysql', 'pgsql',
-            'asp', 'aspx', 'jsp',
-            'cgi', 'fcgi'
-        ];
 
-        // Configuration files and dangerous files
-        var configFiles = [
-            '.htaccess', '.htpasswd', '.env', '.ini',
-            'web.config', 'composer.json', 'package.json',
-            'Dockerfile', 'docker-compose.yml',
-            'Makefile', 'CMakeLists.txt'
-        ];
-
-        // Check by extension
-        var extension = filename.split('.').pop().toLowerCase();
-        if (codeExtensions.includes(extension)) {
-            return true;
-        }
-
-        // Check by filename
-        if (configFiles.includes(filename)) {
-            return true;
-        }
-
-        // Script file names often used without extension
-        var scriptNames = [
-            'index', 'config', 'settings', 'install', 'setup',
-            'admin', 'login', 'auth', 'database', 'db'
-        ];
-
-        var basename = filename.split('.')[0].toLowerCase();
-        if (scriptNames.includes(basename) && !filename.includes('.')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function getCurrentSortBy() {
-        return $('.sortable.sorted').length > 0 ?
-            $('.sortable.sorted').find('.sort-link').data('sort') : 'name';
-    }
-
-    function getCurrentSortOrder() {
-        if ($('.sortable.sorted.asc').length > 0) return 'asc';
-        if ($('.sortable.sorted.desc').length > 0) return 'desc';
-        return 'asc';
-    }
-
-    function navigateToDirectoryWithSort(path, page, sortBy, sortOrder) {
-        $('#bf-secret-file-downloader-loading').show();
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_browse_files',
-                path: path,
-                page: page,
-                sort_by: sortBy,
-                sort_order: sortOrder,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    updateFileListWithSort(response.data, sortBy, sortOrder);
-                    // Update URL (add to browser history)
-                    var newUrl = new URL(window.location);
-                    newUrl.searchParams.set('path', path);
-                    newUrl.searchParams.set('paged', page);
-                    newUrl.searchParams.set('sort_by', sortBy);
-                    newUrl.searchParams.set('sort_order', sortOrder);
-                    window.history.pushState({path: path, page: page, sortBy: sortBy, sortOrder: sortOrder}, '', newUrl);
-                } else {
-                    // If the directory cannot be accessed, try to move to the parent directory
-                    var errorMessage = response.data || '<?php echo esc_js( __('An error occurred', 'bf-secret-file-downloader' ) ); ?>';
-
-                    if (errorMessage.indexOf('<?php echo esc_js( __('Cannot access directory', 'bf-secret-file-downloader' ) ); ?>') !== -1 ||
-                        errorMessage.indexOf('アクセスできません') !== -1) {
-                        // If the directory access error occurs, try to move to the parent directory
-                        var parentPath = getParentPath(path);
-                        if (parentPath !== path) {
-                            console.log('ディレクトリアクセスエラー。親ディレクトリに移動します: ' + parentPath);
-                            navigateToDirectoryWithSort(parentPath, 1, sortBy, sortOrder);
-                            return;
-                        }
-                    }
-
-                    alert(errorMessage);
-                }
-            },
-            error: function() {
-                alert('<?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
-            },
-            complete: function() {
-                $('#bf-secret-file-downloader-loading').hide();
-            }
-        });
-    }
-
-    function navigateToDirectory(path, page) {
-        var currentSortBy = getCurrentSortBy();
-        var currentSortOrder = getCurrentSortOrder();
-        navigateToDirectoryWithSort(path, page, currentSortBy, currentSortOrder);
-    }
-
-
-
-    function navigateToDirectoryOld(path, page) {
-        $('#bf-secret-file-downloader-loading').show();
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_browse_files',
-                path: path,
-                page: page,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    updateFileList(response.data);
-                    // Update URL (add to browser history)
-                    var newUrl = new URL(window.location);
-                    newUrl.searchParams.set('path', path);
-                    newUrl.searchParams.set('paged', page);
-                    window.history.pushState({path: path, page: page}, '', newUrl);
-                } else {
-                    alert(response.data || '<?php esc_html_e('An error occurred', 'bf-secret-file-downloader' ); ?>');
-                }
-            },
-            error: function() {
-                alert('<?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
-            },
-            complete: function() {
-                $('#bf-secret-file-downloader-loading').hide();
-            }
-        });
-    }
-
-        function updateFileListWithSort(data, sortBy, sortOrder) {
-        // Update sort state
-        $('.sortable').removeClass('sorted asc desc');
-        $('.sortable').each(function() {
-            var linkSortBy = $(this).find('.sort-link').data('sort');
-            if (linkSortBy === sortBy) {
-                $(this).addClass('sorted ' + sortOrder);
-            }
-        });
-
-        updateFileList(data);
-    }
-
-    // Template function group
-    function createIconWrapper(file) {
-        if (file.type === 'directory') {
-            return '<span class="bf-icon-wrapper">' +
-                '<span class="dashicons dashicons-folder bf-directory-icon" style="font-size: 20px !important; margin-right: 8px; vertical-align: middle; font-family: dashicons !important;"></span>' +
-                '<span class="bf-fallback-icon" style="display: none; font-size: 18px; margin-right: 8px; vertical-align: middle;">📁</span>' +
-                '</span>';
-        } else {
-            var iconClass = file.type_class || '';
-            var fallbackEmoji = '📄';
-
-            if (iconClass === 'image-file') {
-                fallbackEmoji = '🖼️';
-            } else if (iconClass === 'document-file') {
-                fallbackEmoji = '📝';
-            } else if (iconClass === 'archive-file') {
-                fallbackEmoji = '📦';
-            }
-
-            return '<span class="bf-icon-wrapper">' +
-                '<span class="dashicons dashicons-media-default bf-file-icon" style="font-size: 16px !important; margin-right: 8px; vertical-align: middle; font-family: dashicons !important;"></span>' +
-                '<span class="bf-fallback-icon" style="display: none; font-size: 16px; margin-right: 8px; vertical-align: middle;">' + fallbackEmoji + '</span>' +
-                '</span>';
-        }
-    }
-
-    function createRowActions(file) {
-        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-        var rowActions = '<div class="row-actions">';
-
-        if (file.type === 'directory') {
-            if (file.readable) {
-                rowActions += '<span class="open"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + (strings.open || '<?php esc_html_e('Open', 'bf-secret-file-downloader' ); ?>') + '</a>';
-
-                if (file.can_delete) {
-                    rowActions += ' | ';
-                }
-                rowActions += '</span>';
-            }
-        } else {
-            rowActions += '<span class="download"><a href="#" class="download-file-link" ' +
-                'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
-                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.download || '<?php esc_html_e('Download', 'bf-secret-file-downloader' ); ?>') + '</a> | </span>';
-            rowActions += '<span class="copy-url"><a href="#" class="copy-url-link" ' +
-                'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
-                'data-file-name="' + $('<div>').text(file.name).html() + '">' + (strings.copyUrl || '<?php esc_html_e('Copy URL', 'bf-secret-file-downloader' ); ?>') + '</a>';
-
-            if (file.can_delete) {
-                rowActions += ' | ';
-            }
-            rowActions += '</span>';
-        }
-
-        if (file.can_delete) {
-            rowActions += '<span class="delete"><a href="#" class="delete-file-link" ' +
-                'data-file-path="' + $('<div>').text(file.path).html() + '" ' +
-                'data-file-name="' + $('<div>').text(file.name).html() + '" ' +
-                'data-file-type="' + $('<div>').text(file.type).html() + '">' + (strings.delete || '<?php esc_html_e('Delete', 'bf-secret-file-downloader' ); ?>') + '</a></span>';
-        }
-
-        rowActions += '</div>';
-        return rowActions;
-    }
-
-    function createNameCell(file) {
-        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-        var nameCell = $('<td class="column-name has-row-actions"></td>');
-        var iconWrapper = createIconWrapper(file);
-        var rowActions = createRowActions(file);
-
-        if (file.type === 'directory') {
-            if (file.readable) {
-                nameCell.html(iconWrapper + '<strong class="bf-directory-name row-title"><a href="#" class="open-directory" data-path="' + $('<div>').text(file.path).html() + '">' + $('<div>').text(file.name).html() + '</a></strong>');
-            } else {
-                nameCell.html(iconWrapper + '<span class="bf-directory-name-disabled row-title">' + $('<div>').text(file.name).html() + '</span>' +
-                             '<small class="bf-access-denied">(' + (strings.accessDenied || '<?php esc_html_e('Access denied', 'bf-secret-file-downloader' ); ?>') + ')</small>');
-            }
-        } else {
-            nameCell.html(iconWrapper + '<span class="bf-file-name row-title"><a href="#" class="download-file-link" data-file-path="' + $('<div>').text(file.path).html() + '" data-file-name="' + $('<div>').text(file.name).html() + '">' + $('<div>').text(file.name).html() + '</a></span>');
-        }
-
-        nameCell.append(rowActions);
-        return nameCell;
-    }
-
-    function createFileRow(file) {
-        var row = $('<tr></tr>')
-            .attr('data-path', file.path)
-            .attr('data-type', file.type);
-
-        if (file.type === 'directory' && file.readable) {
-            row.addClass('clickable-directory').css('cursor', 'pointer');
-        }
-
-        // Checkbox column
-        var checkboxCell = $('<th scope="row" class="check-column"></th>');
-        var checkbox = $('<input type="checkbox" name="file_paths[]">')
-            .attr('value', file.path)
-            .attr('data-file-name', file.name)
-            .attr('data-file-type', file.type);
-        checkboxCell.append(checkbox);
-
-        var nameCell = createNameCell(file);
-
-        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-        var typeCell = $('<td class="column-type"></td>').text(
-            file.type === 'directory'
-                ? (strings.directory || '<?php esc_html_e('Directory', 'bf-secret-file-downloader' ); ?>')
-                : (strings.file || '<?php esc_html_e('File', 'bf-secret-file-downloader' ); ?>')
-        );
-
-        var sizeCell = $('<td class="column-size"></td>').text(
-            file.size === '-' ? '-' : formatFileSize(file.size)
-        );
-
-        var modifiedCell = $('<td class="column-modified"></td>').text(
-            new Date(file.modified * 1000).toLocaleString('ja-JP')
-        );
-
-        row.append(checkboxCell, nameCell, typeCell, sizeCell, modifiedCell);
-        return row;
-    }
-
-    function createPathDisplayTemplate(data) {
-        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-        var pathHtml = '<div class="bf-path-info">' +
-            '<strong>' + (strings.currentDirectory || '<?php esc_html_e('Current directory:', 'bf-secret-file-downloader' ); ?>') + '</strong>' +
-            '<code id="current-path-display">' + (data.current_path || (strings.rootDirectory || '<?php esc_html_e("Root directory", "bf-secret-file-downloader" ); ?>')) + '</code>' +
-            '<input type="hidden" id="current-path" value="' + (data.current_path || '') + '">' +
-            '</div>' +
-            '<div class="bf-path-actions">';
-
-        // Go up button
-        if (data.current_path && data.current_path !== '') {
-            pathHtml += '<button type="button" id="go-up-btn" class="button button-small">' +
-                '<span class="dashicons dashicons-arrow-up-alt2"></span>' +
-                (strings.goUp || '<?php esc_html_e('Go to parent directory', 'bf-secret-file-downloader' ); ?>') +
-                '</button>';
-        }
-
-        // Directory-specific authentication settings button (displayed only for non-root directories)
-        <?php if ( current_user_can( 'manage_options' ) ) : ?>
-        if (data.current_path && data.current_path !== '') {
-            pathHtml += '<button type="button" id="directory-auth-btn" class="button button-small">' +
-                '<span class="dashicons dashicons-admin-users"></span>' +
-                (strings.authSettings || '<?php esc_html_e('Authentication settings', 'bf-secret-file-downloader' ); ?>') +
-                '</button>';
-        }
-        <?php endif; ?>
-
-        pathHtml += '</div>';
-        return pathHtml;
-    }
-
-    function updateFileList(data) {
-        // Update current path
-        $('#current-path').val(data.current_path);
-        $('#current-path-display').text(data.current_path || '<?php esc_html_e("Root directory", "bf-secret-file-downloader" ); ?>');
-
-        // Rebuild the entire path display area
-        $('.bf-secret-file-downloader-path').html(createPathDisplayTemplate(data));
-
-        // Update authentication indicator (after updating the path display area)
-        var hasAuth = data.current_directory_has_auth || false;
-        updateAuthIndicator(hasAuth);
-
-        // Reset event handlers
-        $('#go-up-btn').on('click', function(e) {
-            e.preventDefault();
-            var currentPath = $('#current-path').val();
-            if (currentPath) {
-                var parentPath = getParentPath(currentPath);
-                navigateToDirectory(parentPath, 1);
-            }
-        });
-
-        $('#directory-auth-btn').on('click', function(e) {
-            e.preventDefault();
-            openDirectoryAuthModal();
-        });
-
-        // Update statistics
-        var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-        $('.bf-secret-file-downloader-stats p').text(
-            data.total_items > 0
-                ? (strings.itemsFound || '<?php
-                    /* translators: %d: number of items found */
-                    echo esc_js( __('%d items found.', 'bf-secret-file-downloader' ) );
-                ?>').replace('%d', data.total_items)
-                : (strings.noItemsFound || '<?php echo esc_js( __('No items found.', 'bf-secret-file-downloader' ) ); ?>')
-        );
-
-        // Update file list
-        var tbody = $('#file-list-tbody');
-        tbody.empty();
-
-        if (data.items && data.items.length > 0) {
-            $.each(data.items, function(index, file) {
-                tbody.append(createFileRow(file));
-            });
-
-            // Stop event propagation for dynamically generated checkboxes
-            $('input[name="file_paths[]"]').off('click').on('click', function(e) {
-                e.stopPropagation();
-            });
-
-            // Stop event propagation for dynamically generated checkbox labels
-            $('.check-column label').off('click').on('click', function(e) {
-                e.stopPropagation();
-            });
-        } else {
-            var strings = (typeof bfFileListData !== 'undefined' && bfFileListData.strings) ? bfFileListData.strings : {};
-            tbody.append(
-                '<tr><td colspan="5" style="text-align: center; padding: 40px;">' +
-                (strings.noFilesFound || '<?php esc_html_e('No files or directories found.', 'bf-secret-file-downloader' ); ?>') +
-                '</td></tr>'
-            );
-        }
-
-        // Update pagination
-        updatePagination(data);
-    }
-
-    function updatePagination(data) {
-        // Remove existing pagination elements
-        $('.tablenav').remove();
-
-        // Top tablenav including bulk action menu
-        var topTablenav = '<div class="tablenav top">' +
-            '<div class="alignleft actions bulkactions">' +
-            '<label for="bulk-action-selector-top" class="screen-reader-text">' + '<?php echo esc_js( __('Select bulk action', 'bf-secret-file-downloader' ) ); ?>' + '</label>' +
-            '<select name="action" id="bulk-action-selector-top">' +
-            '<option value="-1">' + '<?php echo esc_js( __('Bulk actions', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
-
-        if (data.current_user_can_delete) {
-            topTablenav += '<option value="delete">' + '<?php echo esc_js( __('Delete', 'bf-secret-file-downloader' ) ); ?>' + '</option>';
-        }
-
-        topTablenav += '</select>' +
-            '<input type="submit" id="doaction" class="button action" value="' + '<?php echo esc_js( __('Apply', 'bf-secret-file-downloader' ) ); ?>' + '">' +
-            '</div>';
-
-        if (data.total_pages > 1) {
-            var pagination = generatePaginationHtml(data.current_page, data.total_pages, data.current_path);
-            topTablenav += '<div class="tablenav-pages">' + pagination + '</div>';
-        }
-
-        topTablenav += '</div>';
-
-        // Place top tablenav before the table
-        $('.bf-secret-file-downloader-file-table').before(topTablenav);
-
-        // If there is pagination, add bottom tablenav
-        if (data.total_pages > 1) {
-            var pagination = generatePaginationHtml(data.current_page, data.total_pages, data.current_path);
-            $('.bf-secret-file-downloader-file-table').after('<div class="tablenav bottom"><div class="tablenav-pages">' + pagination + '</div></div>');
-        }
-    }
-
-    function generatePaginationHtml(currentPage, totalPages, currentPath) {
-        var html = '<span class="pagination-links">';
-
-        // Previous page
-        if (currentPage > 1) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + '<?php echo esc_js( __('Previous', 'bf-secret-file-downloader' ) ); ?>' + '</a>';
-        }
-
-        // Page number
-        var startPage = Math.max(1, currentPage - 2);
-        var endPage = Math.min(totalPages, currentPage + 2);
-
-        for (var i = startPage; i <= endPage; i++) {
-            if (i == currentPage) {
-                html += '<span class="current">' + i + '</span>';
-            } else {
-                html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + i + '">' + i + '</a>';
-            }
-        }
-
-        // Next page
-        if (currentPage < totalPages) {
-            html += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + '<?php echo esc_js( __('Next', 'bf-secret-file-downloader' ) ); ?>' + ' &raquo;</a>';
-        }
-
-        html += '</span>';
-        return html;
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 B';
-        var k = 1024;
-        var sizes = ['B', 'KB', 'MB', 'GB'];
-        var i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    function getFileIconClass(fileExtension) {
-        // Image file
-        var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico'];
-        if (imageExtensions.includes(fileExtension)) {
-            return 'image-file';
-        }
-
-        // Document file
-        var documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'pages'];
-        if (documentExtensions.includes(fileExtension)) {
-            return 'document-file';
-        }
-
-        // Archive file
-        var archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'];
-        if (archiveExtensions.includes(fileExtension)) {
-            return 'archive-file';
-        }
-
-        return '';
-    }
-
-    function getParentPath(currentPath) {
-        if (!currentPath || currentPath === '') {
-            return '';
-        }
-
-        // Split path by separator
-        var parts = currentPath.split('/').filter(function(part) {
-            return part !== '';
-        });
-
-        // Remove the last part
-        parts.pop();
-
-        // Rebuild the parent path
-        return parts.join('/');
-    }
-
-    function checkDashicons() {
-        console.log('Dashiconsチェック開始');
-
-        // Check if Dashicons font is loaded
-        var testElement = $('<span class="dashicons dashicons-folder" style="font-family: dashicons; position: absolute; left: -9999px;"></span>');
-        $('body').append(testElement);
-
-        // Check if the font is loaded
-        setTimeout(function() {
-            var computedStyle = window.getComputedStyle(testElement[0]);
-            var fontFamily = computedStyle.getPropertyValue('font-family');
-
-            console.log('フォントファミリー:', fontFamily);
-
-            if (fontFamily.indexOf('dashicons') !== -1) {
-                console.log('Dashiconsが利用可能です - Dashiconsを表示します');
-                // If Dashicons is loaded, display Dashicons and hide the fallback
-                $('.dashicons').css('display', 'inline-block !important').show();
-                $('.bf-fallback-icon').hide();
-
-                // Additional style forced application
-                $('.bf-directory-icon').css({
-                    'display': 'inline-block',
-                    'font-family': 'dashicons',
-                    'font-size': '20px',
-                    'margin-right': '8px',
-                    'vertical-align': 'middle'
-                });
-
-                $('.bf-file-icon').css({
-                    'display': 'inline-block',
-                    'font-family': 'dashicons',
-                    'font-size': '16px',
-                    'margin-right': '8px',
-                    'vertical-align': 'middle'
-                });
-
-            } else {
-                console.log('Dashiconsが利用できません。フォールバックアイコンを使用します');
-                $('.dashicons').hide();
-                $('.bf-fallback-icon').show();
-            }
-
-            testElement.remove();
-        }, 1000);
-    }
-
-    function uploadFiles(files) {
-        var currentPath = $('#current-path').val();
-
-        // Relative path is OK even if it is empty (root directory)
-        var maxFileSize = <?php echo esc_js( $max_file_size_mb ?? 10 ); ?> * 1024 * 1024; // MB to bytes
-        var uploadedCount = 0;
-        var totalFiles = files.length;
-        var errors = [];
-
-        $('#upload-progress').show();
-        updateUploadProgress(0, '<?php esc_html_e('Starting upload...', 'bf-secret-file-downloader' ); ?>');
-
-        // Upload each file in order
-        function uploadNextFile(index) {
-            if (index >= totalFiles) {
-                // All uploads are complete
-                $('#upload-progress').hide();
-
-                if (errors.length > 0) {
-                    alert('<?php esc_html_e('Errors occurred with some files:', 'bf-secret-file-downloader' ); ?>\n' + errors.join('\n'));
-                } else {
-                    // Show success message
-                    showSuccessMessage(uploadedCount + '<?php esc_html_e('files uploaded.', 'bf-secret-file-downloader' ); ?>');
-                }
-
-                // Update file list
-                navigateToDirectory(currentPath, 1);
-                return;
-            }
-
-            var file = files[index];
-            var fileName = file.name;
-
-            // File size check
-            if (file.size > maxFileSize) {
-                errors.push(fileName + ': <?php esc_html_e('File size exceeds limit', 'bf-secret-file-downloader' ); ?>');
-                uploadNextFile(index + 1);
-                return;
-            }
-
-            // Program code file check
-            if (isProgramCodeFile(fileName)) {
-                errors.push(fileName + ': <?php esc_html_e('Cannot upload for security reasons', 'bf-secret-file-downloader' ); ?>');
-                uploadNextFile(index + 1);
-                return;
-            }
-
-            // Create FormData
-            var formData = new FormData();
-            formData.append('action', 'bf_sfd_upload_file');
-            formData.append('target_path', currentPath);
-            formData.append('file', file);
-            formData.append('nonce', '<?php echo esc_js( $nonce ); ?>');
-
-            // Update upload progress
-            var progress = Math.round(((index + 1) / totalFiles) * 100);
-            updateUploadProgress(progress, '<?php esc_html_e('Uploading:', 'bf-secret-file-downloader' ); ?> ' + fileName);
-
-            // Send AJAX
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        uploadedCount++;
-                    } else {
-                        errors.push(fileName + ': ' + (response.data || '<?php esc_html_e('Upload failed', 'bf-secret-file-downloader' ); ?>'));
-                    }
-                    uploadNextFile(index + 1);
-                },
-                error: function() {
-                    errors.push(fileName + ': <?php esc_html_e('Communication error occurred', 'bf-secret-file-downloader' ); ?>');
-                    uploadNextFile(index + 1);
-                }
-            });
-        }
-
-        // Start upload
-        uploadNextFile(0);
-    }
-
-    function updateUploadProgress(percent, message) {
-        $('.upload-progress-fill').css('width', percent + '%');
-        $('#upload-status').text(message);
-    }
-
-    function showSuccessMessage(message) {
-        // Show success message (simplified version)
-        $('<div class="notice notice-success is-dismissible" style="margin: 20px 0;"><p>' + message + '</p></div>')
-            .insertAfter('.bf-secret-file-downloader-header')
-            .delay(5000)
-            .fadeOut();
-    }
-
-    function createDirectory() {
-        var currentPath = $('#current-path').val();
-        var directoryName = $('#directory-name-input').val().trim();
-
-        // Relative path is OK even if it is empty (root directory)
-        if (!directoryName) {
-            alert('<?php esc_html_e('Please enter directory name.', 'bf-secret-file-downloader' ); ?>');
-            $('#directory-name-input').focus();
-            return;
-        }
-
-        // Directory name validation
-        var validPattern = /^[a-zA-Z0-9_\-\.]+$/;
-        if (!validPattern.test(directoryName)) {
-            alert('<?php esc_html_e('Directory name contains invalid characters. Only alphanumeric characters, underscores, hyphens, and dots are allowed.', 'bf-secret-file-downloader' ); ?>');
-            $('#directory-name-input').focus();
-            return;
-        }
-
-        // Check if the directory name starts with a dot
-        if (directoryName.charAt(0) === '.') {
-            alert('<?php esc_html_e('Cannot create directory names starting with a dot.', 'bf-secret-file-downloader' ); ?>');
-            $('#directory-name-input').focus();
-            return;
-        }
-
-        // Disable button
-        $('#create-directory-submit').prop('disabled', true).text('<?php esc_html_e('Creating...', 'bf-secret-file-downloader' ); ?>');
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_create_directory',
-                parent_path: currentPath,
-                directory_name: directoryName,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    showSuccessMessage(response.data.message);
-                    $('#create-directory-form').slideUp();
-                    $('#directory-name-input').val('');
-
-                    // Update file list
-                    navigateToDirectory(currentPath, 1);
-                } else {
-                    alert(response.data || '<?php esc_html_e('Failed to create directory.', 'bf-secret-file-downloader' ); ?>');
-                }
-            },
-            error: function() {
-                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
-            },
-            complete: function() {
-                // Enable button
-                $('#create-directory-submit').prop('disabled', false).text('<?php esc_html_e('Create', 'bf-secret-file-downloader' ); ?>');
-            }
-        });
-    }
-
-    function downloadFile(filePath, fileName) {
-        if (!filePath) {
-            alert('<?php esc_html_e('Invalid file path.', 'bf-secret-file-downloader' ); ?>');
-            return;
-        }
-
-        // Message for starting download process
-        showSuccessMessage('<?php esc_html_e('Preparing download...', 'bf-secret-file-downloader' ); ?>');
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_download_file',
-                file_path: filePath,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success && response.data.download_url) {
-                    // Create a hidden link for download
-                    var link = document.createElement('a');
-                    link.href = response.data.download_url;
-                    link.download = response.data.filename || fileName;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    showSuccessMessage('<?php esc_html_e('Download started.', 'bf-secret-file-downloader' ); ?>');
-                } else {
-                    alert(response.data || '<?php esc_html_e('Download failed.', 'bf-secret-file-downloader' ); ?>');
-                }
-            },
-            error: function() {
-                alert('<?php esc_html_e('Communication error occurred.', 'bf-secret-file-downloader' ); ?>');
-            }
-        });
-    }
-
-    function deleteFile(filePath, fileName, fileType) {
-        var confirmMessage = fileType === 'directory'
-            ? '<?php
-                /* translators: %s: directory name */
-                echo esc_js( __('Delete directory \'%s\' and all its contents? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>'
-            : '<?php
-                /* translators: %s: filename */
-                echo esc_js( __('Delete file \'%s\'? This action cannot be undone.', 'bf-secret-file-downloader' ) ); ?>';
-
-        if (!confirm(confirmMessage.replace('%s', fileName))) {
-            return;
-        }
-
-        // Update the display during the deletion process
-        var deleteLink = $('a[data-file-path="' + filePath + '"].delete-file-link');
-        var originalText = deleteLink.text();
-        deleteLink.text('<?php esc_html_e('Deleting...', 'bf-secret-file-downloader' ); ?>').prop('disabled', true).css('color', '#999');
-
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_delete_file',
-                file_path: filePath,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    showSuccessMessage(response.data.message);
-
-                    // Move to the appropriate directory after deletion
-                    var currentPath = $('#current-path').val();
-                    var targetPath = currentPath;
-                    var deletedPath = response.data.deleted_path;
-
-                    // Check if the deleted item is a directory and if the current path is within the deleted directory
-                    if (fileType === 'directory') {
-                        // Compare the deleted directory path with the current path
-                        if (currentPath === deletedPath ||
-                            (currentPath && deletedPath && currentPath.indexOf(deletedPath + '/') === 0)) {
-                            // If the current path is within the deleted directory or one of its subdirectories,
-                            // move to the parent path returned by the server
-                            targetPath = response.data.parent_path || '';
-                            console.log('削除されたディレクトリ内にいたため、親ディレクトリに移動: ' + targetPath);
-                        }
-                    }
-
-                    // Update file list
-                    navigateToDirectory(targetPath, 1);
-                } else {
-                    var errorMsg = response.data || '<?php esc_html_e('Failed to delete file.', 'bf-secret-file-downloader' ); ?>';
-                    console.log('削除処理がサーバー側で失敗:', errorMsg);
-                    alert(errorMsg);
-
-                    // Restore the deleted button
-                    deleteLink.text(originalText).prop('disabled', false).css('color', '');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log('削除処理で通信エラーが発生:', {xhr: xhr, status: status, error: error});
-                alert('<?php esc_html_e('Communication error occurred during deletion. Please try again.', 'bf-secret-file-downloader' ); ?>');
-
-                // Restore the deleted button when an error occurs
-                deleteLink.text(originalText).prop('disabled', false).css('color', '');
-            }
-        });
-    }
 
     function bulkDeleteFiles() {
         var checkedFiles = $('input[name="file_paths[]"]:checked');
@@ -1755,7 +966,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccessMessage(response.data.message);
+                    bfSfdShowSuccessMessage(response.data.message);
 
                     // Detailed display of the deletion result (if there are failures)
                     if (response.data.failed_count > 0) {
@@ -1770,7 +981,7 @@ jQuery(document).ready(function($) {
                     }
 
                     // Update file list
-                    navigateToDirectory(targetPath, 1);
+                    bfSfdNavigateToDirectory(targetPath, 1);
                 } else {
                     var errorMsg = response.data || '<?php esc_html_e('Bulk delete failed.', 'bf-secret-file-downloader' ); ?>';
                     console.log('一括削除処理がサーバー側で失敗:', errorMsg);
@@ -1876,7 +1087,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccessMessage(response.data.message);
+                    bfSfdShowSuccessMessage(response.data.message);
                     closeDirectoryPasswordModal();
                     updatePasswordIndicator(response.data.has_password);
                 } else {
@@ -1915,7 +1126,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccessMessage(response.data.message);
+                    bfSfdShowSuccessMessage(response.data.message);
                     closeDirectoryPasswordModal();
                     updatePasswordIndicator(response.data.has_password);
                 } else {
@@ -2048,7 +1259,7 @@ jQuery(document).ready(function($) {
         // Use the modern browser Clipboard API
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(url).then(function() {
-                showSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
+                bfSfdShowSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
             }).catch(function(err) {
                 console.error('<?php esc_html_e('Failed to copy to clipboard:', 'bf-secret-file-downloader' ); ?>', err);
                 copyUrlFallback(url);
@@ -2086,7 +1297,7 @@ jQuery(document).ready(function($) {
         try {
             var successful = document.execCommand('copy');
             if (successful) {
-                showSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
+                bfSfdShowSuccessMessage('<?php esc_html_e('Download URL copied to clipboard:', 'bf-secret-file-downloader' ); ?> ' + url);
             } else {
                 showUrlPrompt(url);
             }
@@ -2107,7 +1318,7 @@ jQuery(document).ready(function($) {
     function openDirectoryAuthModal() {
         var currentPath = $('#current-path').val();
         var currentPathDisplay = $('#current-path-display').text();
-        var hasAuth = checkCurrentDirectoryHasAuth();
+        var hasAuth = bfSfdCheckCurrentDirectoryHasAuth();
 
         // Update the modal title
         if (hasAuth) {
@@ -2158,75 +1369,6 @@ jQuery(document).ready(function($) {
         $('#bf-directory-auth-modal').fadeOut(300);
     }
 
-    // Check if the current directory has authentication settings
-    function checkCurrentDirectoryHasAuth() {
-        var indicator = $('.bf-auth-indicator');
-        if (indicator.length === 0) {
-            return false;
-        }
-
-        // Check the indicator text to determine if there are directory-specific settings
-        var statusText = indicator.find('.bf-auth-status-text').text();
-        var hasAuthDetails = $('.bf-auth-details').length > 0;
-
-        return statusText.includes('ディレクトリ毎認証設定あり') || hasAuthDetails;
-    }
-
-    // Load the directory authentication settings
-    function loadDirectoryAuthSettings(currentPath) {
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'bf_sfd_get_directory_auth',
-                path: currentPath,
-                nonce: '<?php echo esc_js( $nonce ); ?>'
-            },
-            success: function(response) {
-                if (response.success) {
-                    var authSettings = response.data;
-
-                    // Authentication method settings
-                    $('#bf-auth-methods-logged-in').prop('checked', authSettings.auth_methods.includes('logged_in'));
-                    $('#bf-auth-methods-simple-auth').prop('checked', authSettings.auth_methods.includes('simple_auth'));
-
-                    // Allowed role settings
-                    $('input[name="bf_allowed_roles[]"]').prop('checked', false);
-                    if (authSettings.allowed_roles) {
-                        authSettings.allowed_roles.forEach(function(role) {
-                            $('#bf-allowed-roles-' + role).prop('checked', true);
-                        });
-                    }
-
-                    // Simple authentication password settings
-                    if (authSettings.simple_auth_password) {
-                        $('#bf-simple-auth-password').val(authSettings.simple_auth_password);
-                    }
-
-                    // Display/hide simple authentication password section
-                    if (authSettings.auth_methods.includes('simple_auth')) {
-                        $('#bf-simple-auth-password-section').show();
-                    } else {
-                        $('#bf-simple-auth-password-section').hide();
-                    }
-
-                    // Display/hide role selection section
-                    if (authSettings.auth_methods.includes('logged_in')) {
-                        $('#bf-allowed-roles-section').show();
-                    } else {
-                        $('#bf-allowed-roles-section').hide();
-                    }
-
-                    // Display authentication details
-                    displayAuthDetails(authSettings);
-                }
-            },
-            error: function() {
-                alert('<?php esc_html_e('Failed to retrieve authentication settings.', 'bf-secret-file-downloader' ); ?>');
-            }
-        });
-    }
-
     // Save the directory authentication settings
     function saveDirectoryAuth() {
         var currentPath = $('#current-path').val();
@@ -2273,7 +1415,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccessMessage(response.data.message);
+                    bfSfdShowSuccessMessage(response.data.message);
                     closeDirectoryAuthModal();
                     updateAuthIndicator(response.data.has_auth);
 
@@ -2316,7 +1458,7 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showSuccessMessage(response.data.message);
+                    bfSfdShowSuccessMessage(response.data.message);
                     closeDirectoryAuthModal();
                     updateAuthIndicator(response.data.has_auth);
                 } else {
@@ -2331,89 +1473,6 @@ jQuery(document).ready(function($) {
             }
         });
     }
-
-
-
-    // Display authentication details
-    function displayAuthDetails(authSettings) {
-        var detailsHtml = '<div class="auth-details-list">';
-
-        // Display authentication method
-        detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Authentication method:', 'bf-secret-file-downloader' ); ?></strong> ';
-        var authMethods = [];
-        if (authSettings.auth_methods.includes('logged_in')) {
-            authMethods.push('<?php esc_html_e('Login user', 'bf-secret-file-downloader' ); ?>');
-        }
-        if (authSettings.auth_methods.includes('simple_auth')) {
-            authMethods.push('<?php esc_html_e('Simple authentication', 'bf-secret-file-downloader' ); ?>');
-        }
-        detailsHtml += authMethods.join(', ') + '</div>';
-
-        // Display allowed roles
-        if (authSettings.allowed_roles && authSettings.allowed_roles.length > 0) {
-            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Allowed roles:', 'bf-secret-file-downloader' ); ?></strong> ';
-            var roleLabels = {
-                'administrator': '<?php esc_html_e('Administrator', 'bf-secret-file-downloader' ); ?>',
-                'editor': '<?php esc_html_e('Editor', 'bf-secret-file-downloader' ); ?>',
-                'author': '<?php esc_html_e('Author', 'bf-secret-file-downloader' ); ?>',
-                'contributor': '<?php esc_html_e('Contributor', 'bf-secret-file-downloader' ); ?>',
-                'subscriber': '<?php esc_html_e('Subscriber', 'bf-secret-file-downloader' ); ?>'
-            };
-            var roles = authSettings.allowed_roles.map(function(role) {
-                return roleLabels[role] || role;
-            });
-            detailsHtml += roles.join(', ') + '</div>';
-        }
-
-        // Display simple authentication password
-        if (authSettings.auth_methods.includes('simple_auth') && authSettings.simple_auth_password) {
-            detailsHtml += '<div class="auth-detail-item"><strong><?php esc_html_e('Simple authentication password:', 'bf-secret-file-downloader' ); ?></strong> ';
-            detailsHtml += '••••••••</div>';
-        }
-
-        detailsHtml += '</div>';
-        $('#auth-details-content').html(detailsHtml);
-    }
-
-
-
-    // Update the authentication setting indicator
-    function updateAuthIndicator(hasAuth) {
-        var indicator = $('.bf-auth-indicator');
-        var authDetails = $('.bf-auth-details');
-        var currentPath = $('#current-path').val();
-
-        if (hasAuth) {
-            if (indicator.length === 0) {
-                $('.bf-path-info').append('<span class="bf-auth-indicator"><span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?></span></span>');
-            } else {
-                // Update the existing indicator
-                indicator.html('<span class="dashicons dashicons-lock"></span><span class="bf-auth-status-text"><?php esc_html_e('Target directory settings', 'bf-secret-file-downloader' ); ?></span>');
-                indicator.css('color', '');
-            }
-
-            // Display authentication details
-            if (authDetails.length === 0) {
-                $('.bf-path-info').append(bfSfdGetAuthDetailsTemplate());
-            }
-
-            // Display authentication details
-            loadDirectoryAuthSettings(currentPath);
-        } else {
-            // If there are no directory-specific settings, display "Common authentication settings applied"
-            if (indicator.length === 0) {
-                $('.bf-path-info').append('<span class="bf-auth-indicator" style="color: #666;"><span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e('Common authentication settings applied', 'bf-secret-file-downloader' ); ?></span></span>');
-            } else {
-                indicator.html('<span class="dashicons dashicons-admin-users"></span><span class="bf-auth-status-text"><?php esc_html_e('Common authentication settings applied', 'bf-secret-file-downloader' ); ?></span>');
-                indicator.css('color', '#666');
-            }
-            authDetails.remove();
-        }
-    }
-
-
-
-
 
     // Control simple authentication checkbox
     $('#bf-auth-methods-simple-auth').on('change', function() {
@@ -2485,7 +1544,7 @@ jQuery(document).ready(function($) {
 
     // Display initial data (using data passed from wp_localize_script)
     if (typeof bfFileListData !== 'undefined' && bfFileListData.initialData) {
-        updateFileList(bfFileListData.initialData);
+        bfSfdUpdateFileList(bfFileListData.initialData);
     }
 
 });

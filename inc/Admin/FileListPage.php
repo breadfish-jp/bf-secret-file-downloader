@@ -120,6 +120,10 @@ class FileListPage {
                 'rootDirectory' => __('Root directory', 'bf-secret-file-downloader' ),
                 'goUp' => __('Go to parent directory', 'bf-secret-file-downloader' ),
                 'authSettings' => __('Authentication settings', 'bf-secret-file-downloader' ),
+                'targetDirectorySettings' => __('Target directory settings', 'bf-secret-file-downloader' ),
+                'commonAuthApplied' => __('Common authentication settings applied', 'bf-secret-file-downloader' ),
+                'previous' => __('Previous', 'bf-secret-file-downloader' ),
+                'next' => __('Next', 'bf-secret-file-downloader' ),
                 'open' => __('Open', 'bf-secret-file-downloader' ),
                 'download' => __('Download', 'bf-secret-file-downloader' ),
                 'copyUrl' => __('Copy URL', 'bf-secret-file-downloader' ),
@@ -131,6 +135,37 @@ class FileListPage {
                 /* translators: %d: number of items found */
                 'itemsFound' => __('%d items found.', 'bf-secret-file-downloader' ),
                 'noItemsFound' => __('No items found.', 'bf-secret-file-downloader' ),
+                'anErrorOccurred' => __('An error occurred', 'bf-secret-file-downloader' ),
+                'cannotAccessDirectory' => __('Cannot access directory', 'bf-secret-file-downloader' ),
+                'communicationErrorOccurred' => __('Communication error occurred', 'bf-secret-file-downloader' ),
+                'failedToRetrieveAuth' => __('Failed to retrieve authentication settings.', 'bf-secret-file-downloader' ),
+                'authenticationMethod' => __('Authentication method:', 'bf-secret-file-downloader' ),
+                'loginUser' => __('Login user', 'bf-secret-file-downloader' ),
+                'simpleAuth' => __('Simple authentication', 'bf-secret-file-downloader' ),
+                'allowedRoles' => __('Allowed roles:', 'bf-secret-file-downloader' ),
+                'administrator' => __('Administrator', 'bf-secret-file-downloader' ),
+                'editor' => __('Editor', 'bf-secret-file-downloader' ),
+                'author' => __('Author', 'bf-secret-file-downloader' ),
+                'contributor' => __('Contributor', 'bf-secret-file-downloader' ),
+                'subscriber' => __('Subscriber', 'bf-secret-file-downloader' ),
+                'simpleAuthPassword' => __('Simple authentication password:', 'bf-secret-file-downloader' ),
+                'startingUpload' => __('Starting upload...', 'bf-secret-file-downloader' ),
+                'fileSizeExceedsLimit' => __('File size exceeds limit', 'bf-secret-file-downloader' ),
+                'cannotUploadForSecurity' => __('Cannot upload for security reasons', 'bf-secret-file-downloader' ),
+                'uploading' => __('Uploading:', 'bf-secret-file-downloader' ),
+                'uploadFailed' => __('Upload failed', 'bf-secret-file-downloader' ),
+                'filesUploadedSuffix' => __('files uploaded.', 'bf-secret-file-downloader' ),
+                'errorsOccurredWithSomeFiles' => __('Errors occurred with some files:', 'bf-secret-file-downloader' ),
+                'invalidFilePath' => __('Invalid file path.', 'bf-secret-file-downloader' ),
+                'preparingDownload' => __('Preparing download...', 'bf-secret-file-downloader' ),
+                'downloadStarted' => __('Download started.', 'bf-secret-file-downloader' ),
+                'downloadFailed' => __('Download failed.', 'bf-secret-file-downloader' ),
+                // Delete file
+                'deleteDirectoryConfirm' => __("Delete directory '%s' and all its contents? This action cannot be undone.", 'bf-secret-file-downloader' ),
+                'deleteFileConfirm' => __("Delete file '%s'? This action cannot be undone.", 'bf-secret-file-downloader' ),
+                'deleting' => __('Deleting...', 'bf-secret-file-downloader' ),
+                'failedToDeleteFile' => __('Failed to delete file.', 'bf-secret-file-downloader' ),
+                'communicationErrorDuringDeletion' => __('Communication error occurred during deletion. Please try again.', 'bf-secret-file-downloader' ),
             ),
         ));
     }
@@ -1352,7 +1387,10 @@ class FileListPage {
         // Get base directory
         $base_directory = DirectoryManager::get_secure_directory();
         if ( empty( $base_directory ) ) {
-            wp_send_json_error( __('Target directory is not configured.', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( array(
+                'message' => __('Target directory is not configured.', 'bf-secret-file-downloader' ),
+                'error_code' => 'DIRECTORY_NOT_CONFIGURED'
+            ));
         }
 
         // Build full path
@@ -1360,12 +1398,18 @@ class FileListPage {
 
         // Security check
         if ( ! SecurityHelper::is_allowed_directory( $full_path ) ) {
-            wp_send_json_error( __('Access to this directory is not allowed.', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( array(
+                'message' => __('Access to this directory is not allowed.', 'bf-secret-file-downloader' ),
+                'error_code' => 'ACCESS_DENIED'
+            ));
         }
 
         // Check if directory exists
         if ( ! is_dir( $full_path ) ) {
-            wp_send_json_error( __('Directory does not exist.', 'bf-secret-file-downloader' ) );
+            wp_send_json_error( array(
+                'message' => __('Directory does not exist.', 'bf-secret-file-downloader' ),
+                'error_code' => 'DIRECTORY_NOT_FOUND'
+            ));
         }
 
         if ( $action_type === 'remove' ) {
@@ -1378,12 +1422,18 @@ class FileListPage {
         } else {
             // Save authentication settings
             if ( empty( $auth_methods ) || ! is_array( $auth_methods ) ) {
-                wp_send_json_error( __('Please select an authentication method.', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( array(
+                    'message' => __('Please select an authentication method.', 'bf-secret-file-downloader' ),
+                    'error_code' => 'AUTH_METHOD_REQUIRED'
+                ));
             }
 
             // If simple authentication is selected, a password is required
             if ( in_array( 'simple_auth', $auth_methods ) && empty( $simple_auth_password ) ) {
-                wp_send_json_error( __('If you select simple authentication, please set a password.', 'bf-secret-file-downloader' ) );
+                wp_send_json_error( array(
+                    'message' => __('If you select simple authentication, please set a password.', 'bf-secret-file-downloader' ),
+                    'error_code' => 'PASSWORD_REQUIRED'
+                ));
             }
 
             $this->set_directory_auth( $relative_path, $auth_methods, $allowed_roles, $simple_auth_password );
