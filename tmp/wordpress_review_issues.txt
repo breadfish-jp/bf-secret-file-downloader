@@ -1,0 +1,26 @@
+# WordPress.org プラグインレビュー指摘事項
+
+## 許可されていないファイル
+- プラグインに含まれている不要なファイルが検出されました
+- 具体例: `bf-secret-file-downloader/languages/bf-secret-file-downloader-ja.po.bak`
+- 対応: .distignoreファイルやwp dist-archiveコマンドを使用して不要ファイルを除外する
+
+## wp_enqueue関数の使用
+- JavaScriptやCSSの読み込みでwp_enqueue関数を正しく使用していない
+- JavaScriptの場合: wp_register_script()、wp_enqueue_script()、wp_add_inline_script()を使用
+- CSSの場合: wp_register_style()、wp_enqueue_style()、wp_add_inline_style()を使用
+- 具体例: `inc/views/FrontEnd/authentication-form.php:19`
+
+## データのサニタイズ、エスケープ、バリデーション
+- POST/GET/REQUEST/FILEを含む処理でサニタイズ、バリデーション、エスケープが不適切
+- サニタイズ: 入力データは即座にサニタイズする
+- バリデーション: すべてのデータを検証する
+- エスケープ: 出力データは適切なesc_*()関数でエスケープする
+- 適切な関数を文脈に応じて使用する（メールならsanitize_email()など）
+
+## 汎用的な関数/クラス/定義/名前空間/オプション名
+- プラグインは一意な関数名、名前空間、定義、クラス、オプション名を使用する必要がある
+- 他のプラグインやテーマとの競合を防ぐため、適切なプレフィックスを使用
+- 推奨プレフィックス例: `bfsefido_`（BF Secret File Downloaderから）
+- 避けるべきプレフィックス: `__`（ダブルアンダースコア）、`wp_`、`_`（アンダースコア単体）
+- 2-3文字のプレフィックスは競合リスクが高いため避ける

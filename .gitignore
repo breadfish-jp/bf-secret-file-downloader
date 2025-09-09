@@ -102,6 +102,9 @@ jspm_packages/
 *.php.swp
 *.php.swo
 
+# Translation backup files
+*.po.bak
+
 # WordPress specific
 wp-config.php
 wp-content/uploads/

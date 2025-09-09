@@ -162,7 +162,9 @@ class FileListPage {
                 'downloadStarted' => __('Download started.', 'bf-secret-file-downloader' ),
                 'downloadFailed' => __('Download failed.', 'bf-secret-file-downloader' ),
                 // Delete file
+                /* translators: %s: directory name */
                 'deleteDirectoryConfirm' => __("Delete directory '%s' and all its contents? This action cannot be undone.", 'bf-secret-file-downloader' ),
+                /* translators: %s: file name */
                 'deleteFileConfirm' => __("Delete file '%s'? This action cannot be undone.", 'bf-secret-file-downloader' ),
                 'deleting' => __('Deleting...', 'bf-secret-file-downloader' ),
                 'failedToDeleteFile' => __('Failed to delete file.', 'bf-secret-file-downloader' ),
@@ -170,7 +172,9 @@ class FileListPage {
                 // Directory password modal
                 'directoryPasswordManagement' => __('Directory password management', 'bf-secret-file-downloader' ),
                 'directoryPasswordSettings' => __('Directory password settings', 'bf-secret-file-downloader' ),
+                /* translators: %s: directory name */
                 'thisDirectoryProtected' => __('This directory (%s) is currently password protected.', 'bf-secret-file-downloader' ),
+                /* translators: %s: directory name */
                 'thisDirectoryNotProtected' => __('This directory (%s) is not password protected.', 'bf-secret-file-downloader' ),
                 'passwordChangeHint' => __("Enter a new password to change it, or remove protection using the 'Remove password protection' button below.", 'bf-secret-file-downloader' ),
                 'pleaseSetDirectoryPassword' => __('Please set a password that will be required when downloading files in this directory.', 'bf-secret-file-downloader' ),
@@ -182,7 +186,9 @@ class FileListPage {
                 'failedToRetrievePassword' => __('Failed to retrieve password.', 'bf-secret-file-downloader' ),
                 // Directory auth modal
                 'directoryAuthSettings' => __('Directory authentication settings', 'bf-secret-file-downloader' ),
+                /* translators: %s: directory name */
                 'dirHasSpecificAuth' => __('This directory (%s) has directory-specific authentication settings.', 'bf-secret-file-downloader' ),
+                /* translators: %s: directory name */
                 'dirAppliesCommonAuth' => __('This directory (%s) applies common authentication settings.', 'bf-secret-file-downloader' ),
                 'changeDirSpecificSettings' => __("Change directory-specific settings or return to common settings using the 'Delete directory-specific settings' button below.", 'bf-secret-file-downloader' ),
                 'commonSettingsAppliedHint' => __('Common settings are applied. To add directory-specific authentication settings, configure them below.', 'bf-secret-file-downloader' ),

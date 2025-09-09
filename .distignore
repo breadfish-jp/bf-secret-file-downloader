@@ -1,0 +1,47 @@
+# WordPress Plugin Distribution Ignore File
+# Files and directories listed here will not be included in the distribution archive
+
+# Development dependencies - vendor is not needed in production
+node_modules/
+vendor/
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+
+# Build and development configuration
+webpack.config.js
+package.json
+package-lock.json
+composer.json
+composer.lock
+phpstan.neon
+phpunit.xml
+
+# Test files
+tests/
+.phpunit.result.cache
+coverage/
+
+# Documentation and development notes
+README.md
+CLAUDE.md
+
+# Temporary and backup files
+tmp/
+*.tmp
+*.temp
+*.bak
+*.po.bak
+*.log
+.DS_Store
+Thumbs.db
+
+# Build outputs that shouldn't be distributed
+dist/
+build/
+*.zip
+
+# Scripts and development tools
+scripts/
