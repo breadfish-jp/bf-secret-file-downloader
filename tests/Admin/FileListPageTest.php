@@ -63,11 +63,11 @@ class FileListPageTest extends \BF_SFD_TestCase {
      */
     public function test_get_page_title() {
         WP_Mock::userFunction( '__' )
-            ->with( 'ファイルリスト', 'bf-secret-file-downloader' )
-            ->andReturn( 'ファイルリスト' );
+            ->with( 'File list', 'bf-secret-file-downloader' )
+            ->andReturn( 'File list' );
 
         $result = $this->file_list_page->get_page_title();
-        $this->assertEquals( 'ファイルリスト', $result );
+        $this->assertEquals( 'File list', $result );
     }
 
     /**
@@ -75,11 +75,11 @@ class FileListPageTest extends \BF_SFD_TestCase {
      */
     public function test_get_menu_title() {
         WP_Mock::userFunction( '__' )
-            ->with( 'ファイルリスト', 'bf-secret-file-downloader' )
-            ->andReturn( 'ファイルリスト' );
+            ->with( 'File list', 'bf-secret-file-downloader' )
+            ->andReturn( 'File list' );
 
         $result = $this->file_list_page->get_menu_title();
-        $this->assertEquals( 'ファイルリスト', $result );
+        $this->assertEquals( 'File list', $result );
     }
 
     /**

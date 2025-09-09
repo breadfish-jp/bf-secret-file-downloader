@@ -509,9 +509,3 @@ if ( ! isset( $current_user_can_manage_auth ) ) {
     </div>
 </div>
 
-
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-
-});
-</script>

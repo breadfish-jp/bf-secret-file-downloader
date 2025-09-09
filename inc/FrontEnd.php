@@ -26,6 +26,7 @@ class FrontEnd {
         // Do not register hooks in the constructor
     }
 
+
     /**
      * Initialize hooks
      */
@@ -46,9 +47,7 @@ class FrontEnd {
         // Check if the path parameter exists (check for download request)
         $file_path = wp_unslash( $_GET['path'] ?? '' );
         // Basic sanitization of the path (remove null bytes and control characters)
-        $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-        // Additional sanitization (remove HTML entities and special characters)
-        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );
         $file_path = wp_strip_all_tags( $file_path );
         if ( empty( $file_path ) ) {
             return; // If it is not a download request, end processing
@@ -211,9 +210,7 @@ class FrontEnd {
         // Get the directory path from the current file path
         $file_path = wp_unslash( $_GET['path'] ?? '' );
         // Basic sanitization of the path (remove null bytes and control characters)
-        $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-        // Additional sanitization (remove HTML entities and special characters)
-        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );
         $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
         if ( $directory_path === '.' ) {
@@ -494,10 +491,7 @@ class FrontEnd {
         $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 
         // Basic sanitization of REQUEST_URI (remove dangerous characters only)
-        $request_uri = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $request_uri );
-
-        // Additional sanitization (remove HTML entities and special characters)
-        $request_uri = htmlspecialchars_decode( $request_uri, ENT_QUOTES | ENT_HTML5 );
+        $request_uri = preg_replace( '/[\x00-\x1F\x7F]/', '', $request_uri );
         $request_uri = wp_strip_all_tags( $request_uri );
         $current_url = $https . '://' . $host . $request_uri;
 
@@ -505,10 +499,7 @@ class FrontEnd {
         $file_path = wp_unslash( $_GET['path'] ?? '' );
 
         // Basic sanitization of the path (remove null bytes and control characters)
-        $file_path = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $file_path );
-
-        // Additional sanitization (remove HTML entities and special characters)
-        $file_path = htmlspecialchars_decode( $file_path, ENT_QUOTES | ENT_HTML5 );
+        $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );
         $file_path = wp_strip_all_tags( $file_path );
         $directory_path = dirname( $file_path );
         if ( $directory_path === '.' ) {
