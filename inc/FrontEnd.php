@@ -45,7 +45,7 @@ class FrontEnd {
      */
     public function handle_file_download() {
         // Check if the path parameter exists (check for download request)
-        $file_path = wp_unslash( $_GET['path'] ?? '' );
+        $file_path = wp_unslash( $_GET['bf_sfd_path'] ?? '' );
         // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );
         $file_path = wp_strip_all_tags( $file_path );
@@ -208,7 +208,7 @@ class FrontEnd {
         }
 
         // Get the directory path from the current file path
-        $file_path = wp_unslash( $_GET['path'] ?? '' );
+        $file_path = wp_unslash( $_GET['bf_sfd_path'] ?? '' );
         // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );
         $file_path = wp_strip_all_tags( $file_path );
@@ -496,7 +496,7 @@ class FrontEnd {
         $current_url = $https . '://' . $host . $request_uri;
 
         // Get the directory path from the current file path
-        $file_path = wp_unslash( $_GET['path'] ?? '' );
+        $file_path = wp_unslash( $_GET['bf_sfd_path'] ?? '' );
 
         // Basic sanitization of the path (remove null bytes and control characters)
         $file_path = preg_replace( '/[\x00-\x1F\x7F]/', '', $file_path );

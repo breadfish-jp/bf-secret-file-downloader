@@ -532,7 +532,7 @@
     // Generate previous link
     var previousLink = '';
     if (currentPage > 1) {
-        previousLink = '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + (strings.previous || 'Previous') + '</a>';
+        previousLink = '<a href="?page=bf-secret-file-downloader&bf_sfd_path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage - 1) + '">&laquo; ' + (strings.previous || 'Previous') + '</a>';
     }
 
     // Generate page numbers
@@ -544,14 +544,14 @@
         if (i == currentPage) {
             pageNumbers += '<span class="current">' + i + '</span>';
         } else {
-            pageNumbers += '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + i + '">' + i + '</a>';
+            pageNumbers += '<a href="?page=bf-secret-file-downloader&bf_sfd_path=' + encodeURIComponent(currentPath) + '&paged=' + i + '">' + i + '</a>';
         }
     }
 
     // Generate next link
     var nextLink = '';
     if (currentPage < totalPages) {
-        nextLink = '<a href="?page=bf-secret-file-downloader&path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + (strings.next || 'Next') + ' &raquo;</a>';
+        nextLink = '<a href="?page=bf-secret-file-downloader&bf_sfd_path=' + encodeURIComponent(currentPath) + '&paged=' + (currentPage + 1) + '">' + (strings.next || 'Next') + ' &raquo;</a>';
     }
 
     // Replace template placeholders
@@ -1142,7 +1142,7 @@
     var home = (typeof bfFileListData !== 'undefined' && bfFileListData.homeUrl) ? bfFileListData.homeUrl : (window.location.origin + '/');
     // ensure trailing slash just once
     if (home.slice(-1) !== '/') { home += '/'; }
-    var url = home + '?path=' + encodeURIComponent(filePath) + '&dflag=' + urlType;
+    var url = home + '?bf_sfd_path=' + encodeURIComponent(filePath) + '&dflag=' + urlType;
     $('#bf-url-input').val(url);
 
     // Update the preview frame (only for image files)
@@ -1483,7 +1483,7 @@ function updatePreviewFrame(url) {
         e.preventDefault();
         var url = new URL(this.href);
         var page = url.searchParams.get('paged') || 1;
-        var path = url.searchParams.get('path') || $('#current-path').val();
+        var path = url.searchParams.get('bf_sfd_path') || $('#current-path').val();
         navigateToDirectory(path, page);
     });
 

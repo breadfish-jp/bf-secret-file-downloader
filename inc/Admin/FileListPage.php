@@ -208,6 +208,8 @@ class FileListPage {
                 'saving' => __('Saving...', 'bf-secret-file-downloader' ),
                 'failedToSaveAuth' => __('Failed to save authentication settings.', 'bf-secret-file-downloader' ),
                 'save' => __('Save', 'bf-secret-file-downloader' ),
+                // Directory creation validation
+                'directoryNameInvalid' => __('Directory name contains invalid characters. Only alphanumeric characters, underscores, hyphens, and dots are allowed.', 'bf-secret-file-downloader' ),
             ),
         ));
     }
@@ -843,7 +845,7 @@ class FileListPage {
      * @return string Current relative path
      */
     private function get_current_path() {
-        return sanitize_text_field( wp_unslash( $_GET['path'] ?? '' ) );
+        return sanitize_text_field( wp_unslash( $_GET['bf_sfd_path'] ?? '' ) );
     }
 
     /**
@@ -1192,7 +1194,7 @@ class FileListPage {
         if ( $current_page > 1 ) {
             $prev_url = add_query_arg( array(
                 'page' => 'bf-secret-file-downloader',
-                'path' => urlencode( $current_path ),
+                'bf_sfd_path' => urlencode( $current_path ),
                 'paged' => $current_page - 1,
                 'sort_by' => $sort_by,
                 'sort_order' => $sort_order
@@ -1210,7 +1212,7 @@ class FileListPage {
             } else {
                 $page_url = add_query_arg( array(
                     'page' => 'bf-secret-file-downloader',
-                    'path' => urlencode( $current_path ),
+                    'bf_sfd_path' => urlencode( $current_path ),
                     'paged' => $i,
                     'sort_by' => $sort_by,
                     'sort_order' => $sort_order
@@ -1223,7 +1225,7 @@ class FileListPage {
         if ( $current_page < $total_pages ) {
             $next_url = add_query_arg( array(
                 'page' => 'bf-secret-file-downloader',
-                'path' => urlencode( $current_path ),
+                'bf_sfd_path' => urlencode( $current_path ),
                 'paged' => $current_page + 1,
                 'sort_by' => $sort_by,
                 'sort_order' => $sort_order
