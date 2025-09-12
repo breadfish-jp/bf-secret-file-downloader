@@ -27,8 +27,7 @@
         var fontFamily = computedStyle.getPropertyValue('font-family');
 
         if (fontFamily.indexOf('dashicons') !== -1) {
-            console.log('Dashiconsが利用可能です - Dashiconsを表示します');
-            // If Dashicons is loaded, display Dashicons and hide the fallback
+             // If Dashicons is loaded, display Dashicons and hide the fallback
             $('.dashicons').css('display', 'inline-block !important').show();
             $('.bf-fallback-icon').hide();
 
@@ -50,7 +49,6 @@
             });
 
         } else {
-            console.log('Dashiconsが利用できません。フォールバックアイコンを使用します');
             $('.dashicons').hide();
             $('.bf-fallback-icon').show();
         }

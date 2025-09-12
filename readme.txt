@@ -3,7 +3,7 @@ Contributors: breadfish
 Tags: download, file manager, security
 Requires at least: 6.8
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -69,6 +69,13 @@ Currently, the plugin is designed for single-site installations.
 
 == Changelog ==
 
+= 1.0.1 =
+* Fix: Removed dangerous htmlspecialchars_decode() usage for improved security
+* Fix: Removed unnecessary inline script tag from admin interface
+* Fix: Added proper translation support for directory name validation messages
+* Improvement: Updated PHPUnit tests to match current implementation
+* Maintenance: Removed temporary .bak files from distribution
+
 = 1.0.0 =
 * Initial release
 * Automatic secure directory creation
@@ -78,6 +85,9 @@ Currently, the plugin is designed for single-site installations.
 * i18n support for Japanese and English
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Security improvements and bug fixes. Recommended update for all users.
 
 = 1.0.0 =
 Initial release of BF Secret File Downloader.

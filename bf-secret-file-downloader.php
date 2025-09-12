@@ -3,7 +3,7 @@
  * Plugin Name: BF Secret File Downloader
  * Plugin URI: https://sfd.breadfish.jp/
  * Description: A plugin for securely managing and distributing private files to authenticated users.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: BREADFISH
  * Author URI: https://breadfish.jp/
  * License: GPL v2 or later
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'BF_SECRET_FILE_DOWNLOADER_VERSION', '1.0.0' );
+define( 'BF_SECRET_FILE_DOWNLOADER_VERSION', '1.0.1' );
 define( 'BF_SECRET_FILE_DOWNLOADER_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BF_SECRET_FILE_DOWNLOADER_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
