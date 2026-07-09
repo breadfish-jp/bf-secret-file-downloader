@@ -2,8 +2,8 @@
 Contributors: breadfish
 Tags: download, file manager, security
 Requires at least: 6.8
-Tested up to: 6.8
-Stable tag: 1.0.1
+Tested up to: 7.0
+Stable tag: 1.0.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -68,6 +68,9 @@ Currently, the plugin is designed for single-site installations.
 3. Frontend download interface
 
 == Changelog ==
+
+= 1.0.2 =
+* [ Bug Fix ] Fix intermittent 30-second stalls on plugin activation and block editor screens caused by unconditional session_start() on every request
 
 = 1.0.1 =
 * Fix: Removed dangerous htmlspecialchars_decode() usage for improved security
