@@ -69,6 +69,8 @@ Currently, the plugin is designed for single-site installations.
 
 == Changelog ==
 
+* [ Bug Fix ] Fix intermittent 30-second stalls on plugin activation and block editor screens caused by unconditional session_start() on every request
+
 = 1.0.1 =
 * Fix: Removed dangerous htmlspecialchars_decode() usage for improved security
 * Fix: Removed unnecessary inline script tag from admin interface

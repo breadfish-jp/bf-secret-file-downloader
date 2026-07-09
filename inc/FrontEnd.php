@@ -29,14 +29,29 @@ class FrontEnd {
 
     /**
      * Initialize hooks
+     * フックを初期化する
+     *
+     * Note: session_start() is intentionally NOT called here.
+     * It is started lazily inside handle_file_download() only when an actual
+     * download request is being processed. Calling session_start() on every
+     * 'init' hook causes the PHP session file to be locked for the entire
+     * request lifetime, which serializes concurrent requests from the same
+     * user (block editor REST calls, heartbeat, autosave, admin-ajax) and
+     * results in ~30 second stalls when max_execution_time terminates a
+     * slow request holding the lock.
+     *
+     * 注意: session_start() はここでは呼ばない。
+     * handle_file_download() 内で実際にダウンロード要求を処理するタイミングで
+     * のみ遅延起動する。 全リクエストの init フックで session_start() を呼ぶと
+     * PHP のセッションファイルがリクエストの全期間ロックされ、同一ユーザーから
+     * の並行リクエスト（ブロックエディタの REST 呼び出し、heartbeat、autosave、
+     * admin-ajax）が直列化される。 その結果、ロックを掴んだリクエストが
+     * max_execution_time で強制終了されるまで、後続リクエストが約 30 秒間
+     * 停止する事象が発生していた。
      */
     public function init() {
-        // Start session
-        if ( ! session_id() ) {
-            session_start();
-        }
-
         // Hook the file downloader on the frontend
+        // フロントエンドのファイルダウンロード処理をフックする
         add_action( 'template_redirect', array( $this, 'handle_file_download' ) );
     }
 
@@ -92,7 +107,20 @@ class FrontEnd {
             wp_die( esc_html( __('You do not have permission to read this file.', 'bf-secret-file-downloader' ) ), 403 );
         }
 
+        // Start the PHP session only at this point, right before authentication
+        // is evaluated. This keeps the session file lock scope as small as
+        // possible so that unrelated concurrent requests (admin, REST, etc.)
+        // are not blocked by this download flow.
+        // 認証チェックを行う直前でのみ PHP セッションを開始し、
+        // セッションファイルロックの保持時間を最小化する。
+        // これにより、無関係な並行リクエスト（管理画面・REST など）が
+        // このダウンロード処理によってブロックされることを防ぐ。
+        if ( ! session_id() ) {
+            session_start();
+        }
+
         // Check authentication
+        // 認証チェック
         $auth_result = $this->check_authentication();
 
         if ( ! $auth_result ) {
@@ -100,7 +128,20 @@ class FrontEnd {
             exit;
         }
 
+        // Release the session lock now that authentication has been recorded.
+        // Streaming a (potentially large) file below can take a long time and
+        // we must not hold the lock during that period, otherwise concurrent
+        // requests from the same user will be stalled.
+        // 認証結果をセッションに書き込んだこの時点で、セッションロックを
+        // 明示的に解放する。 この下のファイル出力は大容量ファイルの場合に
+        // 時間がかかる可能性があり、その間ロックを保持していると同一
+        // ユーザーの並行リクエストが停止してしまうため。
+        if ( session_id() ) {
+            session_write_close();
+        }
+
         // Get file information
+        // ファイル情報を取得する
         $filename = basename( $full_path );
         $filesize = filesize( $full_path );
         $mime_type = wp_check_filetype( $filename )['type'] ?? 'application/octet-stream';
