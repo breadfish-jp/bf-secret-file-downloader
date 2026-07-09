@@ -115,7 +115,7 @@ class FrontEnd {
         // セッションファイルロックの保持時間を最小化する。
         // これにより、無関係な並行リクエスト（管理画面・REST など）が
         // このダウンロード処理によってブロックされることを防ぐ。
-        if ( ! session_id() ) {
+        if ( session_status() !== PHP_SESSION_ACTIVE ) {
             session_start();
         }
 
@@ -136,7 +136,7 @@ class FrontEnd {
         // 明示的に解放する。 この下のファイル出力は大容量ファイルの場合に
         // 時間がかかる可能性があり、その間ロックを保持していると同一
         // ユーザーの並行リクエストが停止してしまうため。
-        if ( session_id() ) {
+        if ( session_status() === PHP_SESSION_ACTIVE ) {
             session_write_close();
         }
 
