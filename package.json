@@ -1,6 +1,6 @@
 {
   "name": "bf-secret-file-downloader",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "BASIC認証もしくは非公開エリアに置かれたディレクトリに配置されたファイルを管理するWordPressプラグイン",
   "scripts": {
     "build": "wp-scripts build",
