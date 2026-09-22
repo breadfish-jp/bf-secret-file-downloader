@@ -303,6 +303,12 @@ class DirectoryManager {
             'index.php' => "<?php\n// Silence is golden.\nexit;",
         );
 
+        // Do nothing on a directory that cannot be written, to avoid PHP warnings on every attempt
+        // 書き込めないディレクトリでは何もしない（試行のたびに PHP 警告を出さないため）
+        if ( ! is_dir( $directory ) || ! is_writable( $directory ) ) {
+            return false;
+        }
+
         $result = true;
         foreach ( $files as $name => $content ) {
             $path = $directory . '/' . $name;
@@ -427,10 +433,11 @@ class DirectoryManager {
 
         $status = self::check_protection_via_http();
 
-        // Re-check an undetermined status sooner, since the cause may be temporary
-        // 判定不能は一時的な原因の場合もあるため、短めの間隔で再確認する
-        $expiration = ( $status === self::STATUS_UNKNOWN ) ? HOUR_IN_SECONDS : DAY_IN_SECONDS;
-        set_transient( self::PROTECTION_STATUS_TRANSIENT, $status, $expiration );
+        // Cache every result for a day, including an undetermined one, because the check may take
+        // a few seconds while the screen is being rendered. Administrators can re-check it manually.
+        // 確認は画面表示中に数秒かかることがあるため、判定不能も含めて 1 日キャッシュする。
+        // 管理者は「再確認する」リンクで手動で再確認できる。
+        set_transient( self::PROTECTION_STATUS_TRANSIENT, $status, DAY_IN_SECONDS );
 
         return $status;
     }
@@ -439,8 +446,8 @@ class DirectoryManager {
      * Check whether files in the secure directory can be downloaded directly
      * セキュアディレクトリ内のファイルが直接ダウンロードできるかを確認する
      *
-     * Places temporary files with random content in the secure directory and, as a control,
-     * directly under uploads (not protected). Requests both URLs via loopback requests and
+     * Places temporary files with random content directly under uploads (not protected) as a control,
+     * and in the secure directory. Requests both URLs via loopback requests and
      * deletes the files immediately. The control tells whether the uploads URL reaches
      * this server at all (e.g. not offloaded to a CDN).
      * ランダムな内容の一時ファイルをセキュアディレクトリと、対照として uploads 直下（保護対象外）に置き、
@@ -457,33 +464,54 @@ class DirectoryManager {
 
         $uploads_dir = wp_upload_dir();
 
-        // Use random file names so that the files cannot be targeted during the check
-        // 確認中にファイルを狙われないよう、ファイル名もランダムにする
+        // Use random file names so that the files cannot be targeted during the check.
+        // Neither file is dot-prefixed: Nginx usually denies dot files, which would hide the real
+        // result (e.g. while the legacy non-hidden directory is still in use).
+        // 確認中にファイルを狙われないよう、ファイル名もランダムにする。
+        // どちらのファイルもドット始まりにしない。Nginx は通常ドットファイルを拒否するため、
+        // （移行前の隠しでない旧ディレクトリを使っている場合など）本当の結果が隠れてしまう。
         $token = wp_generate_password( 32, false );
         $targets = array(
-            'secure'  => array(
-                'path' => $secure_dir . '/bf-sfd-protection-check-' . wp_generate_password( 16, false ) . '.txt',
-                'url'  => self::get_secure_directory_url() . '/',
-            ),
+            // The control is requested first: if the uploads URL is unreachable, the second request is skipped
+            // 対照を先に取得する: uploads の URL に届かない場合は 2 本目のリクエストを省略する
             'control' => array(
                 'path' => $uploads_dir['basedir'] . '/bf-sfd-protection-control-' . wp_generate_password( 16, false ) . '.txt',
                 'url'  => $uploads_dir['baseurl'] . '/',
             ),
+            'secure'  => array(
+                'path' => $secure_dir . '/bf-sfd-protection-check-' . wp_generate_password( 16, false ) . '.txt',
+                'url'  => self::get_secure_directory_url() . '/',
+            ),
         );
 
-        $responses = array();
+        // Delete the temporary files even if the request is terminated by a fatal error (e.g. timeout)
+        // タイムアウト等の致命的エラーで処理が止まっても一時ファイルを削除する
+        $paths = wp_list_pluck( $targets, 'path' );
+        register_shutdown_function(
+            function () use ( $paths ) {
+                foreach ( $paths as $path ) {
+                    if ( file_exists( $path ) ) {
+                        @unlink( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink, WordPress.PHP.NoSilencedErrors.Discouraged
+                    }
+                }
+            }
+        );
+
+        $responses = array(
+            'control' => array( 'code' => 0, 'body' => '' ),
+            'secure'  => array( 'code' => 0, 'body' => '' ),
+        );
         foreach ( $targets as $key => $target ) {
             // Place the temporary file, request it, and delete it right after the request
             // 一時ファイルを置いて取得し、リクエスト直後に削除する
             if ( file_put_contents( $target['path'], $token ) === false ) {
-                $responses[ $key ] = array( 'code' => 0, 'body' => '' );
                 continue;
             }
 
             $response = wp_remote_get(
                 $target['url'] . basename( $target['path'] ),
                 array(
-                    'timeout'     => 5,
+                    'timeout'     => 3,
                     'redirection' => 3,
                     // Same as WordPress core loopback requests (Site Health)
                     // WordPress コアのループバックリクエスト（サイトヘルス）と同じ扱い
@@ -493,12 +521,18 @@ class DirectoryManager {
 
             wp_delete_file( $target['path'] );
 
-            $responses[ $key ] = is_wp_error( $response )
-                ? array( 'code' => 0, 'body' => '' )
-                : array(
-                    'code' => (int) wp_remote_retrieve_response_code( $response ),
-                    'body' => (string) wp_remote_retrieve_body( $response ),
-                );
+            if ( is_wp_error( $response ) ) {
+                // The loopback request itself failed (timeout, connection refused, etc.).
+                // Skip the remaining request so that the screen is not blocked twice.
+                // ループバックリクエスト自体が失敗した（タイムアウト・接続拒否など）。
+                // 画面を二重に待たせないよう、残りのリクエストは行わない。
+                break;
+            }
+
+            $responses[ $key ] = array(
+                'code' => (int) wp_remote_retrieve_response_code( $response ),
+                'body' => (string) wp_remote_retrieve_body( $response ),
+            );
         }
 
         return self::evaluate_protection_response(
