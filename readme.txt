@@ -80,7 +80,7 @@ Currently, the plugin is designed for single-site installations.
 == Changelog ==
 
 = 1.0.3 =
-* [ Spec Change ] Move the secure directory to a hidden (dot-prefixed) directory so that direct access is blocked on most Nginx servers, and migrate existing directories automatically
+* [ Spec Change ] Move the secure directory to a hidden (dot-prefixed) directory so that direct access is blocked on most Nginx servers, and migrate existing directories automatically (reported by Farid Muslimov (torr3s))
 * [ Spec Change ] Check whether direct access to the secure directory is actually blocked and show a warning with an Nginx configuration example if it is not
 * [ Bug Fix ] Add protection files to the base directory so that the secure directory name is not exposed by directory listing
 
