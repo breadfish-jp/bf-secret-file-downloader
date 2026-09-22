@@ -82,6 +82,7 @@ Currently, the plugin is designed for single-site installations.
 * [ Spec Change ] Move the secure directory to a hidden (dot-prefixed) directory so that direct access is blocked on most Nginx servers, and migrate existing directories automatically
 * [ Spec Change ] Check whether direct access to the secure directory is actually blocked and show a warning with an Nginx configuration example if it is not
 * [ Bug Fix ] Add protection files to the base directory so that the secure directory name is not exposed by directory listing
+* [ Bug Fix ] Load the bundled translations with priority, fixing strings missing from the translate.wordpress.org language pack being shown in English
 
 = 1.0.2 =
 * [ Bug Fix ] Fix intermittent 30-second stalls on plugin activation and block editor screens caused by unconditional session_start() on every request
