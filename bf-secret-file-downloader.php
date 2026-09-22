@@ -59,40 +59,22 @@ spl_autoload_register( 'bf_secret_file_downloader_autoloader' );
 
 /**
  * Load the text domain
- * テキストドメインを読み込む
- *
- * The bundled translation (languages/) is loaded explicitly and takes precedence.
- * WordPress core only loads translations from wp-content/languages/plugins/ automatically,
- * so without this, the language pack from translate.wordpress.org is used and strings that
- * are not translated there (e.g. strings added in a new version) are shown in English.
- * Locales without a bundled file fall back to the language pack as before.
- *
- * 同梱の翻訳（languages/）を明示的に読み込み、優先して使う。
- * WordPress コアが自動で読み込むのは wp-content/languages/plugins/ のみのため、
- * これが無いと translate.wordpress.org の言語パックが使われ、そこで未翻訳の文字列
- * （新しいバージョンで追加した文字列など）が英語のまま表示される。
- * 同梱ファイルが無いロケールでは、従来どおり言語パックが使われる。
+ * Note: WordPress automatically loads translations from the languages directory
+ * when the text domain is properly set in the plugin header.
  */
 function bf_secret_file_downloader_load_textdomain() {
-    $domain = 'bf-secret-file-downloader';
-    $locale = determine_locale();
-    $mofile = BF_SECRET_FILE_DOWNLOADER_PLUGIN_DIR . 'languages/' . $domain . '-' . $locale . '.mo';
-
-    // Load the bundled file only if it exists for the current locale
-    // 現在のロケールの同梱ファイルがある場合のみ読み込む
-    if ( is_readable( $mofile ) ) {
-        load_textdomain( $domain, $mofile, $locale );
-    }
+    // WordPress automatically loads translations from languages/ directory
+    // when the text domain is properly configured in the plugin header.
+    // No manual loading is required for WordPress.org hosted plugins.
 }
-
-// Load the translation before anything else on init so that the language pack is not loaded first
-// 言語パックが先に読み込まれないよう、init の最初で翻訳を読み込む
-add_action( 'init', 'bf_secret_file_downloader_load_textdomain', 0 );
 
 /**
  * Initialize the plugin
  */
 function bf_secret_file_downloader_init() {
+
+    // Load the text domain
+    bf_secret_file_downloader_load_textdomain();
 
     // Move the secure directory created by older versions to the hidden directory
     // 旧バージョンで作成したセキュアディレクトリを隠しディレクトリへ移行する
