@@ -69,7 +69,20 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <div class="bf-directory-item">
                                     <code><?php echo esc_html( $target_directory ?: 'ディレクトリが設定されていません' ); ?></code>
                                 </div>
-                                <p class="description"><?php esc_html_e('A secure directory created automatically when the plugin is activated. All access from outside is completely blocked by .htaccess.', 'bf-secret-file-downloader' ); ?></p>
+                                <?php // Show whether direct access is actually blocked (checked by a loopback request) / 直接アクセスが実際に遮断されているかを表示する（ループバックリクエストで確認） ?>
+                                <?php if ( $protection_status === \Breadfish\SecretFileDownloader\DirectoryManager::STATUS_PROTECTED ) : ?>
+                                    <p><span class="dashicons dashicons-yes-alt" style="color: #00a32a;"></span> <?php esc_html_e( 'Direct access to this directory is blocked.', 'bf-secret-file-downloader' ); ?></p>
+                                <?php elseif ( $protection_status === \Breadfish\SecretFileDownloader\DirectoryManager::STATUS_UNPROTECTED ) : ?>
+                                    <p><span class="dashicons dashicons-warning" style="color: #dba617;"></span> <?php esc_html_e( 'Files in this directory can be accessed directly.', 'bf-secret-file-downloader' ); ?></p>
+                                <?php elseif ( $protection_status === \Breadfish\SecretFileDownloader\DirectoryManager::STATUS_UNKNOWN ) : ?>
+                                    <p><span class="dashicons dashicons-info" style="color: #646970;"></span> <?php esc_html_e( 'Could not check whether direct access to this directory is blocked.', 'bf-secret-file-downloader' ); ?></p>
+                                <?php endif; ?>
+                                <?php if ( $protection_status !== '' ) : ?>
+                                    <p><a href="<?php echo esc_url( \Breadfish\SecretFileDownloader\Admin::get_notice_action_url( \Breadfish\SecretFileDownloader\Admin::ACTION_RECHECK_PROTECTION, \Breadfish\SecretFileDownloader\Admin\SettingsPage::PAGE_SLUG ) ); ?>"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
+                                <?php endif; ?>
+                                <p class="description"><?php esc_html_e( 'A secure directory created automatically when the plugin is activated.', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'On Apache, direct access is blocked by .htaccess.', 'bf-secret-file-downloader' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'On Nginx, direct access is blocked if the server denies access to hidden directories (names starting with a dot), which most WordPress configurations do.', 'bf-secret-file-downloader' ); ?></p>
                             </td>
                         </tr>
                     </table>

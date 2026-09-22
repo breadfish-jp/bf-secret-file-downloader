@@ -76,6 +76,10 @@ function bf_secret_file_downloader_init() {
     // Load the text domain
     bf_secret_file_downloader_load_textdomain();
 
+    // Move the secure directory created by older versions to the hidden directory
+    // 旧バージョンで作成したセキュアディレクトリを隠しディレクトリへ移行する
+    \Breadfish\SecretFileDownloader\DirectoryManager::maybe_migrate_to_hidden_directory();
+
     // Execute only in the admin panel
     if ( is_admin() ) {
         $admin = new \Breadfish\SecretFileDownloader\Admin();

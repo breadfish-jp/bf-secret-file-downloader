@@ -164,6 +164,11 @@ class SettingsPage {
             'log_downloads' => $this->get_log_downloads(),
             'security_level' => $this->get_security_level(),
             'target_directory' => $this->get_target_directory(),
+            // Whether direct access to the secure directory is blocked (cached)
+            // セキュアディレクトリへの直接アクセスが遮断されているか（キャッシュあり）
+            'protection_status' => \Breadfish\SecretFileDownloader\DirectoryManager::secure_directory_exists()
+                ? \Breadfish\SecretFileDownloader\DirectoryManager::get_protection_status()
+                : '',
             'auth_methods' => $this->get_auth_methods(),
             'allowed_roles' => $this->get_allowed_roles(),
             'simple_auth_password' => $this->get_simple_auth_password(),
