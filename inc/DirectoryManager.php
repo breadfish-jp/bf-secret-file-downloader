@@ -50,10 +50,24 @@ class DirectoryManager {
     const MOVED_NOTICE_OPTION = 'bf_sfd_show_directory_moved_notice';
 
     /**
-     * Option key of the flag that the migration to hidden directories has been completed
-     * 隠しディレクトリへの移行が完了したことを示すフラグのオプションキー
+     * Option key of the migration state to hidden directories.
+     * The value is MIGRATION_STATE_DONE, or the UNIX time to retry after a failure.
+     * 隠しディレクトリへの移行状態のオプションキー。
+     * 値は MIGRATION_STATE_DONE か、失敗時に再試行する UNIX 時刻。
      */
-    const MIGRATION_DONE_OPTION = 'bf_sfd_hidden_directory_migrated';
+    const MIGRATION_STATE_OPTION = 'bf_sfd_hidden_directory_migration';
+
+    /**
+     * Migration state: completed
+     * 移行状態: 完了
+     */
+    const MIGRATION_STATE_DONE = 'done';
+
+    /**
+     * Interval (seconds) before retrying a failed migration
+     * 失敗した移行を再試行するまでの間隔（秒）
+     */
+    const MIGRATION_RETRY_INTERVAL = 3600;
 
     /**
      * Protection status: direct access is blocked
@@ -173,18 +187,25 @@ class DirectoryManager {
      *
      * Moves not only the current directory but also directories left by
      * "reset settings without deleting files" in older versions.
-     * Once every directory has been moved, a flag is saved so that later requests
-     * only read an autoloaded option.
+     * Once every directory has been moved, the state is saved so that later requests
+     * only read an autoloaded option. If some directories could not be moved,
+     * the migration is retried after MIGRATION_RETRY_INTERVAL instead of on every request.
      * 現在のディレクトリだけでなく、旧バージョンの「ファイルを残して設定をリセット」で
-     * 残ったディレクトリも移行する。すべて移行できたらフラグを保存し、
+     * 残ったディレクトリも移行する。すべて移行できたら状態を保存し、
      * 以降のリクエストでは自動読み込みのオプションを参照するだけで終わる。
+     * 移行できないディレクトリがあった場合は、毎リクエストではなく
+     * MIGRATION_RETRY_INTERVAL 経過後に再試行する。
      *
      * @return bool true if the current secure directory was moved in this call / この呼び出しで現在のセキュアディレクトリを移動した場合 true
      */
     public static function maybe_migrate_to_hidden_directory() {
-        // Skip if the migration has already been completed
-        // 移行が完了済みなら何もしない
-        if ( get_option( self::MIGRATION_DONE_OPTION, false ) ) {
+        // Skip if the migration has been completed, or it is not yet time to retry
+        // 移行が完了済み、または再試行の時刻前なら何もしない
+        $state = get_option( self::MIGRATION_STATE_OPTION, '' );
+        if ( $state === self::MIGRATION_STATE_DONE ) {
+            return false;
+        }
+        if ( is_numeric( $state ) && (int) $state > time() ) {
             return false;
         }
 
@@ -211,9 +232,12 @@ class DirectoryManager {
 
                 $hidden_dir = $base_dir . '/' . self::get_directory_name( $item );
 
-                // Do not overwrite an existing hidden directory
-                // 既存の隠しディレクトリは上書きしない
+                // Do not overwrite an existing hidden directory.
+                // The legacy directory is left as it is, so the migration is not marked as completed.
+                // 既存の隠しディレクトリは上書きしない。
+                // 旧ディレクトリが残るため、移行は完了扱いにしない。
                 if ( file_exists( $hidden_dir ) ) {
+                    $all_moved = false;
                     continue;
                 }
 
@@ -236,7 +260,7 @@ class DirectoryManager {
 
             // Protect the base directory as well (older versions did not create protection files there)
             // ベースディレクトリも保護する（旧バージョンでは保護ファイルを置いていなかった）
-            self::write_protection_files( $base_dir );
+            self::write_protection_files( $base_dir, false );
         }
 
         if ( $moved_current ) {
@@ -251,9 +275,12 @@ class DirectoryManager {
             delete_transient( self::PROTECTION_STATUS_TRANSIENT );
         }
 
-        if ( $all_moved ) {
-            update_option( self::MIGRATION_DONE_OPTION, true );
-        }
+        // Save the state: completed, or the time to retry
+        // 状態を保存する: 完了、または再試行する時刻
+        update_option(
+            self::MIGRATION_STATE_OPTION,
+            $all_moved ? self::MIGRATION_STATE_DONE : time() + self::MIGRATION_RETRY_INTERVAL
+        );
 
         return $moved_current;
     }
@@ -263,20 +290,35 @@ class DirectoryManager {
      * 指定ディレクトリに保護ファイル（.htaccess と index.php）を書き込む
      *
      * @param string $directory the target directory / 対象ディレクトリ
-     * @return bool true if both files were written / 両方書き込めた場合 true
+     * @param bool   $overwrite true to overwrite existing files, false to write only missing files / 既存ファイルを上書きする場合 true、無いファイルのみ書く場合 false
+     * @return bool true if both files exist after the call / 呼び出し後に両方のファイルがある場合 true
      */
-    private static function write_protection_files( $directory ) {
-        // Create an .htaccess file to completely block access (Apache)
-        // アクセスを完全に遮断する .htaccess を作成する（Apache 用）
-        $htaccess_content = "# Deny all access\nDeny from all\n";
-        $htaccess_written = file_put_contents( $directory . '/.htaccess', $htaccess_content );
+    private static function write_protection_files( $directory, $overwrite = true ) {
+        $files = array(
+            // .htaccess to completely block access (Apache)
+            // アクセスを完全に遮断する .htaccess（Apache 用）
+            '.htaccess' => "# Deny all access\nDeny from all\n",
+            // index.php to prevent directory listing
+            // ディレクトリ一覧の表示を防ぐ index.php
+            'index.php' => "<?php\n// Silence is golden.\nexit;",
+        );
 
-        // Create an index.php file to prevent directory listing
-        // ディレクトリ一覧の表示を防ぐ index.php を作成する
-        $index_content = "<?php\n// Silence is golden.\nexit;";
-        $index_written = file_put_contents( $directory . '/index.php', $index_content );
+        $result = true;
+        foreach ( $files as $name => $content ) {
+            $path = $directory . '/' . $name;
 
-        return $htaccess_written !== false && $index_written !== false;
+            // Skip existing files unless overwriting
+            // 上書きしない場合、既存のファイルはそのままにする
+            if ( ! $overwrite && file_exists( $path ) ) {
+                continue;
+            }
+
+            if ( file_put_contents( $path, $content ) === false ) {
+                $result = false;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -397,10 +439,13 @@ class DirectoryManager {
      * Check whether files in the secure directory can be downloaded directly
      * セキュアディレクトリ内のファイルが直接ダウンロードできるかを確認する
      *
-     * Places a temporary file with random content, requests its URL via a loopback
-     * request, and deletes it immediately.
-     * ランダムな内容の一時ファイルを置き、ループバックリクエストでその URL を取得して、
-     * すぐに削除する。
+     * Places temporary files with random content in the secure directory and, as a control,
+     * directly under uploads (not protected). Requests both URLs via loopback requests and
+     * deletes the files immediately. The control tells whether the uploads URL reaches
+     * this server at all (e.g. not offloaded to a CDN).
+     * ランダムな内容の一時ファイルをセキュアディレクトリと、対照として uploads 直下（保護対象外）に置き、
+     * ループバックリクエストで両方の URL を取得して、すぐに削除する。
+     * 対照ファイルで、uploads の URL がこのサーバーに届くか（CDN へのオフロード等でないか）を確かめる。
      *
      * @return string one of the STATUS_* constants / STATUS_* 定数のいずれか
      */
@@ -410,56 +455,85 @@ class DirectoryManager {
             return self::STATUS_UNKNOWN;
         }
 
-        // Use a random file name so that the file cannot be targeted during the check
+        $uploads_dir = wp_upload_dir();
+
+        // Use random file names so that the files cannot be targeted during the check
         // 確認中にファイルを狙われないよう、ファイル名もランダムにする
         $token = wp_generate_password( 32, false );
-        $filename = 'bf-sfd-protection-check-' . wp_generate_password( 16, false ) . '.txt';
-        $file_path = $secure_dir . '/' . $filename;
-
-        if ( file_put_contents( $file_path, $token ) === false ) {
-            return self::STATUS_UNKNOWN;
-        }
-
-        $response = wp_remote_get(
-            self::get_secure_directory_url() . '/' . $filename,
-            array(
-                'timeout'     => 5,
-                'redirection' => 3,
-                // Same as WordPress core loopback requests (Site Health)
-                // WordPress コアのループバックリクエスト（サイトヘルス）と同じ扱い
-                'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
-            )
+        $targets = array(
+            'secure'  => array(
+                'path' => $secure_dir . '/bf-sfd-protection-check-' . wp_generate_password( 16, false ) . '.txt',
+                'url'  => self::get_secure_directory_url() . '/',
+            ),
+            'control' => array(
+                'path' => $uploads_dir['basedir'] . '/bf-sfd-protection-control-' . wp_generate_password( 16, false ) . '.txt',
+                'url'  => $uploads_dir['baseurl'] . '/',
+            ),
         );
 
-        // Delete the temporary file right after the request
-        // リクエスト直後に一時ファイルを削除する
-        wp_delete_file( $file_path );
+        $responses = array();
+        foreach ( $targets as $key => $target ) {
+            // Place the temporary file, request it, and delete it right after the request
+            // 一時ファイルを置いて取得し、リクエスト直後に削除する
+            if ( file_put_contents( $target['path'], $token ) === false ) {
+                $responses[ $key ] = array( 'code' => 0, 'body' => '' );
+                continue;
+            }
 
-        if ( is_wp_error( $response ) ) {
-            return self::STATUS_UNKNOWN;
+            $response = wp_remote_get(
+                $target['url'] . basename( $target['path'] ),
+                array(
+                    'timeout'     => 5,
+                    'redirection' => 3,
+                    // Same as WordPress core loopback requests (Site Health)
+                    // WordPress コアのループバックリクエスト（サイトヘルス）と同じ扱い
+                    'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
+                )
+            );
+
+            wp_delete_file( $target['path'] );
+
+            $responses[ $key ] = is_wp_error( $response )
+                ? array( 'code' => 0, 'body' => '' )
+                : array(
+                    'code' => (int) wp_remote_retrieve_response_code( $response ),
+                    'body' => (string) wp_remote_retrieve_body( $response ),
+                );
         }
 
         return self::evaluate_protection_response(
-            (int) wp_remote_retrieve_response_code( $response ),
-            (string) wp_remote_retrieve_body( $response ),
+            $responses['secure']['code'],
+            $responses['secure']['body'],
+            $responses['control']['code'],
+            $responses['control']['body'],
             $token
         );
     }
 
     /**
-     * Determine the protection status from the loopback response
+     * Determine the protection status from the loopback responses
      * ループバックリクエストの応答から保護状態を判定する
      *
-     * @param int    $status_code HTTP status code (0 if unavailable) / HTTP ステータスコード（取得できない場合 0）
-     * @param string $body        response body / レスポンスボディ
-     * @param string $token       content of the temporary file / 一時ファイルの内容
+     * @param int    $status_code         HTTP status code of the file in the secure directory (0 if unavailable) / セキュアディレクトリ内ファイルの HTTP ステータスコード（取得できない場合 0）
+     * @param string $body                response body of the file in the secure directory / セキュアディレクトリ内ファイルのレスポンスボディ
+     * @param int    $control_status_code HTTP status code of the control file under uploads (0 if unavailable) / uploads 直下の対照ファイルの HTTP ステータスコード（取得できない場合 0）
+     * @param string $control_body        response body of the control file / 対照ファイルのレスポンスボディ
+     * @param string $token               content of the temporary files / 一時ファイルの内容
      * @return string one of the STATUS_* constants / STATUS_* 定数のいずれか
      */
-    public static function evaluate_protection_response( $status_code, $body, $token ) {
+    public static function evaluate_protection_response( $status_code, $body, $control_status_code, $control_body, $token ) {
         // The file content was returned: files can be downloaded directly
         // ファイルの内容が返ってきた: 直接ダウンロードできる状態
         if ( $status_code === 200 && $token !== '' && trim( $body ) === $token ) {
             return self::STATUS_UNPROTECTED;
+        }
+
+        // If the control file under uploads cannot be fetched either, the uploads URL does not
+        // reach this server as expected (CDN offload, site-wide authentication, loopback failure, etc.)
+        // uploads 直下の対照ファイルも取得できない場合、uploads の URL が想定どおりこのサーバーに
+        // 届いていない（CDN へのオフロード、サイト全体の認証、ループバックの失敗など）
+        if ( $control_status_code !== 200 || $token === '' || trim( $control_body ) !== $token ) {
+            return self::STATUS_UNKNOWN;
         }
 
         // Only responses that deny the file itself are treated as protected.
@@ -470,10 +544,10 @@ class DirectoryManager {
             return self::STATUS_PROTECTED;
         }
 
-        // Anything else (no response, redirects, 401 site-wide authentication, 429, 5xx,
-        // a 200 page with other content, etc.) does not tell whether the file is blocked
-        // それ以外（応答なし、リダイレクト、サイト全体の 401 認証、429、5xx、
-        // 別内容の 200 など）では、ファイルが遮断されているか判断できない
+        // Anything else (redirects, 429, 5xx, a 200 page with other content, etc.)
+        // does not tell whether the file is blocked
+        // それ以外（リダイレクト、429、5xx、別内容の 200 など）では、
+        // ファイルが遮断されているか判断できない
         return self::STATUS_UNKNOWN;
     }
 

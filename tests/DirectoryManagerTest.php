@@ -156,10 +156,10 @@ class DirectoryManagerTest extends TestCase {
 
         $test_cases = array(
             array(
-                'test_condition_name' => '現在の旧ディレクトリのみ存在する場合 => 移動して true、ファイル移動・通知フラグ・完了フラグ',
+                'test_condition_name' => '現在の旧ディレクトリのみ存在する場合 => 移動して true、ファイル移動・通知フラグ・完了状態',
                 'conditions'          => array(
                     'secure_id'      => $current,
-                    'migration_done' => false,
+                    'migration_state' => '',
                     'dirs'           => array( $current ),
                 ),
                 'expected'            => array(
@@ -168,14 +168,14 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => true,
                     'base_protected' => true,
                     'notice_flag'    => true,
-                    'done_flag'      => true,
+                    'state'          => 'done',
                 ),
             ),
             array(
                 'test_condition_name' => 'リセットで残った古いディレクトリもある場合 => 両方とも隠しディレクトリへ移動',
                 'conditions'          => array(
                     'secure_id'      => $current,
-                    'migration_done' => false,
+                    'migration_state' => '',
                     'dirs'           => array( $current, $old ),
                 ),
                 'expected'            => array(
@@ -184,14 +184,14 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => true,
                     'base_protected' => true,
                     'notice_flag'    => true,
-                    'done_flag'      => true,
+                    'state'          => 'done',
                 ),
             ),
             array(
                 'test_condition_name' => '現在のディレクトリは移行済みで古いディレクトリのみ残る場合 => 古い方だけ移動、通知なしで false',
                 'conditions'          => array(
                     'secure_id'      => $current,
-                    'migration_done' => false,
+                    'migration_state' => '',
                     'dirs'           => array( '.' . $current, $old ),
                 ),
                 'expected'            => array(
@@ -200,14 +200,14 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => false,
                     'base_protected' => true,
                     'notice_flag'    => false,
-                    'done_flag'      => true,
+                    'state'          => 'done',
                 ),
             ),
             array(
                 'test_condition_name' => '32桁の16進数でないディレクトリの場合 => 移動しない',
                 'conditions'          => array(
                     'secure_id'      => $current,
-                    'migration_done' => false,
+                    'migration_state' => '',
                     'dirs'           => array( '.' . $current, 'my-folder' ),
                 ),
                 'expected'            => array(
@@ -216,14 +216,14 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => false,
                     'base_protected' => true,
                     'notice_flag'    => false,
-                    'done_flag'      => true,
+                    'state'          => 'done',
                 ),
             ),
             array(
-                'test_condition_name' => '移行完了フラグが立っている場合 => 旧ディレクトリがあっても何もせず false',
+                'test_condition_name' => '移行完了済みの場合 => 旧ディレクトリがあっても何もせず false',
                 'conditions'          => array(
                     'secure_id'      => $current,
-                    'migration_done' => true,
+                    'migration_state' => DirectoryManager::MIGRATION_STATE_DONE,
                     'dirs'           => array( $current ),
                 ),
                 'expected'            => array(
@@ -232,14 +232,14 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => false,
                     'base_protected' => false,
                     'notice_flag'    => false,
-                    'done_flag'      => false,
+                    'state'          => null,
                 ),
             ),
             array(
-                'test_condition_name' => 'ベースディレクトリが無い場合 => false で完了フラグのみ',
+                'test_condition_name' => 'ベースディレクトリが無い場合 => false で完了状態のみ保存',
                 'conditions'          => array(
                     'secure_id'      => '',
-                    'migration_done' => false,
+                    'migration_state' => '',
                     'dirs'           => null,
                 ),
                 'expected'            => array(
@@ -248,8 +248,59 @@ class DirectoryManagerTest extends TestCase {
                     'file_moved'     => false,
                     'base_protected' => false,
                     'notice_flag'    => false,
-                    'done_flag'      => true,
+                    'state'          => 'done',
                 ),
+            ),
+        );
+
+        // Add the cases about retrying
+        // 再試行に関するケースを追加する
+        $test_cases[] = array(
+            'test_condition_name' => '旧と隠しの両方がある（衝突）場合 => 上書きせず、再試行待ちの状態を保存',
+            'conditions'          => array(
+                'secure_id'       => $current,
+                'migration_state' => '',
+                'dirs'            => array( $current, '.' . $current ),
+            ),
+            'expected'            => array(
+                'result'         => false,
+                'dirs_after'     => array( '.' . $current, $current ),
+                'file_moved'     => false,
+                'base_protected' => true,
+                'notice_flag'    => false,
+                'state'          => 'retry',
+            ),
+        );
+        $test_cases[] = array(
+            'test_condition_name' => '再試行の時刻前の場合 => 何もせず false',
+            'conditions'          => array(
+                'secure_id'       => $current,
+                'migration_state' => (string) ( time() + 600 ),
+                'dirs'            => array( $current ),
+            ),
+            'expected'            => array(
+                'result'         => false,
+                'dirs_after'     => array( $current ),
+                'file_moved'     => false,
+                'base_protected' => false,
+                'notice_flag'    => false,
+                'state'          => null,
+            ),
+        );
+        $test_cases[] = array(
+            'test_condition_name' => '再試行の時刻を過ぎた場合 => 移行を実行して true',
+            'conditions'          => array(
+                'secure_id'       => $current,
+                'migration_state' => (string) ( time() - 1 ),
+                'dirs'            => array( $current ),
+            ),
+            'expected'            => array(
+                'result'         => true,
+                'dirs_after'     => array( '.' . $current ),
+                'file_moved'     => true,
+                'base_protected' => true,
+                'notice_flag'    => true,
+                'state'          => 'done',
             ),
         );
 
@@ -272,8 +323,8 @@ class DirectoryManagerTest extends TestCase {
             // オプションをモックし、メソッドが書き込んだオプションを記録する
             $this->mock_directory_options( $uploads, $case['conditions']['secure_id'] );
             WP_Mock::userFunction( 'get_option' )
-                ->with( DirectoryManager::MIGRATION_DONE_OPTION, false )
-                ->andReturn( $case['conditions']['migration_done'] );
+                ->with( DirectoryManager::MIGRATION_STATE_OPTION, '' )
+                ->andReturn( $case['conditions']['migration_state'] );
             $updated = array();
             WP_Mock::userFunction( 'update_option' )->andReturnUsing( function ( $name, $value ) use ( &$updated ) {
                 $updated[ $name ] = $value;
@@ -303,7 +354,7 @@ class DirectoryManagerTest extends TestCase {
                 'file_moved'     => is_file( $base . '/.' . $current . '/user-file.pdf' ),
                 'base_protected' => is_file( $base . '/.htaccess' ) && is_file( $base . '/index.php' ),
                 'notice_flag'    => ! empty( $updated[ DirectoryManager::MOVED_NOTICE_OPTION ] ),
-                'done_flag'      => ! empty( $updated[ DirectoryManager::MIGRATION_DONE_OPTION ] ),
+                'state'          => $this->normalize_migration_state( $updated[ DirectoryManager::MIGRATION_STATE_OPTION ] ?? null ),
             );
             $this->assertEquals( $case['expected'], $actual_state, $case['test_condition_name'] );
 
@@ -322,65 +373,79 @@ class DirectoryManagerTest extends TestCase {
     public function test_evaluate_protection_response() {
         $token = 'random-token-123';
 
+        // Control file (under uploads) fetched successfully
+        // 対照ファイル（uploads 直下）が正常に取得できた場合の値
+        $control_ok = array( 'control_code' => 200, 'control_body' => $token );
+
         $test_cases = array(
             array(
                 'test_condition_name' => '200 で一時ファイルの内容が返った場合 => unprotected',
-                'conditions'          => array( 'status_code' => 200, 'body' => $token ),
+                'conditions'          => array( 'status_code' => 200, 'body' => $token ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_UNPROTECTED,
             ),
             array(
                 'test_condition_name' => '200 で内容の前後に改行がある場合 => unprotected',
-                'conditions'          => array( 'status_code' => 200, 'body' => "\n" . $token . "\n" ),
+                'conditions'          => array( 'status_code' => 200, 'body' => "\n" . $token . "\n" ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_UNPROTECTED,
             ),
             array(
-                'test_condition_name' => '403 の場合 => protected',
-                'conditions'          => array( 'status_code' => 403, 'body' => '<html>403 Forbidden</html>' ),
+                'test_condition_name' => '対照ファイルが取得できなくても、中身が返ったら => unprotected',
+                'conditions'          => array( 'status_code' => 200, 'body' => $token, 'control_code' => 0, 'control_body' => '' ),
+                'expected'            => DirectoryManager::STATUS_UNPROTECTED,
+            ),
+            array(
+                'test_condition_name' => '対照ファイルは取得でき、403 の場合 => protected',
+                'conditions'          => array( 'status_code' => 403, 'body' => '<html>403 Forbidden</html>' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_PROTECTED,
             ),
             array(
-                'test_condition_name' => '404 の場合 => protected',
-                'conditions'          => array( 'status_code' => 404, 'body' => 'Not Found' ),
+                'test_condition_name' => '対照ファイルは取得でき、404 の場合 => protected',
+                'conditions'          => array( 'status_code' => 404, 'body' => 'Not Found' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_PROTECTED,
             ),
             array(
-                'test_condition_name' => '410 の場合 => protected',
-                'conditions'          => array( 'status_code' => 410, 'body' => 'Gone' ),
+                'test_condition_name' => '対照ファイルは取得でき、410 の場合 => protected',
+                'conditions'          => array( 'status_code' => 410, 'body' => 'Gone' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_PROTECTED,
             ),
             array(
-                'test_condition_name' => '401（サイト全体の BASIC 認証など）の場合 => unknown',
-                'conditions'          => array( 'status_code' => 401, 'body' => 'Unauthorized' ),
+                'test_condition_name' => '対照ファイルも 404（CDN オフロード・別 vhost 等）で 404 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 404, 'body' => 'Not Found', 'control_code' => 404, 'control_body' => 'Not Found' ),
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => '429（レート制限）の場合 => unknown',
-                'conditions'          => array( 'status_code' => 429, 'body' => 'Too Many Requests' ),
+                'test_condition_name' => '対照ファイルが 200 でも内容が異なる場合で 403 => unknown',
+                'conditions'          => array( 'status_code' => 403, 'body' => 'Forbidden', 'control_code' => 200, 'control_body' => '<html>other</html>' ),
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => '500 の場合 => unknown',
-                'conditions'          => array( 'status_code' => 500, 'body' => 'Internal Server Error' ),
+                'test_condition_name' => 'サイト全体の BASIC 認証で両方 401 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 401, 'body' => 'Unauthorized', 'control_code' => 401, 'control_body' => 'Unauthorized' ),
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => '503 の場合 => unknown',
-                'conditions'          => array( 'status_code' => 503, 'body' => 'Service Unavailable' ),
+                'test_condition_name' => '対照ファイルは取得でき、429 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 429, 'body' => 'Too Many Requests' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => '200 でも内容が異なる（WAF のチャレンジページ等）場合 => unknown',
-                'conditions'          => array( 'status_code' => 200, 'body' => '<html>Checking your browser</html>' ),
+                'test_condition_name' => '対照ファイルは取得でき、500 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 500, 'body' => 'Internal Server Error' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => 'リダイレクトが続いた場合 => unknown',
-                'conditions'          => array( 'status_code' => 301, 'body' => '' ),
+                'test_condition_name' => '対照ファイルは取得でき、200 でも内容が異なる（WAF のチャレンジページ等）場合 => unknown',
+                'conditions'          => array( 'status_code' => 200, 'body' => '<html>Checking your browser</html>' ) + $control_ok,
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
-                'test_condition_name' => 'ステータスコードが取得できない場合 => unknown',
-                'conditions'          => array( 'status_code' => 0, 'body' => '' ),
+                'test_condition_name' => '対照ファイルは取得でき、リダイレクトが続いた場合 => unknown',
+                'conditions'          => array( 'status_code' => 301, 'body' => '' ) + $control_ok,
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
+            ),
+            array(
+                'test_condition_name' => '両方とも応答なしの場合 => unknown',
+                'conditions'          => array( 'status_code' => 0, 'body' => '', 'control_code' => 0, 'control_body' => '' ),
                 'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
         );
@@ -389,6 +454,8 @@ class DirectoryManagerTest extends TestCase {
             $actual = DirectoryManager::evaluate_protection_response(
                 $case['conditions']['status_code'],
                 $case['conditions']['body'],
+                $case['conditions']['control_code'],
+                $case['conditions']['control_body'],
                 $token
             );
             $this->assertEquals( $case['expected'], $actual, $case['test_condition_name'] );
@@ -435,6 +502,23 @@ class DirectoryManagerTest extends TestCase {
             WP_Mock::tearDown();
             WP_Mock::setUp();
         }
+    }
+
+    /**
+     * Normalize the saved migration state for comparison
+     * 保存された移行状態を比較用に正規化する
+     *
+     * @param mixed $state the saved value (null if not saved) / 保存された値（保存されていなければ null）
+     * @return string|null 'done', 'retry' (future UNIX time), or null / 'done'、'retry'（未来の UNIX 時刻）、または null
+     */
+    private function normalize_migration_state( $state ) {
+        if ( $state === DirectoryManager::MIGRATION_STATE_DONE ) {
+            return 'done';
+        }
+        if ( is_int( $state ) && $state > time() ) {
+            return 'retry';
+        }
+        return $state === null ? null : 'invalid';
     }
 
     /**
