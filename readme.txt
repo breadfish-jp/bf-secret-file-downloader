@@ -3,7 +3,7 @@ Contributors: breadfish
 Tags: download, file manager, security
 Requires at least: 6.8
 Tested up to: 7.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -79,6 +79,7 @@ Currently, the plugin is designed for single-site installations.
 
 == Changelog ==
 
+= 1.0.3 =
 * [ Spec Change ] Move the secure directory to a hidden (dot-prefixed) directory so that direct access is blocked on most Nginx servers, and migrate existing directories automatically
 * [ Spec Change ] Check whether direct access to the secure directory is actually blocked and show a warning with an Nginx configuration example if it is not
 * [ Bug Fix ] Add protection files to the base directory so that the secure directory name is not exposed by directory listing
@@ -102,6 +103,9 @@ Currently, the plugin is designed for single-site installations.
 * i18n support for Japanese and English
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Improves protection on Nginx servers. The secure directory is automatically moved to a hidden directory. If you upload files via FTP, use the new directory shown in the admin notice.
 
 = 1.0.1 =
 Security improvements and bug fixes. Recommended update for all users.
