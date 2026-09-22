@@ -57,6 +57,16 @@ The plugin implements multiple security layers including nonce verification, use
 
 The plugin automatically creates secure directories with unique names when activated. These directories are protected with .htaccess and index.php files to prevent direct access and have unique names for additional security.
 
+= Does it work on Nginx? =
+
+Yes. The secure directory is a hidden directory (its name starts with a dot) under wp-content/uploads. Most Nginx configurations for WordPress deny access to hidden files and directories (`location ~ /\. { deny all; }`), so direct access is blocked without any additional configuration.
+
+The plugin checks whether direct access is actually blocked and shows a warning on its admin screens if it is not. In that case, add the following to your Nginx configuration, or ask your hosting provider to add it:
+
+`location ^~ /wp-content/uploads/bf-secret-file-downloader/ { deny all; }`
+
+If you upload files via FTP, enable the option to show hidden files in your FTP client.
+
 = Is it compatible with multisite? =
 
 Currently, the plugin is designed for single-site installations.
@@ -68,6 +78,10 @@ Currently, the plugin is designed for single-site installations.
 3. Frontend download interface
 
 == Changelog ==
+
+* [ Spec Change ] Move the secure directory to a hidden (dot-prefixed) directory so that direct access is blocked on most Nginx servers, and migrate existing directories automatically
+* [ Spec Change ] Check whether direct access to the secure directory is actually blocked and show a warning with an Nginx configuration example if it is not
+* [ Bug Fix ] Add protection files to the base directory so that the secure directory name is not exposed by directory listing
 
 = 1.0.2 =
 * [ Bug Fix ] Fix intermittent 30-second stalls on plugin activation and block editor screens caused by unconditional session_start() on every request
