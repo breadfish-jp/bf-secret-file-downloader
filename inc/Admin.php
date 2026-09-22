@@ -125,11 +125,40 @@ class Admin {
      * Get the URL of a notice action link (with a nonce)
      * 通知の操作リンクの URL を取得する（nonce 付き）
      *
-     * @param string $action one of the ACTION_* constants / ACTION_* 定数のいずれか
+     * The link always points to one of the plugin's own screens instead of the current URL,
+     * so that the redirect after the action never lands on a screen that needs its own nonce
+     * (e.g. update.php).
+     * リンク先は現在の URL ではなく常にプラグイン自身の画面にする。
+     * 処理後のリダイレクト先が、独自の nonce を必要とする画面（update.php など）にならないようにするため。
+     *
+     * @param string $action    one of the ACTION_* constants / ACTION_* 定数のいずれか
+     * @param string $page_slug slug of the plugin screen to return to / 戻り先のプラグイン画面のスラッグ
      * @return string the URL / URL
      */
-    public static function get_notice_action_url( $action ) {
-        return wp_nonce_url( add_query_arg( 'bf_sfd_action', $action ), $action );
+    public static function get_notice_action_url( $action, $page_slug ) {
+        $url = add_query_arg(
+            array(
+                'page'          => $page_slug,
+                'bf_sfd_action' => $action,
+            ),
+            admin_url( 'admin.php' )
+        );
+        return wp_nonce_url( $url, $action );
+    }
+
+    /**
+     * Get the plugin screen to return to after a notice action
+     * 通知の操作後に戻るプラグイン画面を取得する
+     *
+     * @param string $page_slug the requested page slug / リクエストされたページのスラッグ
+     * @return string a slug of the plugin's screens (the file list if invalid) / プラグイン画面のスラッグ（不正ならファイル一覧）
+     */
+    public static function get_return_page_slug( $page_slug ) {
+        $allowed = array(
+            \Breadfish\SecretFileDownloader\Admin\FileListPage::PAGE_SLUG,
+            \Breadfish\SecretFileDownloader\Admin\SettingsPage::PAGE_SLUG,
+        );
+        return in_array( $page_slug, $allowed, true ) ? $page_slug : \Breadfish\SecretFileDownloader\Admin\FileListPage::PAGE_SLUG;
     }
 
     /**
@@ -162,7 +191,10 @@ class Admin {
             DirectoryManager::get_protection_status( true );
         }
 
-        wp_safe_redirect( remove_query_arg( array( 'bf_sfd_action', '_wpnonce' ) ) );
+        // Return to the plugin's screen (never to the current URL, which may need its own nonce)
+        // プラグインの画面に戻る（独自の nonce が必要な場合がある現在の URL には戻らない）
+        $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the nonce is verified above / nonce は上で検証済み
+        wp_safe_redirect( admin_url( 'admin.php?page=' . self::get_return_page_slug( $page ) ) );
         exit;
     }
 
@@ -196,7 +228,7 @@ class Admin {
                 <p><?php esc_html_e( 'If you upload files via FTP, please use the following directory from now on.', 'bf-secret-file-downloader' ); ?></p>
                 <p><code><?php echo esc_html( DirectoryManager::get_secure_directory() ); ?></code></p>
                 <p><?php esc_html_e( 'If the directory is not shown in your FTP client, enable the option to show hidden files.', 'bf-secret-file-downloader' ); ?></p>
-                <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_DISMISS_MOVED_NOTICE ) ); ?>" class="button"><?php esc_html_e( 'Dismiss this notice', 'bf-secret-file-downloader' ); ?></a></p>
+                <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_DISMISS_MOVED_NOTICE, $this->file_list_page::PAGE_SLUG ) ); ?>" class="button"><?php esc_html_e( 'Dismiss this notice', 'bf-secret-file-downloader' ); ?></a></p>
             </div>
             <?php
         }
@@ -222,7 +254,7 @@ class Admin {
             <p><?php esc_html_e( 'The directory name is random and not shown on public pages, so it is hard to guess, but anyone who learns the URL can download the files without authentication.', 'bf-secret-file-downloader' ); ?></p>
             <p><?php esc_html_e( 'If you use Nginx, add the following setting to the server configuration, or ask your hosting provider to add it.', 'bf-secret-file-downloader' ); ?></p>
             <p><code><?php echo esc_html( DirectoryManager::get_nginx_deny_rule() ); ?></code></p>
-            <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_RECHECK_PROTECTION ) ); ?>" class="button"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
+            <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_RECHECK_PROTECTION, $page ) ); ?>" class="button"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
         </div>
         <?php
     }

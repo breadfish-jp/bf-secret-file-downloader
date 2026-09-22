@@ -78,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <p><span class="dashicons dashicons-info" style="color: #646970;"></span> <?php esc_html_e( 'Could not check whether direct access to this directory is blocked.', 'bf-secret-file-downloader' ); ?></p>
                                 <?php endif; ?>
                                 <?php if ( $protection_status !== '' ) : ?>
-                                    <p><a href="<?php echo esc_url( \Breadfish\SecretFileDownloader\Admin::get_notice_action_url( \Breadfish\SecretFileDownloader\Admin::ACTION_RECHECK_PROTECTION ) ); ?>"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
+                                    <p><a href="<?php echo esc_url( \Breadfish\SecretFileDownloader\Admin::get_notice_action_url( \Breadfish\SecretFileDownloader\Admin::ACTION_RECHECK_PROTECTION, \Breadfish\SecretFileDownloader\Admin\SettingsPage::PAGE_SLUG ) ); ?>"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
                                 <?php endif; ?>
                                 <p class="description"><?php esc_html_e( 'A secure directory created automatically when the plugin is activated.', 'bf-secret-file-downloader' ); ?></p>
                                 <p class="description"><?php esc_html_e( 'On Apache, direct access is blocked by .htaccess.', 'bf-secret-file-downloader' ); ?></p>
