@@ -50,6 +50,12 @@ class DirectoryManager {
     const MOVED_NOTICE_OPTION = 'bf_sfd_show_directory_moved_notice';
 
     /**
+     * Option key of the flag that the migration to hidden directories has been completed
+     * 隠しディレクトリへの移行が完了したことを示すフラグのオプションキー
+     */
+    const MIGRATION_DONE_OPTION = 'bf_sfd_hidden_directory_migrated';
+
+    /**
      * Protection status: direct access is blocked
      * 保護状態: 直接アクセスが遮断されている
      */
@@ -162,50 +168,94 @@ class DirectoryManager {
     }
 
     /**
-     * Migrate the legacy (non-hidden) secure directory to the hidden directory
+     * Migrate the legacy (non-hidden) secure directories to hidden directories
      * 旧（隠しでない）セキュアディレクトリを隠しディレクトリへ移行する
      *
-     * Called on every request, but costs only a single is_dir() check once migrated.
-     * 毎リクエスト呼ばれるが、移行済みなら is_dir() 1回だけで終わる。
+     * Moves not only the current directory but also directories left by
+     * "reset settings without deleting files" in older versions.
+     * Once every directory has been moved, a flag is saved so that later requests
+     * only read an autoloaded option.
+     * 現在のディレクトリだけでなく、旧バージョンの「ファイルを残して設定をリセット」で
+     * 残ったディレクトリも移行する。すべて移行できたらフラグを保存し、
+     * 以降のリクエストでは自動読み込みのオプションを参照するだけで終わる。
      *
-     * @return bool true if the directory was moved in this call / この呼び出しで移動した場合 true
+     * @return bool true if the current secure directory was moved in this call / この呼び出しで現在のセキュアディレクトリを移動した場合 true
      */
     public static function maybe_migrate_to_hidden_directory() {
-        $secure_id = get_option( 'bf_sfd_secure_directory_id', '' );
-        if ( empty( $secure_id ) ) {
+        // Skip if the migration has already been completed
+        // 移行が完了済みなら何もしない
+        if ( get_option( self::MIGRATION_DONE_OPTION, false ) ) {
             return false;
         }
 
         $base_dir = self::get_base_directory();
-        $hidden_dir = $base_dir . '/' . self::get_directory_name( $secure_id );
-        $legacy_dir = $base_dir . '/' . $secure_id;
+        $secure_id = get_option( 'bf_sfd_secure_directory_id', '' );
+        $moved_current = false;
+        $moved_any = false;
+        $all_moved = true;
 
-        // Already migrated, or nothing to migrate
-        // 移行済み、または移行対象が無い
-        if ( is_dir( $hidden_dir ) || ! is_dir( $legacy_dir ) ) {
-            return false;
+        if ( is_dir( $base_dir ) ) {
+            $items = scandir( $base_dir );
+            if ( $items === false ) {
+                $items = array();
+                $all_moved = false;
+            }
+
+            foreach ( $items as $item ) {
+                // Target: the current directory ID, or a 32-character hex name created by older versions
+                // 対象: 現在のディレクトリID、または旧バージョンが作成した32桁の16進数の名前
+                $is_legacy_name = ( $item === $secure_id && $secure_id !== '' ) || preg_match( '/^[0-9a-f]{32}$/', $item );
+                if ( ! $is_legacy_name || ! is_dir( $base_dir . '/' . $item ) ) {
+                    continue;
+                }
+
+                $hidden_dir = $base_dir . '/' . self::get_directory_name( $item );
+
+                // Do not overwrite an existing hidden directory
+                // 既存の隠しディレクトリは上書きしない
+                if ( file_exists( $hidden_dir ) ) {
+                    continue;
+                }
+
+                // Rename the directory. WP_Filesystem is not used because it may require
+                // FTP credentials and this runs on front-end requests as well.
+                // ディレクトリ名を変更する。フロントエンドのリクエストでも実行され、
+                // WP_Filesystem は FTP 認証情報を要求する場合があるため rename() を使う。
+                if ( ! @rename( $base_dir . '/' . $item, $hidden_dir ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename, WordPress.PHP.NoSilencedErrors.Discouraged
+                    // Retry on a later request
+                    // 後のリクエストで再試行する
+                    $all_moved = false;
+                    continue;
+                }
+
+                $moved_any = true;
+                if ( $item === $secure_id ) {
+                    $moved_current = true;
+                }
+            }
+
+            // Protect the base directory as well (older versions did not create protection files there)
+            // ベースディレクトリも保護する（旧バージョンでは保護ファイルを置いていなかった）
+            self::write_protection_files( $base_dir );
         }
 
-        // Rename the directory. WP_Filesystem is not used because it may require
-        // FTP credentials and this runs on front-end requests as well.
-        // ディレクトリ名を変更する。フロントエンドのリクエストでも実行され、
-        // WP_Filesystem は FTP 認証情報を要求する場合があるため rename() を使う。
-        if ( ! @rename( $legacy_dir, $hidden_dir ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename, WordPress.PHP.NoSilencedErrors.Discouraged
-            return false;
+        if ( $moved_current ) {
+            update_option( 'bf_sfd_target_directory', $base_dir . '/' . self::get_directory_name( $secure_id ) );
+
+            // Tell the administrator that the location for FTP uploads has changed
+            // FTP でのアップロード先が変わったことを管理者に知らせる
+            update_option( self::MOVED_NOTICE_OPTION, true );
         }
 
-        // Protect the base directory as well (older versions did not create protection files there)
-        // ベースディレクトリも保護する（旧バージョンでは保護ファイルを置いていなかった）
-        self::write_protection_files( $base_dir );
+        if ( $moved_any ) {
+            delete_transient( self::PROTECTION_STATUS_TRANSIENT );
+        }
 
-        update_option( 'bf_sfd_target_directory', $hidden_dir );
-        delete_transient( self::PROTECTION_STATUS_TRANSIENT );
+        if ( $all_moved ) {
+            update_option( self::MIGRATION_DONE_OPTION, true );
+        }
 
-        // Tell the administrator that the location for FTP uploads has changed
-        // FTP でのアップロード先が変わったことを管理者に知らせる
-        update_option( self::MOVED_NOTICE_OPTION, true );
-
-        return true;
+        return $moved_current;
     }
 
     /**
@@ -412,15 +462,19 @@ class DirectoryManager {
             return self::STATUS_UNPROTECTED;
         }
 
-        // No response, or still redirecting: cannot be determined
-        // 応答なし、またはリダイレクトが続いた: 判定できない
-        if ( $status_code < 200 || ( $status_code >= 300 && $status_code < 400 ) ) {
-            return self::STATUS_UNKNOWN;
+        // Only responses that deny the file itself are treated as protected.
+        // 403: denied by .htaccess or an Nginx deny rule / 404, 410: hidden by a "return 404" style rule
+        // ファイル自体を拒否した応答のみ保護済みとみなす。
+        // 403: .htaccess や Nginx の deny で拒否 / 404・410: 「return 404」形式のルールで隠蔽
+        if ( in_array( $status_code, array( 403, 404, 410 ), true ) ) {
+            return self::STATUS_PROTECTED;
         }
 
-        // Any other response (403, 404, error page, etc.) did not expose the file
-        // それ以外の応答（403・404・エラーページなど）ではファイルは漏れていない
-        return self::STATUS_PROTECTED;
+        // Anything else (no response, redirects, 401 site-wide authentication, 429, 5xx,
+        // a 200 page with other content, etc.) does not tell whether the file is blocked
+        // それ以外（応答なし、リダイレクト、サイト全体の 401 認証、429、5xx、
+        // 別内容の 200 など）では、ファイルが遮断されているか判断できない
+        return self::STATUS_UNKNOWN;
     }
 
     /**

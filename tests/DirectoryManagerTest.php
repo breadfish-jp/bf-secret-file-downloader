@@ -151,91 +151,159 @@ class DirectoryManagerTest extends TestCase {
      * maybe_migrate_to_hidden_directory メソッドのテスト
      */
     public function test_maybe_migrate_to_hidden_directory() {
+        $current = '0123456789abcdef0123456789abcdef';
+        $old     = 'fedcba9876543210fedcba9876543210';
+
         $test_cases = array(
             array(
-                'test_condition_name' => '旧ディレクトリのみ存在する場合 => 移動して true、ファイルも移動',
+                'test_condition_name' => '現在の旧ディレクトリのみ存在する場合 => 移動して true、ファイル移動・通知フラグ・完了フラグ',
                 'conditions'          => array(
-                    'secure_id' => 'abc123',
-                    'dirs'      => array( 'abc123' ),
+                    'secure_id'      => $current,
+                    'migration_done' => false,
+                    'dirs'           => array( $current ),
                 ),
                 'expected'            => array(
-                    'result'          => true,
-                    'hidden_exists'   => true,
-                    'legacy_exists'   => false,
-                    'file_moved'      => true,
-                    'base_protected'  => true,
+                    'result'         => true,
+                    'dirs_after'     => array( '.' . $current ),
+                    'file_moved'     => true,
+                    'base_protected' => true,
+                    'notice_flag'    => true,
+                    'done_flag'      => true,
                 ),
             ),
             array(
-                'test_condition_name' => '既に隠しディレクトリがある場合 => 何もせず false',
+                'test_condition_name' => 'リセットで残った古いディレクトリもある場合 => 両方とも隠しディレクトリへ移動',
                 'conditions'          => array(
-                    'secure_id' => 'abc123',
-                    'dirs'      => array( '.abc123' ),
+                    'secure_id'      => $current,
+                    'migration_done' => false,
+                    'dirs'           => array( $current, $old ),
                 ),
                 'expected'            => array(
-                    'result'          => false,
-                    'hidden_exists'   => true,
-                    'legacy_exists'   => false,
-                    'file_moved'      => false,
-                    'base_protected'  => false,
+                    'result'         => true,
+                    'dirs_after'     => array( '.' . $current, '.' . $old ),
+                    'file_moved'     => true,
+                    'base_protected' => true,
+                    'notice_flag'    => true,
+                    'done_flag'      => true,
                 ),
             ),
             array(
-                'test_condition_name' => '両方ある場合 => 旧ディレクトリを上書きせず false',
+                'test_condition_name' => '現在のディレクトリは移行済みで古いディレクトリのみ残る場合 => 古い方だけ移動、通知なしで false',
                 'conditions'          => array(
-                    'secure_id' => 'abc123',
-                    'dirs'      => array( 'abc123', '.abc123' ),
+                    'secure_id'      => $current,
+                    'migration_done' => false,
+                    'dirs'           => array( '.' . $current, $old ),
                 ),
                 'expected'            => array(
-                    'result'          => false,
-                    'hidden_exists'   => true,
-                    'legacy_exists'   => true,
-                    'file_moved'      => false,
-                    'base_protected'  => false,
+                    'result'         => false,
+                    'dirs_after'     => array( '.' . $current, '.' . $old ),
+                    'file_moved'     => false,
+                    'base_protected' => true,
+                    'notice_flag'    => false,
+                    'done_flag'      => true,
                 ),
             ),
             array(
-                'test_condition_name' => 'IDが未設定の場合 => false',
+                'test_condition_name' => '32桁の16進数でないディレクトリの場合 => 移動しない',
                 'conditions'          => array(
-                    'secure_id' => '',
-                    'dirs'      => array(),
+                    'secure_id'      => $current,
+                    'migration_done' => false,
+                    'dirs'           => array( '.' . $current, 'my-folder' ),
                 ),
                 'expected'            => array(
-                    'result'          => false,
-                    'hidden_exists'   => false,
-                    'legacy_exists'   => false,
-                    'file_moved'      => false,
-                    'base_protected'  => false,
+                    'result'         => false,
+                    'dirs_after'     => array( '.' . $current, 'my-folder' ),
+                    'file_moved'     => false,
+                    'base_protected' => true,
+                    'notice_flag'    => false,
+                    'done_flag'      => true,
+                ),
+            ),
+            array(
+                'test_condition_name' => '移行完了フラグが立っている場合 => 旧ディレクトリがあっても何もせず false',
+                'conditions'          => array(
+                    'secure_id'      => $current,
+                    'migration_done' => true,
+                    'dirs'           => array( $current ),
+                ),
+                'expected'            => array(
+                    'result'         => false,
+                    'dirs_after'     => array( $current ),
+                    'file_moved'     => false,
+                    'base_protected' => false,
+                    'notice_flag'    => false,
+                    'done_flag'      => false,
+                ),
+            ),
+            array(
+                'test_condition_name' => 'ベースディレクトリが無い場合 => false で完了フラグのみ',
+                'conditions'          => array(
+                    'secure_id'      => '',
+                    'migration_done' => false,
+                    'dirs'           => null,
+                ),
+                'expected'            => array(
+                    'result'         => false,
+                    'dirs_after'     => array(),
+                    'file_moved'     => false,
+                    'base_protected' => false,
+                    'notice_flag'    => false,
+                    'done_flag'      => true,
                 ),
             ),
         );
 
         foreach ( $test_cases as $case ) {
-            // Build a temporary uploads directory. Put a user file in the legacy directory.
-            // 一時 uploads ディレクトリを作り、旧ディレクトリにはユーザーファイルを置く
+            // Build a temporary uploads directory. Put a user file in each non-hidden directory.
+            // 一時 uploads ディレクトリを作り、隠しでない各ディレクトリにユーザーファイルを置く
             $uploads = $this->create_temp_uploads_dir();
             $base = $uploads . '/bf-secret-file-downloader';
-            foreach ( $case['conditions']['dirs'] as $dir ) {
-                mkdir( $base . '/' . $dir, 0777, true );
-                if ( strpos( $dir, '.' ) !== 0 ) {
-                    file_put_contents( $base . '/' . $dir . '/user-file.pdf', 'dummy' );
+            if ( $case['conditions']['dirs'] !== null ) {
+                mkdir( $base, 0777, true );
+                foreach ( $case['conditions']['dirs'] as $dir ) {
+                    mkdir( $base . '/' . $dir );
+                    if ( strpos( $dir, '.' ) !== 0 ) {
+                        file_put_contents( $base . '/' . $dir . '/user-file.pdf', 'dummy' );
+                    }
                 }
             }
+
+            // Mock the options and record the options written by the method
+            // オプションをモックし、メソッドが書き込んだオプションを記録する
             $this->mock_directory_options( $uploads, $case['conditions']['secure_id'] );
-            WP_Mock::userFunction( 'update_option' )->andReturn( true );
+            WP_Mock::userFunction( 'get_option' )
+                ->with( DirectoryManager::MIGRATION_DONE_OPTION, false )
+                ->andReturn( $case['conditions']['migration_done'] );
+            $updated = array();
+            WP_Mock::userFunction( 'update_option' )->andReturnUsing( function ( $name, $value ) use ( &$updated ) {
+                $updated[ $name ] = $value;
+                return true;
+            } );
             WP_Mock::userFunction( 'delete_transient' )->andReturn( true );
 
             // Run the method under test
             // テスト対象を実行する
             $actual = DirectoryManager::maybe_migrate_to_hidden_directory();
 
-            $id = $case['conditions']['secure_id'];
+            // Collect the directories after the migration (excluding protection files)
+            // 移行後のディレクトリ一覧を取得する（保護ファイルは除く）
+            $dirs_after = array();
+            if ( is_dir( $base ) ) {
+                foreach ( scandir( $base ) as $item ) {
+                    if ( $item !== '.' && $item !== '..' && is_dir( $base . '/' . $item ) ) {
+                        $dirs_after[] = $item;
+                    }
+                }
+            }
+            sort( $dirs_after );
+
             $actual_state = array(
                 'result'         => $actual,
-                'hidden_exists'  => $id !== '' && is_dir( $base . '/.' . $id ),
-                'legacy_exists'  => $id !== '' && is_dir( $base . '/' . $id ),
-                'file_moved'     => $id !== '' && is_file( $base . '/.' . $id . '/user-file.pdf' ),
+                'dirs_after'     => $dirs_after,
+                'file_moved'     => is_file( $base . '/.' . $current . '/user-file.pdf' ),
                 'base_protected' => is_file( $base . '/.htaccess' ) && is_file( $base . '/index.php' ),
+                'notice_flag'    => ! empty( $updated[ DirectoryManager::MOVED_NOTICE_OPTION ] ),
+                'done_flag'      => ! empty( $updated[ DirectoryManager::MIGRATION_DONE_OPTION ] ),
             );
             $this->assertEquals( $case['expected'], $actual_state, $case['test_condition_name'] );
 
@@ -276,14 +344,34 @@ class DirectoryManagerTest extends TestCase {
                 'expected'            => DirectoryManager::STATUS_PROTECTED,
             ),
             array(
-                'test_condition_name' => '500（Apache で Deny 構文が使えない場合など）の場合 => protected',
-                'conditions'          => array( 'status_code' => 500, 'body' => 'Internal Server Error' ),
+                'test_condition_name' => '410 の場合 => protected',
+                'conditions'          => array( 'status_code' => 410, 'body' => 'Gone' ),
                 'expected'            => DirectoryManager::STATUS_PROTECTED,
             ),
             array(
-                'test_condition_name' => '200 でも内容が異なる（エラーページ等）場合 => protected',
-                'conditions'          => array( 'status_code' => 200, 'body' => '<html>Page not found</html>' ),
-                'expected'            => DirectoryManager::STATUS_PROTECTED,
+                'test_condition_name' => '401（サイト全体の BASIC 認証など）の場合 => unknown',
+                'conditions'          => array( 'status_code' => 401, 'body' => 'Unauthorized' ),
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
+            ),
+            array(
+                'test_condition_name' => '429（レート制限）の場合 => unknown',
+                'conditions'          => array( 'status_code' => 429, 'body' => 'Too Many Requests' ),
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
+            ),
+            array(
+                'test_condition_name' => '500 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 500, 'body' => 'Internal Server Error' ),
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
+            ),
+            array(
+                'test_condition_name' => '503 の場合 => unknown',
+                'conditions'          => array( 'status_code' => 503, 'body' => 'Service Unavailable' ),
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
+            ),
+            array(
+                'test_condition_name' => '200 でも内容が異なる（WAF のチャレンジページ等）場合 => unknown',
+                'conditions'          => array( 'status_code' => 200, 'body' => '<html>Checking your browser</html>' ),
+                'expected'            => DirectoryManager::STATUS_UNKNOWN,
             ),
             array(
                 'test_condition_name' => 'リダイレクトが続いた場合 => unknown',

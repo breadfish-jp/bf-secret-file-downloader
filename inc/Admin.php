@@ -51,6 +51,10 @@ class Admin {
         // セキュアディレクトリに関する通知を表示する
         add_action( 'admin_notices', array( $this, 'render_directory_notices' ) );
 
+        // Handle the "dismiss notice" and "check again" links in the notices
+        // 通知内の「通知を閉じる」「再確認」リンクを処理する
+        add_action( 'admin_init', array( $this, 'handle_directory_notice_actions' ) );
+
         // Initialize each page
         $this->file_list_page->init();
         $this->settings_page->init();
@@ -106,12 +110,69 @@ class Admin {
     }
 
     /**
+     * Action name of the "dismiss the directory moved notice" link
+     * 「ディレクトリ移動の通知を閉じる」リンクのアクション名
+     */
+    const ACTION_DISMISS_MOVED_NOTICE = 'bf_sfd_dismiss_moved_notice';
+
+    /**
+     * Action name of the "check the protection status again" link
+     * 「保護状態を再確認する」リンクのアクション名
+     */
+    const ACTION_RECHECK_PROTECTION = 'bf_sfd_recheck_protection';
+
+    /**
+     * Get the URL of a notice action link (with a nonce)
+     * 通知の操作リンクの URL を取得する（nonce 付き）
+     *
+     * @param string $action one of the ACTION_* constants / ACTION_* 定数のいずれか
+     * @return string the URL / URL
+     */
+    public static function get_notice_action_url( $action ) {
+        return wp_nonce_url( add_query_arg( 'bf_sfd_action', $action ), $action );
+    }
+
+    /**
+     * Handle the notice action links
+     * 通知の操作リンクを処理する
+     *
+     * Redirects back to the same screen without the query parameters after the action.
+     * 処理後はクエリパラメータを除いた同じ画面へリダイレクトする。
+     */
+    public function handle_directory_notice_actions() {
+        $action = isset( $_GET['bf_sfd_action'] ) ? sanitize_key( wp_unslash( $_GET['bf_sfd_action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( ! in_array( $action, array( self::ACTION_DISMISS_MOVED_NOTICE, self::ACTION_RECHECK_PROTECTION ), true ) ) {
+            return;
+        }
+
+        // Only administrators can perform the actions, and the nonce must be valid
+        // 操作できるのは管理者のみで、nonce が有効である必要がある
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        check_admin_referer( $action );
+
+        if ( $action === self::ACTION_DISMISS_MOVED_NOTICE ) {
+            // Stop showing the "directory moved" notice
+            // 「ディレクトリを移動した」通知の表示をやめる
+            delete_option( DirectoryManager::MOVED_NOTICE_OPTION );
+        } else {
+            // Check the protection status again, ignoring the cache
+            // キャッシュを無視して保護状態を再確認する
+            DirectoryManager::get_protection_status( true );
+        }
+
+        wp_safe_redirect( remove_query_arg( array( 'bf_sfd_action', '_wpnonce' ) ) );
+        exit;
+    }
+
+    /**
      * Render notices about the secure directory
      * セキュアディレクトリに関する通知を表示する
      *
-     * - A one-time notice after the directory was moved to the hidden directory
+     * - A notice after the directory was moved to the hidden directory (shown until dismissed)
      * - A warning on the plugin's screens when files can be downloaded directly
-     * - 隠しディレクトリへ移動した後に一度だけ出す通知
+     * - 隠しディレクトリへ移動した後の通知（閉じるまで表示する）
      * - ファイルを直接ダウンロードできる状態のとき、プラグインの画面に出す警告
      */
     public function render_directory_notices() {
@@ -121,17 +182,21 @@ class Admin {
             return;
         }
 
-        // One-time notice: the location for FTP uploads has changed
-        // 一度だけの通知: FTP でのアップロード先が変わった
+        // Notice: the location for FTP uploads has changed.
+        // Kept until the administrator dismisses it, because it may be missed on screens
+        // that do not show classic notices (e.g. the block editor).
+        // 通知: FTP でのアップロード先が変わった。
+        // ブロックエディターなど従来の通知が表示されない画面で見逃されないよう、
+        // 管理者が閉じるまで表示し続ける。
         if ( get_option( DirectoryManager::MOVED_NOTICE_OPTION, false ) ) {
-            delete_option( DirectoryManager::MOVED_NOTICE_OPTION );
             ?>
-            <div class="notice notice-info is-dismissible">
+            <div class="notice notice-info">
                 <p><strong><?php esc_html_e( 'BF Secret File Downloader', 'bf-secret-file-downloader' ); ?></strong></p>
                 <p><?php esc_html_e( 'To improve protection, the secure directory has been moved to a hidden directory (a directory whose name starts with a dot).', 'bf-secret-file-downloader' ); ?></p>
                 <p><?php esc_html_e( 'If you upload files via FTP, please use the following directory from now on.', 'bf-secret-file-downloader' ); ?></p>
                 <p><code><?php echo esc_html( DirectoryManager::get_secure_directory() ); ?></code></p>
                 <p><?php esc_html_e( 'If the directory is not shown in your FTP client, enable the option to show hidden files.', 'bf-secret-file-downloader' ); ?></p>
+                <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_DISMISS_MOVED_NOTICE ) ); ?>" class="button"><?php esc_html_e( 'Dismiss this notice', 'bf-secret-file-downloader' ); ?></a></p>
             </div>
             <?php
         }
@@ -157,6 +222,7 @@ class Admin {
             <p><?php esc_html_e( 'The directory name is random and not shown on public pages, so it is hard to guess, but anyone who learns the URL can download the files without authentication.', 'bf-secret-file-downloader' ); ?></p>
             <p><?php esc_html_e( 'If you use Nginx, add the following setting to the server configuration, or ask your hosting provider to add it.', 'bf-secret-file-downloader' ); ?></p>
             <p><code><?php echo esc_html( DirectoryManager::get_nginx_deny_rule() ); ?></code></p>
+            <p><a href="<?php echo esc_url( self::get_notice_action_url( self::ACTION_RECHECK_PROTECTION ) ); ?>" class="button"><?php esc_html_e( 'Check again', 'bf-secret-file-downloader' ); ?></a></p>
         </div>
         <?php
     }
